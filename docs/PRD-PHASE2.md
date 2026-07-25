@@ -71,6 +71,33 @@ LINE OA **ไม่มี public API ตั้ง "chat tag" ในแอป LIN
 - [ ] `/staff` (ต้อง `view_leads`), `/admin` (ต้อง `manage_users`) · guard self-lockout (ปิด/ลดสิทธิ์ตัวเองไม่ได้)
 - [ ] **Audit:** บันทึกการเข้าถึง ticket/แก้ tag/สร้าง user (`staff_audit`)
 
+## 3.5 Epic D — Leads Dashboard (รายชื่อผู้ลงทะเบียนทั้งหมด) 🆕
+> **Problem:** เดิม `/staff` ค้นได้ทีละ ticket เท่านั้น (ลูกค้าต้องเอา ticket มาแจ้ง) — ทีม/แอดมิน **ยังไม่มีหน้าเห็น lead ทุกคนในลิสต์เดียว** เพื่อไล่ดู/ติดตาม/กรอง/ส่งออก. Epic นี้เติมช่องว่างนั้น
+> **Non-goal:** ยังไม่ทำ analytics/funnel charts (เฟส 2.1) · ไม่แก้/ลบ lead จากหน้านี้ (เฟสหลัง เพิ่ม DSR)
+
+### User Stories
+1. ในฐานะทีมงาน (มีสิทธิ์ `view_leads`) ฉันอยากเห็น **รายชื่อผู้ลงทะเบียนทั้งหมด เรียงล่าสุดก่อน** เพื่อไล่ติดตามได้โดยไม่ต้องมี ticket
+2. ฉันอยาก **ค้น** (ชื่อเล่น/ช่องทางติดต่อ/เลข ticket) และ **กรอง** (สเตจ · PCOS · แผน ART · tag · เชื่อม LINE แล้ว/ยัง) เพื่อโฟกัสกลุ่มเป้าหมาย
+3. ฉันอยากกดที่ 1 แถวแล้ว **เปิดดูโปรไฟล์เต็ม** (ไปหน้า `/staff` ของ ticket นั้น)
+4. ในฐานะแอดมิน (`export_data`) ฉันอยาก **ส่งออก CSV** ตาม filter ปัจจุบัน เพื่อเอาไปทำงานต่อ
+5. Edge: ยังไม่ตั้ง Supabase → แสดงสถานะชัด · ไม่มีสิทธิ์ → 403/redirect · ไม่มี lead → empty state
+
+### Requirements (P0)
+- [ ] **หน้า `/leads`** (staff zone) — gate ด้วยสิทธิ์ **`view_leads`** (ไม่ใช่ admin-only) · ถ้าไม่ login → redirect `/login`
+- [ ] ตาราง: เวลา (created_at), ชื่อเล่น, ช่องทางติดต่อ, สเตจ, PCOS, ART, คะแนน (report score), จำนวน tag, สถานะ LINE, เลข ticket
+- [ ] **เรียงล่าสุดก่อน** (created_at desc) · **pagination** (หน้า/limit เช่น 25/หน้า) · แสดงจำนวนรวม
+- [ ] **ค้นหา** ข้อความ (nickname / contact_value / ticket code) — server-side
+- [ ] **กรอง:** stage · has_pcos · art_plan · tag (slug) · line-bound (มี/ไม่มี line_binding)
+- [ ] คลิกแถว → ไป `/staff?code=MJ-XXXXXX` (เปิดดูโปรไฟล์เต็ม + จัดการ tag ที่หน้าเดิม)
+- [ ] **Export CSV** — ปุ่มโชว์เฉพาะผู้มีสิทธิ์ `export_data` · ส่งออกตาม filter ปัจจุบัน · header ภาษาไทย
+- [ ] **BFF endpoint `GET /api/leads`** — guard `view_leads` · รับ query: `q, stage, pcos, art, tag, line, page, limit, format=csv` · join tickets(code) + tag count + report score + line binding · service-role เท่านั้น
+- [ ] ลิงก์เข้าหน้านี้จาก `/staff` และ `/admin` (สำหรับผู้มีสิทธิ์)
+- [ ] audit: log การเข้าถึงลิสต์ + export ใน `staff_audit`
+- [ ] Acceptance: ไม่มี env → 503 + UI บอกให้ตั้ง Supabase · ไม่มีสิทธิ์ → 403 · ค้น "แนน" คืนเฉพาะที่ match · export CSV เปิดใน Excel ได้ (BOM UTF-8)
+
+### UI (ล้อ website CI — ดู DESIGN.md)
+- Header: Wordmark + "รายชื่อผู้ลงทะเบียน (N)" · แถบค้น+filter (glass) · ตาราง responsive (scroll-x บนมือถือ) · ปุ่มหลัก teal · chip tag/สถานะ
+
 ## 4. Data & API
 **ตารางใหม่ (migration 0002):** `staff_users` (pin_hash, role, permissions[]) · `line_bindings` · `reports` (snapshot payload) · `staff_audit` · `leads.line_user_id`
 **API ใหม่:**
@@ -81,7 +108,10 @@ LINE OA **ไม่มี public API ตั้ง "chat tag" ในแอป LIN
 | `GET/POST /api/admin/users` · `PATCH /users/[id]` | manage_users | จัดการ staff |
 | `POST /api/line/webhook` | LINE signature | จับ ticket + tag + ตอบ Flex |
 | `GET /api/ticket/[code]` (อัปเกรด) | view_leads | +report score +LINE status |
+| `GET /api/leads` 🆕 | view_leads | ลิสต์ lead ทั้งหมด (q/filter/page) · `format=csv` ต้อง export_data |
 | `GET /r/[code]` | รหัส=ความลับ | รายงานแบบแชร์ |
+
+**หน้า (Pages):** `/plan` · `/r/[code]` · `/login` · `/staff` (ค้นทีละ ticket, รับ `?code=` auto-lookup) · **`/leads` 🆕 (Leads Dashboard, view_leads)** · `/admin` (manage_users)
 
 ## 5. NFR + จริยธรรม
 - **Security:** PIN hash scrypt+timingSafeEqual · session HMAC + httpOnly + verify ทุก request · LINE signature verify · deny-by-default RLS · service key server-only · rate-limit login/lead
@@ -92,5 +122,6 @@ LINE OA **ไม่มี public API ตั้ง "chat tag" ในแอป LIN
 - Q: sync tag เข้า LINE เนทีฟ (audience API) จำเป็นไหม หรือใช้ระบบ tag เราพอ → **เริ่มด้วยระบบเรา**
 - Q: ต้องมี rich menu / auto-greeting ใน LINE OA ด้วยไหม (เฟส 2.1)
 - Q: หน้า dashboard analytics (funnel G1–G5) — เฟส 2.1
-- ✅ ทำแล้วเฟสนี้: report, webhook, auth/RBAC, admin, stepped questionnaire, shareable report, screen mocks
+- ✅ ทำแล้วเฟสนี้: report, webhook, auth/RBAC, admin, stepped questionnaire, shareable report, screen mocks, **Leads Dashboard (`/leads` + `/api/leads` + CSV export + row→/staff)** 🆕
+- ⏳ Dashboard เฟสถัดไป: analytics/funnel charts · แก้/ลบ lead (DSR) จากหน้านี้ · bulk tag
 - ⏳ ก่อน launch จริง: ยืนยันสเปกสินค้า (ล็อกการแมปวิตามิน) · LINE channel (secret/token) · SESSION_SECRET · CI จริง · privacy policy · red-team copy โดย Lucifer (หา false hope/กดดัน)

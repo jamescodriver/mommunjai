@@ -46,7 +46,8 @@ export default function AdminPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">👑 จัดการผู้ใช้ทีมงาน</h1>
         <div className="flex items-center gap-2 text-sm">
-          <Link href="/staff" className="text-teal-deep">ไปหน้าค้น Ticket</Link>
+          <Link href="/leads" className="text-teal-deep">รายชื่อทั้งหมด</Link>
+          <Link href="/staff" className="text-teal-deep">ค้น Ticket</Link>
           <button className="btn-ghost !py-1.5" onClick={logout}>ออกจากระบบ</button>
         </div>
       </div>

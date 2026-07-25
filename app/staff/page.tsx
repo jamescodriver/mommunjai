@@ -16,12 +16,15 @@ export default function StaffPage() {
     fetch("/api/auth/session").then((r) => r.json()).then((d) => {
       if (!d.authed) return router.push("/login");
       setMe(d);
+      // auto-lookup when arriving from Leads Dashboard (/staff?code=MJ-XXXXXX)
+      const c = new URLSearchParams(window.location.search).get("code");
+      if (c) { setCode(c.toUpperCase()); lookup(c); }
     });
   }, [router]);
 
-  const lookup = async () => {
+  const lookup = async (c = code) => {
     setErr(null); setData(null);
-    const res = await fetch(`/api/ticket/${encodeURIComponent(code.toUpperCase())}`);
+    const res = await fetch(`/api/ticket/${encodeURIComponent(c.toUpperCase())}`);
     const d = await res.json();
     if (!res.ok) return setErr(d.error || "ผิดพลาด");
     setData(d);
@@ -40,7 +43,8 @@ export default function StaffPage() {
     <main className="mx-auto w-full max-w-lg p-4 sm:p-6">
       <div className="flex items-center justify-between text-sm">
         <span>สวัสดีค่ะ <b>{me.name}</b> <span className="chip ml-1">{me.role}</span></span>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
+          {(me.role === "admin" || (me.perms || []).includes("view_leads")) && <Link href="/leads" className="text-teal-deep">รายชื่อทั้งหมด</Link>}
           {(me.role === "admin" || (me.perms || []).includes("manage_users")) && <Link href="/admin" className="text-teal-deep">จัดการผู้ใช้</Link>}
           <button className="text-ink/60" onClick={logout}>ออกจากระบบ</button>
         </div>
@@ -50,7 +54,7 @@ export default function StaffPage() {
         <h1 className="text-lg font-semibold">🔎 ค้นหา Ticket ลูกค้า</h1>
         <div className="mt-3 flex gap-2">
           <input className="field" placeholder="MJ-XXXXXX" value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && lookup()} />
-          <button className="btn-primary" onClick={lookup}>ค้นหา</button>
+          <button className="btn-primary" onClick={() => lookup()}>ค้นหา</button>
         </div>
         {err && <p className="mt-2 text-sm text-rose-deep">{err}</p>}
       </div>
