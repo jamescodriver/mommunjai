@@ -16,8 +16,13 @@ export interface ProteinError {
   error: string;
 }
 
+// g per kg body weight, per stage. Sources (see docs/nutrition-protocol.md §1):
+// - prep 1.2–1.5: decided 2026-07-25 to span clinical pre-conception guidance (~1.2)
+//   up to the brand's own Ferty guidance for egg/endometrium support (1.5 g/kg).
+// - pregnant 1.1–1.3: standard maternal nutrition guidance.
+// - lactating ~1.3, male 1.2–1.6: general nutrition guidance (not fertility-specific).
 const RANGES: Record<Stage, [number, number]> = {
-  prep: [1.0, 1.2],
+  prep: [1.2, 1.5],
   pregnant: [1.1, 1.3],
   lactating: [1.3, 1.3],
   male: [1.2, 1.6],

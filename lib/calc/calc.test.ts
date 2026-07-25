@@ -33,12 +33,13 @@ describe("ovulation (M2)", () => {
 });
 
 describe("protein (M3)", () => {
-  it("computes range for prep stage", () => {
+  it("computes range for prep stage (1.2–1.5 g/kg)", () => {
     const r = calcProtein({ weightKg: 50, stage: "prep" });
     if (!("error" in r)) {
-      expect(r.minGrams).toBe(50); // 50*1.0
-      expect(r.maxGrams).toBe(60); // 50*1.2
-      expect(r.fertyServings.max).toBeGreaterThanOrEqual(2);
+      expect(r.minGrams).toBe(60); // 50*1.2
+      expect(r.maxGrams).toBe(75); // 50*1.5
+      expect(r.perKg).toEqual([1.2, 1.5]);
+      expect(r.fertyServings.max).toBeGreaterThanOrEqual(3);
     }
   });
   it("pregnant needs more (1.1-1.3)", () => {
