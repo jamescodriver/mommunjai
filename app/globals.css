@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --teal: #1bc0ba; /* primary (brand green) */
+  --rose: #f978b3; /* secondary (brand pink) */
+  --cream: #fff8fb;
+  --gold: #e7b84b;
+  --ink: #3d3d4d;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Prompt:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap");
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  color: var(--ink);
+  font-family: "Prompt", "Noto Sans Thai", system-ui, sans-serif;
+}
+
+/* App background — soft mint→pink hero gradient (matches website; skipped in embed mode) */
+body {
+  background: linear-gradient(135deg, #e7f7f5 0%, #fdf0f6 48%, #ffe9f2 100%);
+  min-height: 100vh;
+}
+body.embed {
+  background: transparent;
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/60 backdrop-blur-md border border-white/70 shadow-glass rounded-xl2;
+  }
+  .glass-strong {
+    @apply bg-white/80 backdrop-blur-md border border-white/80 shadow-glass rounded-xl2;
+  }
+  /* Website primary action = filled teal pill */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-teal text-white font-medium px-5 py-3 min-h-[44px] shadow-sm transition hover:bg-teal-deep active:scale-[.98];
+  }
+  /* Secondary/accent action = filled pink pill */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-rose text-white font-medium px-5 py-3 min-h-[44px] shadow-sm transition hover:bg-rose-deep active:scale-[.98];
+  }
+  /* Website outline action = teal-bordered pill */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-white/80 border border-teal/50 text-teal-deep px-5 py-3 min-h-[44px] transition hover:bg-teal-soft;
+  }
+  .field {
+    @apply w-full rounded-xl border border-black/10 bg-white/80 px-4 py-3 text-base outline-none focus:border-teal focus:ring-2 focus:ring-teal/30;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm bg-teal/15 text-teal-deep border border-teal/25;
+  }
+  /* Website feature card = teal gradient with white content */
+  .card-feature {
+    @apply rounded-xl2 text-white p-6 shadow-glass;
+    background: linear-gradient(150deg, #1bc0ba 0%, #159c97 100%);
+  }
+}

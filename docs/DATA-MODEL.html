@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Model — Mommunjai</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --rose:#E8A0BF; --teal:#5FB3B3; --cream:#FFF7F3; --ink:#3d3d4d; --gold:#E7B84B;
+         --glass:rgba(255,255,255,.62); --line:rgba(255,255,255,.7); --shadow:0 8px 30px rgba(90,60,80,.12);}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,-apple-system,sans-serif;color:var(--ink);
+       background:linear-gradient(135deg,#FFF7F3 0%,#FDEBF1 40%,#E7F5F4 100%);min-height:100vh;line-height:1.6}
+  .wrap{max-width:1200px;margin:0 auto;padding:24px;display:grid;grid-template-columns:250px 1fr;gap:24px}
+  header.top{grid-column:1/-1;display:flex;align-items:center;gap:14px;background:var(--glass);
+       backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;padding:18px 24px;box-shadow:var(--shadow)}
+  header.top .em{font-size:34px}
+  header.top h1{margin:0;font-size:22px;font-weight:600}
+  header.top .sub{margin:0;font-size:13px;opacity:.7}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--glass);backdrop-filter:blur(14px);
+       border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);max-height:85vh;overflow:auto}
+  nav.toc a{display:block;padding:6px 10px;border-radius:10px;color:var(--ink);text-decoration:none;font-size:13px;opacity:.85}
+  nav.toc a:hover{background:rgba(232,160,191,.18)}
+  main{min-width:0}
+  details.sec{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;
+       padding:6px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+  details.sec>summary{cursor:pointer;font-size:19px;font-weight:600;padding:14px 0;list-style:none;display:flex;align-items:center;gap:10px}
+  details.sec>summary::-webkit-details-marker{display:none}
+  details.sec>summary::before{content:'▸';color:var(--rose);transition:transform .2s}
+  details.sec[open]>summary::before{transform:rotate(90deg)}
+  .body{padding-bottom:16px}
+  h1,h2,h3{line-height:1.3} h3{font-size:16px;margin-top:20px}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;overflow:auto;display:block}
+  th,td{border:1px solid rgba(120,90,110,.18);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:rgba(95,179,179,.14)}
+  code{background:rgba(120,90,110,.1);padding:2px 6px;border-radius:6px;font-size:.9em}
+  pre{background:rgba(40,40,60,.9);color:#eee;padding:14px;border-radius:12px;overflow:auto}
+  pre code{background:none;color:inherit}
+  a{color:#c85a8a} blockquote{border-left:4px solid var(--teal);margin:12px 0;padding:6px 16px;background:rgba(95,179,179,.08);border-radius:8px}
+  input[type=checkbox]{margin-right:6px}
+  .mermaid{background:rgba(255,255,255,.5);border-radius:12px;padding:12px;margin:12px 0;text-align:center}
+  .toolbar{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+  .btn{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink)}
+  .btn:hover{background:rgba(232,160,191,.2)}
+  @media(max-width:820px){.wrap{grid-template-columns:1fr;padding:14px}nav.toc{position:static;max-height:none}}
+  @media print{nav.toc,.toolbar{display:none}details.sec{break-inside:avoid}}
+</style></head><body>
+<div class="wrap">
+  <header class="top"><span class="em">🗄️</span><div><h1>Data Model</h1><p class="sub">Mommunjai · เอกสารรีวิว (พับ/กางแต่ละ section ได้ · แก้ที่ไฟล์ .md แล้ว regenerate)</p></div></header>
+  <div class="toolbar">
+    <button class="btn" onclick="document.querySelectorAll('details.sec').forEach(d=>d.open=true)">กางทั้งหมด</button>
+    <button class="btn" onclick="document.querySelectorAll('details.sec').forEach(d=>d.open=false)">พับทั้งหมด</button>
+    <button class="btn" onclick="window.print()">พิมพ์ / PDF</button>
+  </div>
+  <nav class="toc" id="toc"></nav>
+  <main id="main"></main>
+</div>
+<script>
+  const MD = "# Data Model \u2014 Mommunjai (Supabase / Postgres)\n\n> \u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e0a\u0e31\u0e19 1.0 \u00b7 2026-07-20 \u00b7 SA (Angiris) \u00b7 \u0e2d\u0e48\u0e32\u0e19\u0e04\u0e39\u0e48\u0e01\u0e31\u0e1a [ARCHITECTURE.md](ARCHITECTURE.md) \u00b7 [PRD.md](PRD.md)\n> HTML: [DATA-MODEL.html](DATA-MODEL.html) \u00b7 SQL \u0e08\u0e23\u0e34\u0e07: [../supabase/migrations/0001_init.sql](../supabase/migrations/0001_init.sql)\n\n## 1. ER Diagram\n```mermaid\nerDiagram\n  leads ||--o| tickets : \"\u0e21\u0e35 1\"\n  leads ||--o{ tool_results : \"\u0e17\u0e33\u0e2b\u0e25\u0e32\u0e22\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\"\n  leads ||--o{ consent_log : \"\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21\u0e2b\u0e25\u0e32\u0e22\u0e04\u0e23\u0e31\u0e49\u0e07\"\n  leads ||--o{ tag_assignments : \"\u0e16\u0e39\u0e01\u0e41\u0e17\u0e47\u0e01\"\n  tags ||--o{ tag_assignments : \"\u0e43\u0e0a\u0e49\u0e01\u0e31\u0e1a\u0e2b\u0e25\u0e32\u0e22 lead\"\n  leads ||--o{ events : \"\u0e01\u0e48\u0e2d event\"\n\n  leads {\n    uuid id PK\n    text nickname\n    text contact_channel \"line|phone\"\n    text contact_value \"\u0e40\u0e02\u0e49\u0e32\u0e23\u0e2b\u0e31\u0e2a/\u0e41\u0e2e\u0e0a\u0e44\u0e14\u0e49\"\n    text stage \"prep|infertility|pregnant|lactating|male\"\n    text age_range\n    bool has_pcos\n    text art_plan \"none|iui|ivf|icsi\"\n    jsonb interests \"\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e17\u0e35\u0e48\u0e2a\u0e19\u0e43\u0e08\"\n    timestamptz created_at\n    timestamptz updated_at\n  }\n  tickets {\n    uuid id PK\n    text code UK \"MJ-XXXXXX\"\n    uuid lead_id FK\n    text status \"new|contacted|closed\"\n    timestamptz created_at\n  }\n  tags {\n    uuid id PK\n    text slug UK \"#PCOS\"\n    text label\n    text kind \"auto|manual\"\n    text color\n  }\n  tag_assignments {\n    uuid id PK\n    uuid lead_id FK\n    uuid tag_id FK\n    text source \"auto|staff\"\n    timestamptz created_at\n  }\n  consent_log {\n    uuid id PK\n    uuid lead_id FK\n    text policy_version\n    text consent_text\n    bool granted\n    inet ip\n    timestamptz created_at\n  }\n  tool_results {\n    uuid id PK\n    uuid lead_id FK\n    text tool \"ovulation|protein|nutrients|sleep|vitamins\"\n    jsonb input\n    jsonb output\n    timestamptz created_at\n  }\n  events {\n    uuid id PK\n    uuid lead_id FK \"nullable\"\n    text anon_id\n    text name\n    jsonb props\n    timestamptz created_at\n  }\n```\n\n## 2. \u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22\u0e15\u0e32\u0e23\u0e32\u0e07\n| \u0e15\u0e32\u0e23\u0e32\u0e07 | \u0e2b\u0e19\u0e49\u0e32\u0e17\u0e35\u0e48 | \u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2b\u0e15\u0e38 PDPA/security |\n|---|---|---|\n| **leads** | \u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e1c\u0e39\u0e49\u0e2a\u0e19\u0e43\u0e08 (1 \u0e41\u0e16\u0e27/lead) | \u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e38\u0e02\u0e20\u0e32\u0e1e (stage/has_pcos/art_plan) = \u0e2d\u0e48\u0e2d\u0e19\u0e44\u0e2b\u0e27 \u2192 insert \u0e44\u0e14\u0e49\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e21\u0e35 consent \u00b7 contact_value \u0e1e\u0e34\u0e08\u0e32\u0e23\u0e13\u0e32\u0e41\u0e2e\u0e0a/\u0e40\u0e02\u0e49\u0e32\u0e23\u0e2b\u0e31\u0e2a |\n| **tickets** | \u0e40\u0e25\u0e02 ticket \u0e17\u0e35\u0e48\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e40\u0e2d\u0e32\u0e44\u0e1b\u0e41\u0e08\u0e49\u0e07 LINE OA | `code` unique, \u0e2a\u0e38\u0e48\u0e21, \u0e44\u0e21\u0e48\u0e1c\u0e39\u0e01 PII \u00b7 status \u0e43\u0e0a\u0e49\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e38\u0e22 |\n| **tags** | \u0e04\u0e25\u0e31\u0e07 tag (auto+manual) | seed \u0e04\u0e48\u0e32\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19 (\u0e14\u0e39 \u00a74) |\n| **tag_assignments** | \u0e1c\u0e39\u0e01 lead \u2194 tag (many-to-many) | source \u0e1a\u0e2d\u0e01\u0e27\u0e48\u0e32 auto \u0e2b\u0e23\u0e37\u0e2d staff \u0e40\u0e1e\u0e34\u0e48\u0e21 |\n| **consent_log** | \u0e2b\u0e25\u0e31\u0e01\u0e10\u0e32\u0e19\u0e01\u0e32\u0e23\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21 | \u0e40\u0e01\u0e47\u0e1a policy_version + \u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21 + granted + timestamp (\u0e17\u0e33 audit \u0e44\u0e14\u0e49) |\n| **tool_results** | \u0e1c\u0e25\u0e41\u0e15\u0e48\u0e25\u0e30\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e17\u0e35\u0e48\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e17\u0e33 | \u0e43\u0e2b\u0e49\u0e17\u0e35\u0e21\u0e40\u0e2b\u0e47\u0e19\u0e1a\u0e23\u0e34\u0e1a\u0e17 (\u0e40\u0e1b\u0e49\u0e32\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01 \u0e2f\u0e25\u0e2f) |\n| **events** | analytics funnel | \u0e43\u0e0a\u0e49 anon_id \u0e40\u0e21\u0e37\u0e48\u0e2d\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e1b\u0e47\u0e19 lead |\n\n## 3. RLS & Access model\n- **deny-by-default** \u0e17\u0e38\u0e01\u0e15\u0e32\u0e23\u0e32\u0e07 (\u0e40\u0e1b\u0e34\u0e14 RLS, \u0e44\u0e21\u0e48\u0e21\u0e35 policy \u0e2d\u0e19\u0e38\u0e0d\u0e32\u0e15 anon/authenticated)\n- \u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19/\u0e40\u0e02\u0e35\u0e22\u0e19\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14\u0e1c\u0e48\u0e32\u0e19 **BFF \u0e14\u0e49\u0e27\u0e22 service_role** (bypass RLS \u0e1d\u0e31\u0e48\u0e07 server) \u2192 client \u0e44\u0e21\u0e48\u0e41\u0e15\u0e30 DB \u0e15\u0e23\u0e07\n- \u0e16\u0e49\u0e32\u0e40\u0e1f\u0e2a 2 \u0e17\u0e33 staff auth \u0e08\u0e23\u0e34\u0e07 \u2192 \u0e40\u0e1e\u0e34\u0e48\u0e21 policy \u0e43\u0e2b\u0e49 role `staff` \u0e2d\u0e48\u0e32\u0e19 tickets/leads/tags \u0e44\u0e14\u0e49 (\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e17\u0e33\u0e40\u0e1f\u0e2a 1)\n\n## 4. Seed tags (auto rules)\n| slug | label | \u0e40\u0e07\u0e37\u0e48\u0e2d\u0e19\u0e44\u0e02 auto |\n|---|---|---|\n| `#PCOS` | PCOS | has_pcos = true |\n| `#\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e17\u0e49\u0e2d\u0e07` | \u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c | stage = prep |\n| `#\u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01` | \u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01 | stage = infertility |\n| `#ICSI` | \u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19 ICSI | art_plan = icsi |\n| `#IVF` | \u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19 IVF | art_plan = ivf |\n| `#IUI` | \u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19 IUI | art_plan = iui |\n| `#\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e0a\u0e32\u0e22` | \u0e1d\u0e48\u0e32\u0e22\u0e0a\u0e32\u0e22 | stage = male |\n| `#\u0e2a\u0e19\u0e43\u0e08-OvaAll` | \u0e2a\u0e19\u0e43\u0e08 OvaAll | interests \u0e21\u0e35 ovaall |\n| `#\u0e2a\u0e19\u0e43\u0e08-Ferty` | \u0e2a\u0e19\u0e43\u0e08\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19 | interests \u0e21\u0e35 ferty |\n| `#engaged` | \u0e17\u0e33\u0e2b\u0e25\u0e32\u0e22\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d | tool_results \u2265 3 |\n\n## 5. Migration SQL\n\u0e44\u0e1f\u0e25\u0e4c\u0e08\u0e23\u0e34\u0e07: [`supabase/migrations/0001_init.sql`](../supabase/migrations/0001_init.sql) \u2014 \u0e2a\u0e23\u0e49\u0e32\u0e07\u0e17\u0e38\u0e01\u0e15\u0e32\u0e23\u0e32\u0e07, index (`tickets.code`, `tag_assignments(lead_id)`), enable RLS, seed tags, \u0e1f\u0e31\u0e07\u0e01\u0e4c\u0e0a\u0e31\u0e19 gen ticket code (retry \u0e01\u0e31\u0e19\u0e0a\u0e19)\n\n## 6. Phase 2 additions ([`0002_phase2.sql`](../supabase/migrations/0002_phase2.sql))\n| \u0e15\u0e32\u0e23\u0e32\u0e07 | \u0e2b\u0e19\u0e49\u0e32\u0e17\u0e35\u0e48 | \u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2b\u0e15\u0e38 |\n|---|---|---|\n| **staff_users** | \u0e1a\u0e31\u0e0d\u0e0a\u0e35\u0e17\u0e35\u0e21\u0e07\u0e32\u0e19 | `pin_hash` (scrypt), `role` (admin/staff), `permissions[]` (RBAC), `active` |\n| **line_bindings** | \u0e1c\u0e39\u0e01 LINE user \u2194 lead | `line_user_id` unique \u00b7 \u0e08\u0e31\u0e1a\u0e15\u0e2d\u0e19 webhook \u0e23\u0e31\u0e1a ticket |\n| **reports** | snapshot \u0e23\u0e32\u0e22\u0e07\u0e32\u0e19 \"\u0e41\u0e1c\u0e19 90 \u0e27\u0e31\u0e19\" | `code` (=ticket), `score`, `payload` jsonb \u00b7 \u0e43\u0e0a\u0e49\u0e17\u0e35\u0e48 `/r/[code]` + LINE Flex |\n| **staff_audit** | log \u0e01\u0e32\u0e23\u0e01\u0e23\u0e30\u0e17\u0e33\u0e02\u0e2d\u0e07\u0e17\u0e35\u0e21 | view_ticket / add_tag / create_user \u2026 |\n| leads.**line_user_id** | \u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c\u0e40\u0e1e\u0e34\u0e48\u0e21 | \u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21 lead \u0e01\u0e31\u0e1a LINE \u0e42\u0e14\u0e22\u0e15\u0e23\u0e07 |\n- RLS: \u0e17\u0e38\u0e01\u0e15\u0e32\u0e23\u0e32\u0e07\u0e43\u0e2b\u0e21\u0e48 deny-by-default (\u0e40\u0e02\u0e49\u0e32\u0e16\u0e36\u0e07\u0e1c\u0e48\u0e32\u0e19 BFF service_role) \u00b7 seed tag `#line-connected`\n- RBAC permissions: `view_leads \u00b7 manage_tags \u00b7 view_reports \u00b7 manage_users \u00b7 line_admin \u00b7 export_data` (admin = \u0e17\u0e38\u0e01\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c)\n";
+  mermaid.initialize({startOnLoad:false, theme:'base', themeVariables:{primaryColor:'#FDEBF1',primaryBorderColor:'#E8A0BF',lineColor:'#5FB3B3',fontFamily:'Prompt,sans-serif'}});
+  marked.setOptions({breaks:false, gfm:true});
+  // split markdown by top-level H2 into sections
+  const lines = MD.split('\n');
+  const sections = []; let cur=null;
+  for(const ln of lines){
+    if(/^##\s+/.test(ln)){ cur={title:ln.replace(/^##\s+/,'').trim(), buf:[]}; sections.push(cur); }
+    else if(cur){ cur.buf.push(ln); }
+    else { (sections._pre=sections._pre||[]).push(ln); }
+  }
+  const main=document.getElementById('main'), toc=document.getElementById('toc');
+  if(sections._pre){ const d=document.createElement('div'); d.innerHTML=marked.parse(sections._pre.join('\n')); main.appendChild(d); }
+  sections.forEach((s,i)=>{
+    const id='s'+i;
+    const det=document.createElement('details'); det.className='sec'; det.open = i<3; det.id=id;
+    const sum=document.createElement('summary'); sum.textContent=s.title; det.appendChild(sum);
+    const body=document.createElement('div'); body.className='body';
+    body.innerHTML=marked.parse(s.buf.join('\n'));
+    det.appendChild(body); main.appendChild(det);
+    const a=document.createElement('a'); a.href='#'+id; a.textContent=s.title;
+    a.onclick=e=>{det.open=true;}; toc.appendChild(a);
+  });
+  // render mermaid code blocks
+  document.querySelectorAll('pre code.language-mermaid').forEach((c,i)=>{
+    const div=document.createElement('div'); div.className='mermaid'; div.textContent=c.textContent;
+    c.closest('pre').replaceWith(div);
+  });
+  mermaid.run({querySelector:'.mermaid'});
+</script>
+</body></html>

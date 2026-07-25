@@ -1,0 +1,144 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
+import { autoTags } from "@/lib/tagging";
+import { genTicketCode, rateLimit } from "@/lib/ticket";
+import { CONSENT_POLICY_VERSION } from "@/lib/disclaimer";
+import { generateReport } from "@/lib/report";
+
+function reportProfileFromBody(body: any) {
+  return {
+    nickname: body.nickname,
+    stage: body.stage,
+    weightKg: body.weightKg ? Number(body.weightKg) : undefined,
+    ageRange: body.age_range,
+    hasPcos: !!body.has_pcos,
+    artPlan: ["none", "iui", "ivf", "icsi"].includes(body.art_plan) ? body.art_plan : "none",
+    tools: body.tools && typeof body.tools === "object" ? body.tools : {},
+  };
+}
+
+export const runtime = "nodejs";
+
+function corsHeaders(origin: string | null) {
+  const allowed = (process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const h: Record<string, string> = { "Content-Type": "application/json" };
+  // Same-origin (no Origin header) always allowed; cross-origin must be in allowlist.
+  if (origin && (allowed.includes(origin) || allowed.includes("*"))) {
+    h["Access-Control-Allow-Origin"] = origin;
+    h["Vary"] = "Origin";
+  }
+  return h;
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const h = corsHeaders(req.headers.get("origin"));
+  return new NextResponse(null, {
+    status: 204,
+    headers: { ...h, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" },
+  });
+}
+
+export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const headers = corsHeaders(origin);
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+  if (!rateLimit(`lead:${ip}`)) {
+    return NextResponse.json({ error: "ส่งข้อมูลถี่เกินไป กรุณารอสักครู่" }, { status: 429, headers });
+  }
+
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "รูปแบบข้อมูลไม่ถูกต้อง" }, { status: 400, headers });
+  }
+
+  // --- validation ---
+  const errors: string[] = [];
+  if (!body.consent) errors.push("ต้องยินยอมก่อนบันทึกข้อมูล");
+  if (!body.nickname || String(body.nickname).trim().length < 1) errors.push("กรุณาระบุชื่อเล่น");
+  if (!body.contact_value || String(body.contact_value).trim().length < 3) errors.push("กรุณาระบุช่องทางติดต่อ");
+  const stages = ["prep", "infertility", "pregnant", "lactating", "male"];
+  if (body.stage && !stages.includes(body.stage)) errors.push("stage ไม่ถูกต้อง");
+  if (errors.length) return NextResponse.json({ error: errors.join(" · ") }, { status: 400, headers });
+
+  const profile = {
+    nickname: String(body.nickname).slice(0, 80),
+    contact_channel: ["line", "phone", "other"].includes(body.contact_channel) ? body.contact_channel : "line",
+    contact_value: String(body.contact_value).slice(0, 120),
+    stage: body.stage || null,
+    age_range: body.age_range || null,
+    has_pcos: !!body.has_pcos,
+    art_plan: ["none", "iui", "ivf", "icsi"].includes(body.art_plan) ? body.art_plan : "none",
+    interests: Array.isArray(body.interests) ? body.interests.slice(0, 20) : [],
+  };
+  const tags = autoTags({
+    stage: profile.stage || undefined,
+    hasPcos: profile.has_pcos,
+    artPlan: profile.art_plan,
+    interests: profile.interests,
+    toolResultsCount: body.tools ? Object.keys(body.tools).length : 0,
+  });
+
+  const report = generateReport(reportProfileFromBody(body));
+
+  // --- DEV fallback: no Supabase env → return generated ticket + report without persisting ---
+  if (!hasSupabaseEnv()) {
+    return NextResponse.json(
+      { ticket_code: genTicketCode(), tags, report, dev_mode: true, note: "SUPABASE env ยังไม่ตั้ง — ยังไม่ได้บันทึกจริง" },
+      { headers },
+    );
+  }
+
+  // --- persist via Supabase (BFF, service role) ---
+  try {
+    const sb = getServiceClient();
+    const { data: lead, error: le } = await sb.from("leads").insert(profile).select("id").single();
+    if (le || !lead) throw le || new Error("insert lead failed");
+
+    await sb.from("consent_log").insert({
+      lead_id: lead.id,
+      policy_version: CONSENT_POLICY_VERSION,
+      consent_text: String(body.consent_text || "").slice(0, 2000),
+      granted: true,
+      ip,
+    });
+
+    if (body.tools && typeof body.tools === "object") {
+      const rows = Object.entries(body.tools).map(([tool, v]: any) => ({
+        lead_id: lead.id, tool, input: v?.input ?? null, output: v?.output ?? null,
+      })).filter((r) => ["ovulation", "protein", "nutrients", "sleep", "vitamins"].includes(r.tool));
+      if (rows.length) await sb.from("tool_results").insert(rows);
+    }
+
+    // ticket with retry on unique collision
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code = genTicketCode();
+      const { error } = await sb.from("tickets").insert({ code, lead_id: lead.id });
+      if (!error) break;
+      code = "";
+    }
+    if (!code) throw new Error("ticket generation failed");
+
+    if (tags.length) {
+      const { data: tagRows } = await sb.from("tags").select("id, slug").in("slug", tags);
+      if (tagRows?.length) {
+        await sb.from("tag_assignments").insert(
+          tagRows.map((t) => ({ lead_id: lead.id, tag_id: t.id, source: "auto" })),
+        );
+      }
+    }
+
+    // store the personalized report snapshot (shareable at /r/<code> and via LINE)
+    await sb.from("reports").insert({ code, lead_id: lead.id, score: report.score, payload: report });
+
+    return NextResponse.json({ ticket_code: code, tags, report }, { headers });
+  } catch (e: any) {
+    return NextResponse.json({ error: "บันทึกไม่สำเร็จ กรุณาลองใหม่" }, { status: 500, headers });
+  }
+}

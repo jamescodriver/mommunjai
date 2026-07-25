@@ -1,0 +1,23 @@
+import Link from "next/link";
+
+// Placeholder privacy policy — brand/legal must finalize before launch (see docs/legal-compliance.md).
+export default function Privacy() {
+  return (
+    <main className="mx-auto w-full max-w-2xl p-6">
+      <Link href="/" className="text-sm text-teal-deep">← กลับหน้าหลัก</Link>
+      <div className="glass mt-3 p-6 text-sm leading-relaxed">
+        <h1 className="text-xl font-semibold">นโยบายความเป็นส่วนตัว (ฉบับร่าง)</h1>
+        <p className="mt-3 text-ink/70">
+          ⚠️ เอกสารนี้เป็นฉบับร่างสำหรับการพัฒนา ต้องให้ฝ่ายกฎหมาย/แบรนด์จัดทำฉบับสมบูรณ์ก่อนเปิดใช้จริง
+        </p>
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-ink/80">
+          <li>เราเก็บข้อมูลที่คุณให้ (ชื่อเล่น ช่องทางติดต่อ ข้อมูลสุขภาพเช่นภาวะการเจริญพันธุ์) <b>เมื่อคุณให้ความยินยอมเท่านั้น</b></li>
+          <li>วัตถุประสงค์: ให้ทีมงาน Baby &amp; Mom ติดต่อกลับและให้คำแนะนำผ่าน LINE OA</li>
+          <li>ข้อมูลสุขภาพเป็นข้อมูลอ่อนไหวตาม PDPA มาตรา 26 เราเก็บเท่าที่จำเป็นและไม่เปิดเผยต่อบุคคลภายนอกโดยไม่ได้รับอนุญาต</li>
+          <li>คุณมีสิทธิขอเข้าถึง แก้ไข หรือลบข้อมูล โดยติดต่อผ่าน LINE OA @BabyAndMom พร้อมแจ้งรหัส Ticket</li>
+          <li>เครื่องคำนวณต่าง ๆ ทำงานในเครื่องของคุณ ไม่ส่งข้อมูลออกจนกว่าคุณจะกดส่งแบบสอบถาม</li>
+        </ul>
+      </div>
+    </main>
+  );
+}

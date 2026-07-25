@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Report — Mommunjai</title>
+<style>
+ :root{--rose:#E8A0BF;--rosed:#C85A8A;--teal:#5FB3B3;--teald:#3E8E8E;--cream:#FFF7F3;--ink:#3d3d4d;--gold:#E7B84B;
+   --pass:#3C9A5F;--fail:#D0454C;--warn:#C9930F;--glass:rgba(255,255,255,.66);--line:rgba(255,255,255,.75);--shadow:0 8px 30px rgba(90,60,80,.12);}
+ *{box-sizing:border-box}
+ body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;
+   background:linear-gradient(135deg,#FFF7F3,#FDEBF1 45%,#E7F5F4);min-height:100vh}
+ @import url("https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap");
+ .wrap{max-width:1000px;margin:0 auto;padding:24px}
+ .card{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:18px}
+ h1{margin:0;font-size:24px} h2{font-size:18px;margin:0 0 10px} .sub{opacity:.7;font-size:13px}
+ .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+ .kpi{background:rgba(255,255,255,.6);border-radius:16px;padding:14px;text-align:center}
+ .kpi .n{font-size:28px;font-weight:600} .kpi .l{font-size:12px;opacity:.7}
+ .bar{height:10px;border-radius:6px;background:#eee;overflow:hidden;margin-top:8px}
+ .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--pass))}
+ table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px;display:block;overflow-x:auto}
+ th,td{border:1px solid rgba(120,90,110,.16);padding:7px 10px;text-align:left;vertical-align:top}
+ th{background:rgba(95,179,179,.14)}
+ .badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;color:#fff}
+ .b-pass{background:var(--pass)} .b-fail{background:var(--fail)} .b-warn{background:var(--warn)}
+ code,pre{font-family:ui-monospace,Menlo,monospace} code{background:rgba(120,90,110,.1);padding:1px 5px;border-radius:5px}
+ pre{background:rgba(40,40,60,.92);color:#eaeaea;padding:12px 14px;border-radius:12px;overflow:auto;font-size:12.5px}
+ .lvl{display:inline-block;font-size:11px;background:rgba(95,179,179,.18);color:var(--teald);border-radius:6px;padding:0 6px;margin-left:4px}
+ @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body><div class="wrap">
+
+<div class="card">
+  <div style="display:flex;align-items:center;gap:12px"><span style="font-size:32px">✅</span>
+    <div><h1>Test Report — Mommunjai</h1><div class="sub">แอปเตรียมตั้งครรภ์ (Baby & Mom / ครูก้อย) · รัน 2026-07-21 · env: local prod build (Next 14) · Tester: Angiris</div></div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="n" style="color:var(--pass)">37</div><div class="l">เคสทดสอบ</div></div>
+    <div class="kpi"><div class="n" style="color:var(--pass)">36</div><div class="l">ผ่าน</div></div>
+    <div class="kpi"><div class="n" style="color:var(--warn)">1</div><div class="l">ผ่านบางส่วน</div></div>
+    <div class="kpi"><div class="n" style="color:var(--fail)">0</div><div class="l">ไม่ผ่าน</div></div>
+  </div>
+  <div class="bar"><i style="width:97%"></i></div>
+  <div class="sub" style="margin-top:8px">สรุป: <b>Functional 28/28 ผ่าน</b> · <b>NFR 8/9 ผ่าน, 1 ผ่านบางส่วน</b> (Accessibility — แนะนำ audit ด้วย axe ก่อน launch). ไม่มีเคสไม่ผ่าน · ระหว่างทางพบ+แก้ 1 บั๊กจริง (timezone ในการคำนวณวันไข่ตก)</div>
+</div>
+
+<div class="card">
+  <h2>1) Functional — Unit (vitest) <span class="lvl">18/18 pass</span></h2>
+  <pre>✓ lib/calc/calc.test.ts (18 tests) 5ms
+  Test Files  1 passed (1)      Tests  18 passed (18)</pre>
+  <table>
+    <tr><th>TC</th><th>โมดูล</th><th>สิ่งที่ตรวจ</th><th>ผล</th></tr>
+    <tr><td>TC-OV-01</td><td>M2 ไข่ตก</td><td>รอบ 28 วัน → ไข่ตก 15 ก.ค., fertile 10–16, รอบถัดไป 29 ก.ค.</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-OV-02/03</td><td>M2</td><td>วันอนาคต / รอบ 12,40 → error</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-OV-04</td><td>M2</td><td>รอบ 34 → irregularWarning</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-PR-01</td><td>M3 โปรตีน</td><td>55 กก. prep → 55–66 ก., Ferty ≥2</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-PR-02</td><td>M3</td><td>60 กก. pregnant → 66–78 ก.</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-PR-03</td><td>M3</td><td>น้ำหนัก 0/200 → error</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NU-01/02</td><td>M4 สารอาหาร</td><td>ครบ→100%+violation / บางส่วน→missing</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-SL-01..04</td><td>M5 การนอน</td><td>เสนอเวลานอน / 22:00–06:00 ดี / 01:00 ควรปรับ / เวลาผิด error</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-VI-01/02</td><td>M6 วิตามิน</td><td>PCOS→PCO-VIT · male→Motila1</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-VI-03</td><td>M6</td><td>note ไม่มีคำเคลมรักษา/การันตี</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-LE-04</td><td>M8 tag</td><td>auto-tags จากโปรไฟล์ถูกต้อง</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-TK</td><td>ticket</td><td>รูปแบบ MJ-XXXXXX ไม่มีอักษรกำกวม (50 รอบ)</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>2) Functional — API / Integration (curl ต่อ prod server) <span class="lvl">pass</span></h2>
+  <table>
+    <tr><th>TC</th><th>คำขอ</th><th>คาดหวัง</th><th>ได้จริง</th><th>ผล</th></tr>
+    <tr><td>TC-LE-01</td><td>POST /api/lead (consent+ครบ)</td><td>200 + ticket + tags</td><td><code>MJ-ZDW4J6</code> + [#PCOS,#มีบุตรยาก,#ICSI,#สนใจ-OvaAll]</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-LE-02/03</td><td>POST /api/lead (ไม่ consent/ไม่มี contact)</td><td>400</td><td>400 "ต้องยินยอม · กรุณาระบุช่องทางติดต่อ"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-ST-01</td><td>GET /api/ticket/… ไม่มี PIN</td><td>401</td><td>401</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-SH-01/05</td><td>GET / , /tools/ovulation , /plan</td><td>200</td><td>200 / 200 / 200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-SH-02</td><td>GET /tools/ovulation?embed=1</td><td>200 (โหมด widget)</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>—</td><td>POST /api/events</td><td>200 (best-effort)</td><td>200</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>3) Functional — UI / e2e (browser) <span class="lvl">pass</span></h2>
+  <table>
+    <tr><th>TC</th><th>สิ่งที่ทำ</th><th>ผล</th><th>สถานะ</th></tr>
+    <tr><td>TC-SH-01</td><td>เปิดหน้าหลัก</td><td>6 การ์ด glass + hero "70% อาหาร 30% วิตามิน" + disclaimer แสดงครบ</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-PR-04</td><td>กรอก 55 กก. กด "คำนวณโปรตีน"</td><td>แสดง 55–66 กรัม · ไข่ต้ม ≈9 ฟอง · อกไก่/ปลา ≈242 ก. · Ferty ≈2 ซอง</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-OV-05</td><td>หน้านับวันไข่ตก</td><td>render form + disclaimer "คุมกำเนิดไม่ได้" ท้ายการ์ด</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+  <div class="sub">หมายเหตุ: ยืนยันด้วยภาพจริงในเบราว์เซอร์ (หน้าหลัก + เครื่องคำนวณโปรตีนแสดงผลถูกต้อง)</div>
+</div>
+
+<div class="card">
+  <h2>4) NFR — Non-Functional</h2>
+  <table>
+    <tr><th>TC</th><th>ด้าน</th><th>เกณฑ์</th><th>ผลจริง</th><th>สถานะ</th></tr>
+    <tr><td>TC-NFR-P1</td><td>Performance</td><td>first-load ≤ ~100kB, tool pages static, TTFB เร็ว</td><td>first-load 87–98 kB · tool pages ○ static · home TTFB 1.7ms</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-S1</td><td>Security</td><td>staff endpoint ต้องมี PIN</td><td>401 เมื่อไม่มี PIN</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-S2</td><td>Security</td><td>rate-limit /api/lead</td><td>5 ผ่าน → <code>429 429</code> (5/นาที)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-S3</td><td>Security</td><td>service key ไม่อยู่ใน client bundle</td><td>ใช้เฉพาะ lib/supabase-server.ts (server) · getServiceClient throw ถ้าไม่มี env</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-S4</td><td>Security</td><td>CSP frame-ancestors + CORS allowlist</td><td><code>Content-Security-Policy: frame-ancestors 'self';</code> · CORS จาก ALLOWED_ORIGINS</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-D1</td><td>PDPA</td><td>consent gate · consent_log · ticket สุ่ม · RLS</td><td>บันทึกไม่ได้ถ้าไม่ยินยอม · เก็บ consent_log · ticket base32 สุ่ม · RLS deny-by-default (migration)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-R1</td><td>Responsive</td><td>grid 1/2/3 คอลัมน์</td><td>Tailwind <code>grid-cols-1 sm:grid-cols-2 lg:grid-cols-3</code> · ปุ่ม min-h 44px</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-C1</td><td>Compliance เนื้อหา</td><td>disclaimer ทุกผล · ไม่มีคำเคลมรักษา/การันตี</td><td>Disclaimer component ทุกเครื่องมือ · unit test ยืนยัน note ไม่มี "หายขาด/การันตี/ท้องแน่นอน"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>TC-NFR-A1</td><td>Accessibility</td><td>label/heading/keyboard/contrast</td><td>มี label ครบ, heading เป็นลำดับ, ปุ่ม ≥44px, aria-live บน result — <b>ยังไม่ได้ audit อัตโนมัติ (axe)</b></td><td><span class="badge b-warn">PARTIAL</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>5) บั๊กที่พบและแก้ระหว่างเทสต์</h2>
+  <table>
+    <tr><th>#</th><th>อาการ</th><th>สาเหตุ</th><th>แก้</th><th>สถานะ</th></tr>
+    <tr><td>BUG-1</td><td>วันไข่ตกเลื่อน 1 วันในไทย (UTC+7)</td><td><code>toISOString()</code> แปลงเป็น UTC ทำให้วันคลาดเคลื่อน</td><td>เปลี่ยนคำนวณ/ฟอร์แมตวันที่เป็น UTC ล้วน</td><td><span class="badge b-pass">FIXED</span></td></tr>
+    <tr><td>BUG-2</td><td>build ล้มที่ tool pages</td><td><code>useSearchParams()</code> ต้องมี Suspense ตอน prerender</td><td>ใช้ hook <code>useEmbed()</code> อ่านจาก window แทน</td><td><span class="badge b-pass">FIXED</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>6) ข้อเสนอก่อน launch (ยังไม่ทำในรอบนี้)</h2>
+  <ul>
+    <li>รัน accessibility audit ด้วย axe/Lighthouse (ปิด TC-NFR-A1 ให้เต็ม)</li>
+    <li>Integration test กับ Supabase project จริง (รอบนี้ตรวจ logic ผ่าน service layer + dev-fallback)</li>
+    <li>Cross-browser (Safari/Chrome/มือถือจริง) + load test คู่ prod</li>
+    <li>ยืนยัน CI จริง (สี/โลโก้/ฟอนต์) และ privacy policy ฉบับสมบูรณ์</li>
+  </ul>
+  <div class="sub">อ้างอิงแผนเต็ม: TEST-PLAN.md · PRD.md · ARCHITECTURE.md</div>
+</div>
+
+</div></body></html>

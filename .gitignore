@@ -1,0 +1,37 @@
+node_modules/
+.next/
+out/
+.DS_Store
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+
+# Raw source material (large PDFs + unpublished book manuscript) — do not commit
+source/
+
+# Sensitive client docs & brand assets — kept LOCAL ONLY (repo is public; never commit these)
+assets/
+docs/company.md
+docs/profile-krukoy.md
+docs/BRAND.md
+docs/brand-voice.md
+docs/BRAND-STORY.md
+docs/BOOK-INSIGHTS.md
+docs/MOTIVATION-RESEARCH.md
+docs/MOTIVATION-RESEARCH.html
+docs/RED-TEAM-COPY.md
+docs/product-catalog.md
+docs/product-catalog-master.md
+docs/nutrition-protocol.md
+docs/legal-compliance.md
+docs/SCREEN-MOCKS.html
+
+# Internal PM/planning working files (reference client relationship + other ventures) — local only
+CLAUDE.md
+PROGRESS.md
+PROJECT-SCOPE.md
+
+# Internal ops checklist (references accounts/other ventures) — local only
+DEPLOY-CHECKLIST.md

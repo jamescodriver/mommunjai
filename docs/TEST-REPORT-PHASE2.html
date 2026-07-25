@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Report Phase 2 — Mommunjai</title>
+<style>
+ :root{--rose:#E8A0BF;--rosed:#C85A8A;--teal:#5FB3B3;--teald:#3E8E8E;--ink:#3d3d4d;--gold:#E7B84B;
+   --pass:#3C9A5F;--fail:#D0454C;--warn:#C9930F;--glass:rgba(255,255,255,.66);--line:rgba(255,255,255,.75);--shadow:0 8px 30px rgba(90,60,80,.12);}
+ *{box-sizing:border-box}
+ body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;
+   background:linear-gradient(135deg,#FFF7F3,#FDEBF1 45%,#E7F5F4);min-height:100vh}
+ @import url("https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap");
+ .wrap{max-width:1000px;margin:0 auto;padding:24px}
+ .card{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:18px}
+ h1{margin:0;font-size:24px} h2{font-size:18px;margin:0 0 10px} .sub{opacity:.7;font-size:13px}
+ .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+ .kpi{background:rgba(255,255,255,.6);border-radius:16px;padding:14px;text-align:center}
+ .kpi .n{font-size:28px;font-weight:600}.kpi .l{font-size:12px;opacity:.7}
+ .bar{height:10px;border-radius:6px;background:#eee;overflow:hidden;margin-top:8px}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--pass))}
+ table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px;display:block;overflow-x:auto}
+ th,td{border:1px solid rgba(120,90,110,.16);padding:7px 10px;text-align:left;vertical-align:top}th{background:rgba(95,179,179,.14)}
+ .badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;color:#fff}
+ .b-pass{background:var(--pass)}.b-warn{background:var(--warn)}
+ code{background:rgba(120,90,110,.1);padding:1px 5px;border-radius:5px;font-family:ui-monospace,Menlo,monospace}
+ pre{background:rgba(40,40,60,.92);color:#eaeaea;padding:12px 14px;border-radius:12px;overflow:auto;font-size:12.5px}
+ .lvl{display:inline-block;font-size:11px;background:rgba(95,179,179,.18);color:var(--teald);border-radius:6px;padding:0 6px;margin-left:4px}
+ @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head><body><div class="wrap">
+
+<div class="card">
+  <div style="display:flex;align-items:center;gap:12px"><span style="font-size:32px">🚀</span>
+    <div><h1>Test Report — Phase 2</h1><div class="sub">Mommunjai · Personalized Report + LINE Webhook + Admin/Auth/RBAC · รัน 2026-07-21 · local prod build (Next 14)</div></div></div>
+  <div class="kpis">
+    <div class="kpi"><div class="n" style="color:var(--pass)">42</div><div class="l">เคสรวม (P1+P2)</div></div>
+    <div class="kpi"><div class="n" style="color:var(--pass)">41</div><div class="l">ผ่าน</div></div>
+    <div class="kpi"><div class="n" style="color:var(--warn)">1</div><div class="l">ผ่านบางส่วน</div></div>
+    <div class="kpi"><div class="n" style="color:var(--pass)">30</div><div class="l">unit tests ผ่าน</div></div>
+  </div>
+  <div class="bar"><i style="width:98%"></i></div>
+  <div class="sub" style="margin-top:8px">เฟส 2 เพิ่ม 12 เคสใหม่ (report/LINE/auth/RBAC) — <b>ผ่านทั้งหมด</b> · unit tests รวม 30 ผ่าน · build clean · runtime verified · 1 partial = a11y audit (ยกจากเฟส 1)</div>
+</div>
+
+<div class="card">
+  <h2>1) Unit tests <span class="lvl">30/30 pass</span></h2>
+  <pre>✓ lib/calc/calc.test.ts   (18 tests)
+✓ lib/phase2.test.ts      (12 tests)   ← report ×7, auth ×4, line ×1
+  Test Files 2 passed · Tests 30 passed</pre>
+</div>
+
+<div class="card">
+  <h2>2) Epic A — Personalized Report (แผน 90 วัน)</h2>
+  <table>
+    <tr><th>TC</th><th>ตรวจ</th><th>ผลจริง</th><th>สถานะ</th></tr>
+    <tr><td>RP-01</td><td>นำด้วย "จุดแข็ง" ไม่ใช่คะแนนต่ำ</td><td>strengths[0] = "คุณภาพไข่ของคุณอยู่ในเกณฑ์ดี (80%)…"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-02</td><td>มี quick win วันนี้</td><td>"วันนี้: งดของหวานทั้งหมด แล้วดื่มน้ำอุ่น…"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-03</td><td>แผน 90 วัน 3 ช่วง</td><td>plan90.length = 3</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-04</td><td>ไม่มีคำเคลมรักษา/การันตี</td><td>JSON ไม่มี /รักษาให้หาย|หายขาด|การันตี|ท้องแน่นอน/</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-05</td><td>ชวนคู่ (หญิงมี, ชายไม่มี)</td><td>partnerNudge: หญิง=มี · male=null</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-06</td><td>ยก fertile window + vitamins มาในแผน</td><td>fertileWindow.start=2026-07-27 · vitamins>0</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-07</td><td>ART → เตือน safety (ไม่หยุด/ปรับยาเอง)</td><td>cautions มี "อย่าหยุดหรือปรับยา/วิตามินเอง…"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-08</td><td>/api/lead คืน report ครบ (runtime)</td><td>title="แผน 90 วัน…" score=72 · 4 cautions</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>RP-09</td><td>/plan stepped UX (browser)</td><td>endowed progress + micro-commitment + goal-gradient แสดงถูก</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>3) Epic B — LINE Webhook</h2>
+  <table>
+    <tr><th>TC</th><th>ตรวจ</th><th>ผลจริง</th><th>สถานะ</th></tr>
+    <tr><td>LN-01</td><td>ดึงรหัส MJ- จากข้อความอิสระ</td><td>"…mj-4x7k2p…" → MJ-4X7K2P · ไม่มีรหัส → null</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>LN-02</td><td>ไม่มี signature/bypass → 401 (secure)</td><td>401</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>LN-03</td><td>dev-bypass + ข้อความมี ticket → 200</td><td>{"ok":true} 200</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>LN-04</td><td>bind lead + tag #line-connected + Flex reply (logic)</td><td>โค้ด verify+bind+upsert tag+reportFlex ครบ (integration รอ LINE จริง)</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>4) Epic C — Admin / Auth / RBAC</h2>
+  <table>
+    <tr><th>TC</th><th>ตรวจ</th><th>ผลจริง</th><th>สถานะ</th></tr>
+    <tr><td>AU-01</td><td>hash/verify PIN (scrypt)</td><td>ถูก PIN=true · ผิด=false</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AU-02</td><td>session sign/verify (HMAC)</td><td>roundtrip คืน sid ถูก</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AU-03</td><td>ปฏิเสธ session หมดอายุ/ถูกแก้</td><td>expired=null · tampered=null</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AU-04</td><td>RBAC: admin ทุกสิทธิ์ · staff เฉพาะที่ให้</td><td>admin.manage_users=true · staff.manage_users=false</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-01</td><td>staff lookup ไม่มี session → 401</td><td>401</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-02</td><td>admin users ไม่มี session → 403</td><td>403</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-03</td><td>login ไม่มี env → 503 (ไม่ crash)</td><td>503</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-04</td><td>guard self-lockout (ปิด/ลดสิทธิ์ตัวเอง)</td><td>PATCH ตัวเอง active=false/role=staff → 400</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-05</td><td>bootstrap admin คนแรกครั้งเดียว</td><td>สร้างได้เมื่อ 0 users · มีแล้ว → 409</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>AD-06</td><td>หน้า /login /admin /r/[code] โหลด 200</td><td>200 ทุกหน้า</td><td><span class="badge b-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>5) NFR / Security / Ethics</h2>
+  <table>
+    <tr><th>ด้าน</th><th>ผล</th><th>สถานะ</th></tr>
+    <tr><td>Security — auth</td><td>PIN scrypt+timingSafeEqual · session HMAC httpOnly 8ชม. · verify ทุก request · rate-limit login (8/นาที)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Security — LINE</td><td>X-Line-Signature HMAC verify (401 ถ้าไม่ผ่าน)</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Security — RBAC</td><td>ทุก endpoint ตรวจ hasPerm · deny-by-default RLS · service key server-only</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>จริยธรรม (กลุ่มเปราะบาง)</td><td>จุดแข็งก่อน · ไม่เคลมรักษา/การันตี (test) · เตือนไม่หยุดการรักษาแพทย์เอง · ชวนคู่ · คะแนน "ไม่ใช่การตัดสิน"</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>PDPA</td><td>consent gate (P1) · ticket/report code สุ่มเป็นความลับ · เก็บเท่าที่จำเป็น</td><td><span class="badge b-pass">PASS</span></td></tr>
+    <tr><td>Accessibility</td><td>label/heading/keyboard ครบ — ยังไม่ audit axe</td><td><span class="badge b-warn">PARTIAL</span></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>6) ก่อน launch (ยังไม่ทำในรอบนี้)</h2>
+  <ul>
+    <li>Integration จริงกับ LINE Messaging API (channel secret/token) + Supabase prod</li>
+    <li>Red-team copy โดย Lucifer — หา 3 จุดที่ข้อความอาจให้ false hope หรือกดดันกลุ่มเปราะบาง</li>
+    <li>ยืนยันสเปกสินค้า OvaAll/Ferty/PCO-VIT เพื่อล็อกการแมปวิตามินในรายงาน</li>
+    <li>a11y audit (axe/Lighthouse) · load/pen test · SESSION_SECRET + privacy policy ฉบับจริง</li>
+  </ul>
+  <div class="sub">อ้างอิง: PRD-PHASE2 · MOTIVATION-RESEARCH · ARCHITECTURE · DATA-MODEL</div>
+</div>
+
+</div></body></html>
