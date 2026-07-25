@@ -110,6 +110,7 @@ LINE OA **ไม่มี public API ตั้ง "chat tag" ในแอป LIN
 | `GET /api/ticket/[code]` (อัปเกรด) | view_leads | +report score +LINE status |
 | `GET /api/leads` 🆕 | view_leads | ลิสต์ lead ทั้งหมด (q/filter/page) · `format=csv` ต้อง export_data |
 | `GET /r/[code]` | รหัส=ความลับ | รายงานแบบแชร์ |
+| `GET /api/health` | เปิดสาธารณะ | เช็คความพร้อมหลัง deploy — คืน **boolean เท่านั้น ไม่โชว์ค่า secret**: `core_ready` (supabase+session), `line_ready` (secret+token), `missing_env[]`, `line_webhook_url` (เอาไปวางใน LINE Developers) |
 
 **หน้า (Pages):** `/plan` · `/r/[code]` · `/login` · `/staff` (ค้นทีละ ticket, รับ `?code=` auto-lookup) · **`/leads` 🆕 (Leads Dashboard, view_leads)** · `/admin` (manage_users)
 
