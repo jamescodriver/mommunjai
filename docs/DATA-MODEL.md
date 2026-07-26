@@ -119,7 +119,7 @@ erDiagram
 - RBAC permissions: `view_leads · manage_tags · view_reports · manage_users · line_admin · export_data` (admin = ทุกสิทธิ์)
 
 ## 7. Phase 3 additions (`0003_phase3.sql` — **สเปก รออนุมัติ**)
-> รายละเอียดเต็ม + เหตุผลของแต่ละตาราง: [PRD-PHASE3.md §6](PRD-PHASE3.md) · หน้าจอ/โฟลว์: `public/crm-flow-65641ac5.html`
+> รายละเอียดเต็ม + เหตุผลของแต่ละตาราง: [PRD-PHASE3.md §6](PRD-PHASE3.md) · หน้าจอ/โฟลว์: `public/flow-crm.html`
 > หลักการ: **เพิ่มอย่างเดียว ไม่ลบ/ไม่แก้ของเดิม** · RLS deny-by-default เหมือนเดิม
 
 | ตาราง | หน้าที่ |
