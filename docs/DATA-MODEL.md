@@ -117,3 +117,26 @@ erDiagram
 | leads.**line_user_id** | คอลัมน์เพิ่ม | เชื่อม lead กับ LINE โดยตรง |
 - RLS: ทุกตารางใหม่ deny-by-default (เข้าถึงผ่าน BFF service_role) · seed tag `#line-connected`
 - RBAC permissions: `view_leads · manage_tags · view_reports · manage_users · line_admin · export_data` (admin = ทุกสิทธิ์)
+
+## 7. Phase 3 additions (`0003_phase3.sql` — **สเปก รออนุมัติ**)
+> รายละเอียดเต็ม + เหตุผลของแต่ละตาราง: [PRD-PHASE3.md §6](PRD-PHASE3.md) · หน้าจอ/โฟลว์: `public/crm-flow-65641ac5.html`
+> หลักการ: **เพิ่มอย่างเดียว ไม่ลบ/ไม่แก้ของเดิม** · RLS deny-by-default เหมือนเดิม
+
+| ตาราง | หน้าที่ |
+|---|---|
+| **customers** | แกนตัวตน — 1 คน = 1 แถว (คนหนึ่งมีได้หลาย `leads`) · `owner_staff_id` · `status` · `last_active_at` |
+| **line_profiles** | ขยายจาก `line_bindings` — `follow_state` (anonymous/active/blocked) · `rich_menu_variant` · `source` |
+| **interactions** | ไทม์ไลน์ทุกเหตุการณ์ (inbound/outbound/tool/report_view/link_click/campaign/purchase/note) |
+| **customer_notes** | โน้ตภายในของทีม (ลูกค้าไม่เห็น) |
+| **segments** · **segment_members** | นิยามกลุ่ม (dynamic/snapshot) + สมาชิก |
+| **line_audiences** | ผูก segment ↔ LINE audienceGroupId + สถานะซิงก์ |
+| **campaigns** · **campaign_recipients** | แคมเปญ + ผลรายคน (+ `skip_reason` เมื่อถูกตัดออก) |
+| **automations** · **automation_runs** | journey ตามวงจรชีวิต + กันส่งซ้ำ |
+| **consents** | **แยกความยินยอม 3 ประเภท:** health_data (PDPA ม.26) / marketing / line_message |
+| **purchases** *(ทางเลือก)* | ประวัติสั่งซื้อ ถ้าแบรนด์แชร์ |
+| **line_quota_log** | โควตาข้อความรายวัน (อ่านจาก LINE) |
+| leads.**customer_id** | คอลัมน์เพิ่ม — lead สังกัดลูกค้า 1 คน |
+
+- RBAC permissions เพิ่ม: `view_crm · edit_customer · manage_segments · send_campaign · import_base · manage_automations`
+  (`send_campaign` + `import_base` = admin เท่านั้นโดยค่าเริ่มต้น เพราะมีผลกระทบภายนอก/มีค่าใช้จ่าย)
+- ⚠️ `line_profiles.follow_state = 'anonymous'` **ห้ามผูกกับข้อมูลสุขภาพใด ๆ** จนกว่าเจ้าตัวจะยินยอมเอง
