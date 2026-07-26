@@ -17,7 +17,7 @@ export default function Home() {
       <section className="glass relative overflow-hidden p-6 text-center sm:p-10">
         <span className="pointer-events-none absolute -right-6 top-6 text-4xl text-rose/40">＋</span>
         <span className="pointer-events-none absolute left-6 bottom-6 text-2xl text-teal/40">＋</span>
-        <Wordmark className="text-2xl" />
+        <Wordmark height={40} />
         <h1 className="mt-3 font-display text-2xl font-bold leading-tight sm:text-4xl">
           Where <span className="text-teal">Science</span> Meets{" "}
           <span className="text-rose">Motherhood</span>
@@ -58,7 +58,7 @@ export default function Home() {
 
       {/* Brand footer band — echoes website teal footer */}
       <footer className="card-feature mt-10 text-center">
-        <Wordmark className="text-xl [&_*]:!text-white" />
+        <Wordmark height={30} white />
         <p className="mt-1 text-sm text-white/90">Where Science Meets Motherhood</p>
         <p className="mx-auto mt-3 max-w-md text-xs text-white/80">
           ข้อมูลเพื่อการดูแลสุขภาพเบื้องต้น ไม่แทนคำวินิจฉัยของแพทย์

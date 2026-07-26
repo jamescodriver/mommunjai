@@ -40,7 +40,7 @@ export default function LoginPage() {
     <main className="mx-auto flex min-h-[80vh] max-w-sm items-center p-4">
       <div className="glass w-full p-6">
         <div className="mb-4 text-center">
-          <Wordmark className="text-xl" />
+          <Wordmark height={30} />
           <p className="mt-1 text-xs text-ink/50">ระบบทีมงาน</p>
         </div>
         {mode === "loading" && <p className="text-center text-sm text-ink/60">กำลังโหลด…</p>}

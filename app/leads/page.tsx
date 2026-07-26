@@ -55,7 +55,7 @@ export default function LeadsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3"><Wordmark className="text-lg" /><span className="text-sm text-ink/60">รายชื่อผู้ลงทะเบียน</span></div>
+        <div className="flex items-center gap-3"><Wordmark height={26} /><span className="text-sm text-ink/60">รายชื่อผู้ลงทะเบียน</span></div>
         <div className="flex gap-3 text-sm">
           <Link href="/staff" className="text-teal-deep">ค้น Ticket</Link>
           {(me.role === "admin" || (me.perms || []).includes("manage_users")) && <Link href="/admin" className="text-teal-deep">จัดการผู้ใช้</Link>}

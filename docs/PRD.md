@@ -202,14 +202,14 @@ retention · # lead→ปิดการขาย · ยอดขายสิน
 ---
 
 ## 7. Brand CI & Design System
-> ✅ **อัปเดต 2026-07-24 — ใช้ CI จริงแล้ว** (จาก brand guideline + mockup เว็บใหม่) · รายละเอียดเต็ม: BRAND.md + [DESIGN.md](DESIGN.md) §2, §2.5, §9 · ⏳ เหลือขอ **vector โลโก้ทางการ**
+> ✅ **อัปเดต 2026-07-24 — ใช้ CI จริงแล้ว** (จาก brand guideline + mockup เว็บใหม่) · รายละเอียดเต็ม: BRAND.md + [DESIGN.md](DESIGN.md) §2, §2.5, §9 · ✅ ติดตั้ง **โลโก้ทางการ** แล้ว (2026-07-26)
 - **Palette (CI จริง):** **PRIMARY เขียว `#1BC0BA`** · **SECONDARY ชมพู `#F978B3`** · ดำ `#000000` / ขาว · ครีม/พื้น `#FFF8FB` · ทอง accent `#E7B84B` · ink `#3D3D4D`
   - + สี 5 sub-brand stage: PRIME มินต์ · FERTI ม่วง · PREG ฟ้า · REVIVE พีช · BLOOM เหลือง
   - ⛔ เลิกใช้ starter เดิม (rose `#E8A0BF` / teal `#5FB3B3`) — เป็นค่าที่เดาไว้ตอนยังไม่มีไกด์
 - **กฎบทบาทสี:** teal = ปุ่มหลัก/ตัวเลข/ลิงก์ · pink = accent + error (ตาราง DESIGN.md §2.5)
 - **Glassmorphism:** การ์ด `rgba(255,255,255,.6)` + `backdrop-blur` + border ขาวโปร่ง + เงานุ่ม · พื้นหลัง gradient **มินต์→ชมพู** · ปุ่ม **pill** · feature card **teal gradient**
 - **Typography:** **Poppins** (อังกฤษ/หัวเรื่อง/ตัวเลข) + **Prompt** (ไทย) — ทั้งคู่ Google Fonts (SIL OFL)
-- **Logo:** wordmark **baby&mom+** (teal+pink) — ตอนนี้เป็น text-based `components/wordmark.tsx` รอไฟล์ vector จริง
+- **Logo:** ✅ **โลโก้ทางการของแบรนด์** — symbol (แม่อุ้มลูก เขียว+ชมพู) + wordmark `baby&mom+` ตัวอักษรดำ · ใช้ผ่าน `components/wordmark.tsx` (`public/logo.png` / `logo-white.png` สำหรับพื้น teal) · favicon+app icon จาก symbol
 - **โทนภาพ/อีโมจิ:** อบอุ่น ให้กำลังใจ · เลี่ยงภาพทารกถี่เกินจนกดดันกลุ่มมีบุตรยาก
 - **Components:** ToolCard, ResultCard, StepProgress, ConsentBox, TicketBadge, ProductChip, Disclaimer — ทำเป็น design system เดียวใช้ซ้ำ
 - ใช้ **/ui-ux-pro-max** เป็นแนวทางดีไซน์ (glass, spacing, a11y) ตอน build

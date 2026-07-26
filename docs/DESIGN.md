@@ -16,7 +16,7 @@
 6. **เข้าถึงได้ (a11y)** — contrast, ปุ่มใหญ่, keyboard, ภาษาไทยอ่านง่าย
 
 ## 2. Design Tokens — **CI จริงจาก BRAND.md** (⚠️ โค้ดยังใช้ starter อยู่ ต้องอัปเดต)
-> Gabriel ถอดจาก brand guideline จริง — **ต่างจาก starter เดิม (rose/teal) อย่างมาก** · dev (metatron) ต้องอัปเดต `tailwind.config.ts` + `app/globals.css` เมื่อได้ vector โลโก้ทางการ
+> Gabriel ถอดจาก brand guideline จริง — **ต่างจาก starter เดิม (rose/teal) อย่างมาก** · dev อัปเดต `tailwind.config.ts` + `app/globals.css` แล้ว · โลโก้ทางการติดตั้งแล้ว (2026-07-26)
 ```
 สี CI จริง (ใช้อันนี้):
   PRIMARY  เขียว  #1BC0BA  (RGB 27/192/186 · CMYK 70/0/34/0) — สีหลัก/โลโก้
@@ -51,7 +51,7 @@ Glass: bg white/60 + backdrop-blur-md + border white/70
 ## 3. Components (design system — มีใน `components/ui.tsx`)
 | Component | ใช้ตอนไหน | สเปก |
 |---|---|---|
-| `Wordmark` | หัวหน้า/รายงาน/login/footer | "baby&mom+" teal+pink (`components/wordmark.tsx`) — **text-based ชั่วคราว รอ vector จริง** |
+| `Wordmark` | หัวหน้า/รายงาน/login/footer | **โลโก้ทางการ** (`components/wordmark.tsx` → `public/logo.png`) · prop: `height` (px) และ `white` สำหรับพื้น teal · ⛔ ห้ามเปลี่ยนสี/บิดสัดส่วน (BRAND.md §1.7) |
 | `.card-feature` | บล็อกเน้น/footer แบรนด์ | teal gradient + ตัวอักษรขาว (แบบ feature card เว็บ) |
 | `.btn-secondary` | CTA accent | pill ชมพู |
 | `ToolShell` | กรอบเครื่องมือทุกตัว | หัว emoji+title, intro, เนื้อหา, disclaimer, back link (ซ่อนใน embed) |
@@ -91,7 +91,10 @@ Glass: bg white/60 + backdrop-blur-md + border white/70
 > ที่มา: mockup เว็บ 4 หน้า (Homepage, ให้ BabyAndMom แนะนำคุณ, เส้นทางการเป็นแม่, ผลิตภัณฑ์) · Figma p9EF9CdoHyYOMORItHyb9C เข้าได้แต่ **View-only** (MCP ต้อง edit) → ใช้ mockup แทน · **นี่คือมาตรฐานจริงที่ UI แอปต้องล้อตาม**
 
 ### 9.1 Logo & Brand mark
-- Wordmark **"baby&mom+"** — "baby&" เขียว #1BC0BA · "mom" ชมพู #F978B3 · "+" ชมพูตัวยก · symbol = รูปหยด/แม่-ลูกโค้งมน เขียว+ชมพู · footer ใช้เวอร์ชันขาว
+- ✅ **โลโก้ทางการ (ติดตั้งแล้ว 2026-07-26)** — lockup แนวนอน: **symbol** (แม่โอบลูก โค้งมน เขียว #1BC0BA + ตัวเชื่อมชมพู #F978B3) + **wordmark "baby&mom" ตัวอักษรสีดำ** + **"+" ชมพูตัวยก**
+  - ⚠️ แก้ความเข้าใจเดิม: ตัวอักษร wordmark เป็น **สีดำ** ไม่ใช่เขียว/ชมพู (ตรงกับ BRAND.md §2.1 ที่ระบุ "ตัวอักษรโลโก้เป็นสีดำ")
+  - ไฟล์: `public/logo.png` (สี) · `public/logo-white.png` (ขาวล้วน — ใช้บนพื้น teal/footer) · `app/icon.png` + `app/apple-icon.png` (favicon/app icon ตัด symbol เดี่ยว) · ต้นฉบับ `assets/brand/BAM-Logo-master.png`
+  - เรียกใช้ผ่าน `<Wordmark height={40} />` หรือ `<Wordmark height={30} white />`
 - Tagline: **"Where Science Meets Motherhood"** (EN, Poppins) · sub "ยึดหลักวิทยาศาสตร์"
 
 ### 9.2 สี (ยืนยัน + เพิ่มสี stage)
@@ -122,7 +125,7 @@ Glass: bg white/60 + backdrop-blur-md + border white/70
 - radius ใหญ่ (การ์ด ~20–24px, ปุ่ม pill เต็ม) · เงานุ่มฟุ้ง · ภาพคนจริงโทนพาสเทล
 
 ### 9.6 สิ่งที่ต้องขอเพิ่ม
-- Vector logo ทางการ (baby&mom+ + symbol) · icon set (heart/sparkle/pregnant/lotus/baby ในวงกลม) · ภาพถ่ายลิขสิทธิ์ · หน้า mockup "ให้ BabyAndMom แนะนำคุณ" = แนวทาง flow แบบสอบถาม/แนะนำ (ล้อกับ /plan ของแอป)
+- ✅ โลโก้ทางการ (ได้แล้ว — PNG) · ⏳ vector สำหรับงานพิมพ์ · icon set (heart/sparkle/pregnant/lotus/baby ในวงกลม) · ภาพถ่ายลิขสิทธิ์ · หน้า mockup "ให้ BabyAndMom แนะนำคุณ" = แนวทาง flow แบบสอบถาม/แนะนำ (ล้อกับ /plan ของแอป)
 > หมายเหตุ: footer เขียน sub-brand baby-care เป็น "BMM BABY" แต่ hero เขียน "BBM BLOOM" — ให้ยืนยันชื่อทางการกับแบรนด์
 
 ## 9.7 สถานะการนำไปใช้ในแอป (2026-07-24) — ✅ ครบทุกหน้า

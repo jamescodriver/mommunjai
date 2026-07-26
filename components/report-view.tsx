@@ -28,7 +28,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
     <div className="mx-auto w-full max-w-2xl space-y-4 p-4 sm:p-6">
       {/* header */}
       <div className="glass-strong p-6 text-center">
-        <Wordmark className="text-lg" />
+        <Wordmark height={26} />
         <p className="text-xs font-medium text-ink/50">by ครูก้อย</p>
         <h1 className="mt-1 text-2xl font-semibold text-teal-deep">{report.title}</h1>
         <p className="mt-1 text-sm text-ink/70">{report.tagline}</p>
