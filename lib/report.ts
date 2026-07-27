@@ -19,6 +19,9 @@ export interface Pillar {
   label: string;
   score: number | null; // null = ยังไม่ได้ทำเครื่องมือนี้
   note: string;
+  /** เครื่องมือที่ต้องทำเพื่อให้ได้คะแนนเสานี้ — ใช้ทำลิงก์ "ทำแบบประเมิน" ในรายงาน */
+  toolHref?: string;
+  toolLabel?: string;
 }
 export interface PlanPhase {
   phase: string;
@@ -66,18 +69,20 @@ export function generateReport(p: ReportProfile): Report {
   pillars.push({ key: "egg", label: isMale ? "คุณภาพอสุจิ" : "คุณภาพไข่", score: nut ? nut.pillars?.egg ?? null : null,
     note: nut
       ? (isMale ? "จากอาหารบำรุงอสุจิที่คุณกิน" : "จากอาหารบำรุงไข่ที่คุณกิน")
-      : "ทำเครื่องมือ ‘เช็กสารอาหาร’ เพื่อดูคะแนนนี้" });
+      : "ยังไม่ได้ประเมิน", toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
   pillars.push({ key: "nutrition", label: "โภชนาการรวม", score: nut ? nut.overall ?? null : null,
-    note: nut ? `กินครบ ${nut.eatenCount ?? 0}/${nut.totalEat ?? 8} อย่าง` : "ยังไม่ได้ประเมิน" });
+    note: nut ? `กินครบ ${nut.eatenCount ?? 0}/${nut.totalEat ?? 8} อย่าง` : "ยังไม่ได้ประเมิน", toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
   const sleep = t.sleep?.output;
   const sleepScore = sleep ? (sleep.beforeTen && sleep.goodDuration ? 92 : sleep.goodDuration ? 72 : 48) : null;
   pillars.push({ key: "sleep", label: "การนอน", score: sleepScore,
-    note: sleep ? (sleep.status ? `สถานะ: ${sleep.status}` : "ประเมินแล้ว") : "ทำเครื่องมือ ‘คำนวณการนอน’" });
+    note: sleep ? (sleep.status ? `สถานะ: ${sleep.status}` : "ประเมินแล้ว") : "ยังไม่ได้ประเมิน", toolHref: "/tools/sleep", toolLabel: "คำนวณการนอน" });
   // hormone pillar blends nutrition-hormone pillar and PCOS/sugar signal
   let hormone: number | null = nut ? nut.pillars?.hormone ?? null : null;
   if (hormone !== null && p.hasPcos) hormone = clamp(hormone - 10);
   pillars.push({ key: "hormone", label: "สมดุลฮอร์โมน", score: hormone,
-    note: p.hasPcos ? "การดูแลเรื่องน้ำตาลช่วยสมดุลฮอร์โมนได้ — ค่อย ๆ ปรับไปด้วยกันนะคะ" : "จากอาหารปรับสมดุลฮอร์โมน" });
+    note: hormone === null
+      ? "ยังไม่ได้ประเมิน"
+      : (p.hasPcos ? "การดูแลเรื่องน้ำตาลช่วยสมดุลฮอร์โมนได้ — ค่อย ๆ ปรับไปด้วยกันนะคะ" : "จากอาหารปรับสมดุลฮอร์โมน"), toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
 
   const done = pillars.filter((x) => x.score !== null);
   const score = done.length ? clamp(done.reduce((s, x) => s + (x.score as number), 0) / done.length) : 50;
@@ -93,7 +98,7 @@ export function generateReport(p: ReportProfile): Report {
   // ----- "จุดที่เสริมได้" (never "จุดที่พลาด") -----
   const improvements: string[] = [];
   done.filter((x) => (x.score as number) < 65).forEach((x) => improvements.push(`${x.label}: มีพื้นที่ให้เสริมอีกนิด — ${x.note}`));
-  pillars.filter((x) => x.score === null).slice(0, 2).forEach((x) => improvements.push(`ลองทำเครื่องมือเพื่อดู "${x.label}" ของคุณ จะได้แผนที่แม่นขึ้น`));
+  // เสาที่ยังไม่ได้ประเมินไม่ต้องพูดซ้ำตรงนี้ — หมวด "ความพร้อมโดยรวม" มีลิงก์ไปทำแบบประเมินให้แล้ว
 
   // ----- fertile window (from ovulation tool) -----
   const ov = t.ovulation?.output;

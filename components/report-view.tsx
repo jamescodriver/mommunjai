@@ -24,6 +24,7 @@ function Section({ n, title, children }: { n: string; title: string; children: R
 // Renders the personalized "90-day plan" report. Order matters (research §3):
 // greeting → strengths FIRST → quick win → gentle score → improvements → 90-day plan → 70/30 → partner → actions → LINE → close.
 export default function ReportView({ report, code, ticketNote }: { report: Report; code?: string; ticketNote?: boolean }) {
+  const pending = report.pillars.filter((p) => p.score === null);
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 p-4 sm:p-6">
       {/* header */}
@@ -61,14 +62,44 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           </div>
           <div className="text-sm">{report.scoreLabel}<p className="text-xs text-ink/60">คะแนนนี้ไว้ติดตามพัฒนาการ ไม่ใช่การตัดสิน 💛</p></div>
         </div>
+
+        {/* A missing pillar and a genuine 0% used to look identical — say which is which,
+            and give a way to fill the gap in. */}
+        {pending.length > 0 && (
+          <p className="mt-2 rounded-lg bg-gold/15 p-2 text-xs">
+            คะแนนนี้คิดจาก <b>{report.pillars.length - pending.length} ใน {report.pillars.length} ส่วน</b> ที่ประเมินแล้ว —
+            ทำอีก {pending.length} ส่วนที่เหลือ แล้วคะแนนจะแม่นขึ้นค่ะ
+          </p>
+        )}
+
         <div className="mt-3 space-y-2">
           {report.pillars.map((p) => (
             <div key={p.key}>
-              <div className="flex justify-between text-xs"><span>{p.label}</span><span>{p.score === null ? "—" : `${p.score}%`}</span></div>
-              <div className="mt-1 h-2 rounded-full bg-black/5"><div className="h-2 rounded-full bg-teal" style={{ width: `${p.score ?? 0}%` }} /></div>
+              <div className="flex items-baseline justify-between gap-2 text-xs">
+                <span>{p.label}</span>
+                {p.score === null
+                  ? <span className="text-ink/40">ยังไม่ได้ประเมิน</span>
+                  : <span>{p.score}%</span>}
+              </div>
+              {p.score === null ? (
+                <div className="mt-1 h-2 rounded-full border border-dashed border-ink/20 bg-transparent" />
+              ) : (
+                <div className="mt-1 h-2 rounded-full bg-black/5"><div className="h-2 rounded-full bg-teal" style={{ width: `${p.score}%` }} /></div>
+              )}
+              {p.score === null && p.toolHref && (
+                <a href={p.toolHref} className="mt-1 inline-block text-xs font-medium text-teal-deep underline">
+                  ทำแบบประเมิน &ldquo;{p.toolLabel}&rdquo; →
+                </a>
+              )}
             </div>
           ))}
         </div>
+
+        {pending.length > 0 && (
+          <p className="mt-3 text-xs text-ink/50">
+            ทำเสร็จแล้ว <a href="/plan" className="font-medium text-teal-deep underline">สร้างแผนใหม่อีกครั้ง</a> เพื่ออัปเดตคะแนนได้เลยค่ะ
+          </p>
+        )}
       </Section>
 
       {/* 4. improvements */}

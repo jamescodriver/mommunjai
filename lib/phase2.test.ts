@@ -109,3 +109,26 @@ describe("report — male wording", () => {
     expect(r.pillars.find((p) => p.key === "egg")?.label).toBe("คุณภาพไข่");
   });
 });
+
+describe("report — unassessed pillars", () => {
+  it("marks a pillar with no tool result as null, never as a real zero", () => {
+    // ไม่ได้ทำเครื่องมือใดเลย
+    const r = generateReport({ nickname: "แนน", stage: "prep" });
+    expect(r.pillars.every((p) => p.score === null)).toBe(true);
+    expect(r.pillars.every((p) => p.note === "ยังไม่ได้ประเมิน")).toBe(true);
+  });
+  it("every pillar points at the tool that fills it", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep" });
+    expect(r.pillars.map((p) => p.toolHref)).toEqual([
+      "/tools/nutrients", "/tools/nutrients", "/tools/sleep", "/tools/nutrients",
+    ]);
+    expect(r.pillars.every((p) => !!p.toolLabel)).toBe(true);
+  });
+  it("a real 0% stays 0, not null", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep",
+      tools: { nutrients: { output: { pillars: { egg: 0, uterus: 0, hormone: 0 }, overall: 0, eatenCount: 0, totalEat: 8 } } } });
+    const hormone = r.pillars.find((p) => p.key === "hormone");
+    expect(hormone?.score).toBe(0);
+    expect(hormone?.note).not.toBe("ยังไม่ได้ประเมิน");
+  });
+});
