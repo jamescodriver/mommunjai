@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
 
 const TOOLS = [
-  { href: "/tools/ovulation", emoji: "📅", title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสมีลูกจากรอบเดือน" },
+  { href: "/tools/ovulation", emoji: "📅", title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสมีลูกจากรอบเดือน — กรอกแทนคู่ได้" },
   { href: "/tools/protein", emoji: "🥚", title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่ให้สมบูรณ์" },
   { href: "/tools/nutrients", emoji: "🥗", title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม" },
   { href: "/tools/sleep", emoji: "🌙", title: "คำนวณการนอน", desc: "เวลานอนที่ดีต่อฮอร์โมนเจริญพันธุ์" },

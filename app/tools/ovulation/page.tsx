@@ -28,11 +28,11 @@ export default function OvulationPage() {
         embed={embed}
         emoji="📅"
         title="นับวันไข่ตก"
-        intro="กรอกวันแรกของประจำเดือนล่าสุด แล้วเราจะช่วยหาช่วงที่มีโอกาสมีลูกสูงสุด"
+        intro="กรอกวันแรกของประจำเดือนล่าสุด แล้วเราจะช่วยหาช่วงที่มีโอกาสมีลูกสูงสุด — คุณผู้ชายกรอกแทนคู่ได้เลยค่ะ ช่วยกันวางแผนได้ทั้งสองคน 👫"
         disclaimer={OVULATION_DISCLAIMER}
       >
         <div className="space-y-4">
-          <Field label="วันแรกของประจำเดือนล่าสุด">
+          <Field label="วันแรกของประจำเดือนล่าสุด" hint="ของคุณ หรือของคู่ก็ได้">
             <input type="date" className="field" value={last} onChange={(e) => setLast(e.target.value)} />
           </Field>
           <Field label={`ความยาวรอบเดือน (วัน): ${cycle}`} hint="ปกติ 21–35 วัน (ค่าเริ่มต้น 28)">
