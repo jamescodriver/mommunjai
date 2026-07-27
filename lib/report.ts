@@ -43,6 +43,7 @@ export interface Report {
   plan90: PlanPhase[];
   weeklyActions: string[];
   partnerNudge: string | null; // include the partner (~40% male factor)
+  isMale: boolean; // the view swaps egg/sperm wording and the protein product off this
   cautions: string[];
   generatedFor: { stage?: string; hasPcos?: boolean; artPlan?: string };
 }
@@ -57,12 +58,15 @@ function clamp(n: number) { return Math.max(0, Math.min(100, Math.round(n))); }
 export function generateReport(p: ReportProfile): Report {
   const t = p.tools || {};
   const baseStage: Stage = (p.stage === "infertility" ? "prep" : (p.stage as Stage)) || "prep";
+  const isMale = p.stage === "male";
 
   // ----- pillars from whichever tools were completed -----
   const pillars: Pillar[] = [];
   const nut = t.nutrients?.output;
-  pillars.push({ key: "egg", label: "คุณภาพไข่", score: nut ? nut.pillars?.egg ?? null : null,
-    note: nut ? "จากอาหารบำรุงไข่ที่คุณกิน" : "ทำเครื่องมือ ‘เช็กสารอาหาร’ เพื่อดูคะแนนนี้" });
+  pillars.push({ key: "egg", label: isMale ? "คุณภาพอสุจิ" : "คุณภาพไข่", score: nut ? nut.pillars?.egg ?? null : null,
+    note: nut
+      ? (isMale ? "จากอาหารบำรุงอสุจิที่คุณกิน" : "จากอาหารบำรุงไข่ที่คุณกิน")
+      : "ทำเครื่องมือ ‘เช็กสารอาหาร’ เพื่อดูคะแนนนี้" });
   pillars.push({ key: "nutrition", label: "โภชนาการรวม", score: nut ? nut.overall ?? null : null,
     note: nut ? `กินครบ ${nut.eatenCount ?? 0}/${nut.totalEat ?? 8} อย่าง` : "ยังไม่ได้ประเมิน" });
   const sleep = t.sleep?.output;
@@ -82,8 +86,8 @@ export function generateReport(p: ReportProfile): Report {
   // ----- strengths FIRST (research: never lead with a low score for a hurting person) -----
   const strengths: string[] = [];
   done.filter((x) => (x.score as number) >= 65).forEach((x) => strengths.push(`${x.label}ของคุณอยู่ในเกณฑ์ดี (${x.score}%) — รักษาไว้ต่อเนื่องนะคะ`));
-  if (t.ovulation?.output?.ovulationDate) strengths.push("คุณเริ่มวางแผนจากรอบเดือนแล้ว เป็นก้าวที่สำคัญมาก");
-  if (t.protein?.output) strengths.push("คุณใส่ใจเรื่องโปรตีนบำรุงไข่ ซึ่งเป็นหัวใจของการเตรียมตัว");
+  if (t.ovulation?.output?.ovulationDate) strengths.push(`คุณเริ่มวางแผนจากรอบเดือน${isMale ? "ของคู่" : ""}แล้ว เป็นก้าวที่สำคัญมาก`);
+  if (t.protein?.output) strengths.push(`คุณใส่ใจเรื่องโปรตีนบำรุง${isMale ? "อสุจิ" : "ไข่"} ซึ่งเป็นหัวใจของการเตรียมตัว`);
   if (strengths.length === 0) strengths.push("คุณลงมือหาข้อมูลและเริ่มเตรียมตัววันนี้ — นั่นคือจุดเริ่มที่ดีที่สุดแล้วค่ะ");
 
   // ----- "จุดที่เสริมได้" (never "จุดที่พลาด") -----
@@ -112,7 +116,6 @@ export function generateReport(p: ReportProfile): Report {
   const rec = recommendVitamins(vp);
 
   // ----- personalized 90-day plan (food/behavior FIRST, products last; ART = consult doctor before supplements) -----
-  const isMale = p.stage === "male";
   const artActive = !!p.artPlan && p.artPlan !== "none";
   // age-appropriate referral timing (clinical: <35=12mo, 35-39=6mo, 40+=now)
   const referral =
@@ -192,7 +195,7 @@ export function generateReport(p: ReportProfile): Report {
     score, scoreLabel, strengths, improvements, quickWinToday,
     pillars, fertileWindow, protein,
     vitamins: rec.primary, vitaminNote: rec.note,
-    plan90, weeklyActions: weeklyActions.slice(0, 4), partnerNudge, cautions,
+    plan90, weeklyActions: weeklyActions.slice(0, 4), partnerNudge, isMale, cautions,
     generatedFor: { stage: stageThai[p.stage || "prep"], hasPcos: p.hasPcos, artPlan: p.artPlan },
   };
 }

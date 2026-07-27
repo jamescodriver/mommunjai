@@ -95,10 +95,10 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       {/* 6. 70/30 — fertile window + protein + vitamins */}
       <Section n="6" title="70% อยู่ในจาน · 30% วิตามินตรงจุด 🍽️">
         {report.fertileWindow && (
-          <p className="mb-2 text-sm">🗓️ ช่วงมีโอกาสสูงรอบถัดไป: <b className="text-teal-deep">{fmtTH(report.fertileWindow.start)}–{fmtTH(report.fertileWindow.end)}</b></p>
+          <p className="mb-2 text-sm">🗓️ ช่วงมีโอกาสสูงรอบถัดไป{report.isMale ? " (ของคู่คุณ)" : ""}: <b className="text-teal-deep">{fmtTH(report.fertileWindow.start)}–{fmtTH(report.fertileWindow.end)}</b></p>
         )}
         {report.protein && (
-          <p className="mb-2 text-sm">🥚 เป้าโปรตีน: <b>{report.protein.min}–{report.protein.max} กรัม/วัน</b> (เติมด้วย Ferty ~{report.protein.ferty} ซองถ้าอาหารไม่ถึง)</p>
+          <p className="mb-2 text-sm">{report.isMale ? "💪" : "🥚"} เป้าโปรตีน: <b>{report.protein.min}–{report.protein.max} กรัม/วัน</b> (เติมด้วย {report.isMale ? "Ferta" : "Ferty"} ~{report.protein.ferty} ซองถ้าอาหารไม่ถึง)</p>
         )}
         <p className="mt-2 text-xs text-ink/60">{report.vitaminNote}</p>
         <div className="mt-2 space-y-2">

@@ -90,3 +90,22 @@ describe("line ticket extraction", () => {
     expect(extractTicketCode("ไม่มีรหัส")).toBeNull();
   });
 });
+
+describe("report — male wording", () => {
+  const maleTools = {
+    nutrients: { output: { pillars: { egg: 70, uterus: 60, hormone: 65 }, overall: 65, eatenCount: 5, totalEat: 8 } },
+    protein: { output: { minGrams: 84, maxGrams: 112, fertyServings: { max: 5 } } },
+  };
+  it("a man is never told about egg quality", () => {
+    const r = generateReport({ nickname: "โต้ง", stage: "male", tools: maleTools });
+    const all = JSON.stringify(r);
+    expect(r.isMale).toBe(true);
+    expect(r.pillars.find((p) => p.key === "egg")?.label).toBe("คุณภาพอสุจิ");
+    expect(all).not.toMatch(/คุณภาพไข่|บำรุงไข่/);
+  });
+  it("a woman still sees egg wording", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep", tools: maleTools });
+    expect(r.isMale).toBe(false);
+    expect(r.pillars.find((p) => p.key === "egg")?.label).toBe("คุณภาพไข่");
+  });
+});

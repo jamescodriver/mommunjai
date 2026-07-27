@@ -88,7 +88,7 @@ export default function PlanPage() {
           <div className="space-y-4 text-center">
             <div className="text-4xl">💛</div>
             <h1 className="text-xl font-semibold">แผน 90 วัน มั่นใจก่อนมีลูก — ฉบับของคุณ</h1>
-            <p className="text-sm text-ink/70">ตอบไม่กี่ข้อ แล้วครูก้อยจะทำ <b>แผนบำรุง 90 วันเฉพาะคุณ</b> ให้ทันที (ไข่ใช้เวลาสุกราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)</p>
+            <p className="text-sm text-ink/70">ตอบไม่กี่ข้อ แล้วครูก้อยจะทำ <b>แผนบำรุง 90 วันเฉพาะคุณ</b> ให้ทันที (ทั้งไข่และอสุจิใช้เวลาสุกราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)</p>
             <button className="btn-primary w-full" onClick={next}>พร้อมลงมือ 90 วัน เริ่มเลย</button>
             <p className="text-xs text-ink/50">ใช้เวลาไม่ถึง 2 นาที · ข้อมูลของคุณถูกเก็บอย่างปลอดภัย</p>
           </div>
@@ -108,7 +108,7 @@ export default function PlanPage() {
             <h2 className="text-lg font-semibold">ตอนนี้คุณ{form.nickname ? ` ${form.nickname}` : ""}อยู่ช่วงไหน?</h2>
             <div className="grid grid-cols-2 gap-2 text-sm">
               {[["prep", "เตรียมตั้งครรภ์"], ["infertility", "มีบุตรยาก"], ["pregnant", "ตั้งครรภ์แล้ว"], ["male", "ฝ่ายชาย"]].map(([v, l]) => (
-                <button key={v} onClick={() => set("stage", v)} className={`rounded-xl border px-3 py-3 ${form.stage === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{l}</button>
+                <button key={v} onClick={() => setForm((f: any) => ({ ...f, stage: v, ...(v === "male" ? { has_pcos: false } : {}) }))} className={`rounded-xl border px-3 py-3 ${form.stage === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{l}</button>
               ))}
             </div>
             <p className="rounded-lg bg-teal/10 p-2 text-xs text-teal-deep">💡 รู้ไหมคะ? การบำรุงล่วงหน้าอย่างน้อย 3 เดือนช่วยสนับสนุนการเตรียมความพร้อมของร่างกาย</p>
@@ -125,7 +125,9 @@ export default function PlanPage() {
                 <option value="">ไม่ระบุ</option><option>ต่ำกว่า 30</option><option>30–34</option><option>35–39</option><option>40+</option>
               </select>
             </Field>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="accent-teal" checked={!!form.has_pcos} onChange={(e) => set("has_pcos", e.target.checked)} /> มีภาวะ PCOS / ไม่แน่ใจ</label>
+            {form.stage !== "male" && (
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="accent-teal" checked={!!form.has_pcos} onChange={(e) => set("has_pcos", e.target.checked)} /> มีภาวะ PCOS / ไม่แน่ใจ</label>
+            )}
             <div className="flex gap-2"><button className="btn-ghost flex-1" onClick={back}>ย้อน</button><button className="btn-primary flex-1" onClick={next}>ต่อไป</button></div>
           </div>
         )}
@@ -133,7 +135,11 @@ export default function PlanPage() {
         {step === "art" && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">มีแผนใช้เทคโนโลยีช่วยไหมคะ?</h2>
-            <p className="text-xs text-ink/50">ถามเพื่อจัดแผนบำรุงไข่/ผนังมดลูกให้เข้ากับจังหวะการรักษา (ถ้ามี)</p>
+            <p className="text-xs text-ink/50">
+              {form.stage === "male"
+                ? "ถามเพื่อจัดแผนบำรุงอสุจิให้เข้ากับจังหวะการรักษาของคู่ (ถ้ามี)"
+                : "ถามเพื่อจัดแผนบำรุงไข่/ผนังมดลูกให้เข้ากับจังหวะการรักษา (ถ้ามี)"}
+            </p>
             <div className="grid grid-cols-4 gap-2 text-sm">
               {[["none", "ยังไม่"], ["iui", "IUI"], ["ivf", "IVF"], ["icsi", "ICSI"]].map(([v, l]) => (
                 <button key={v} onClick={() => set("art_plan", v)} className={`rounded-xl border px-2 py-2 ${form.art_plan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{l}</button>
