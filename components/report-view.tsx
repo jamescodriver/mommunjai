@@ -1,5 +1,7 @@
 "use client";
-import type { Report } from "@/lib/report";
+import { useCallback, useEffect, useState } from "react";
+import { computePillars, type Report } from "@/lib/report";
+import { readProfile } from "@/lib/profile-store";
 import { track } from "@/lib/track";
 import { Wordmark } from "@/components/wordmark";
 
@@ -24,7 +26,32 @@ function Section({ n, title, children }: { n: string; title: string; children: R
 // Renders the personalized "90-day plan" report. Order matters (research §3):
 // greeting → strengths FIRST → quick win → gentle score → improvements → 90-day plan → 70/30 → partner → actions → LINE → close.
 export default function ReportView({ report, code, ticketNote }: { report: Report; code?: string; ticketNote?: boolean }) {
-  const pending = report.pillars.filter((p) => p.score === null);
+  // A report is a snapshot. If the reader goes off and does a missing assessment, let them
+  // pull the new numbers in here instead of re-filling the whole questionnaire (which would
+  // also create a second lead). Only offered while something is still unassessed, so it can
+  // add information but never overwrite an existing score with a stranger's.
+  const [live, setLive] = useState<ReturnType<typeof computePillars> | null>(null);
+  const pillars = live?.pillars ?? report.pillars;
+  const score = live?.score ?? report.score;
+  const scoreLabel = live?.scoreLabel ?? report.scoreLabel;
+  const pending = pillars.filter((p) => p.score === null);
+
+  const refresh = useCallback(() => {
+    setLive(computePillars({
+      isMale: report.isMale,
+      hasPcos: report.generatedFor?.hasPcos,
+      tools: readProfile().tools,
+    }));
+  }, [report.isMale, report.generatedFor?.hasPcos]);
+
+  // The tools open in another tab; localStorage fires `storage` in this one when they finish,
+  // so the score fills itself in without the reader having to notice a button.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => { if (e.key === "mmj_profile") refresh(); };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [refresh]);
+
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 p-4 sm:p-6">
       {/* header */}
@@ -57,23 +84,23 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       <Section n="3" title="ความพร้อมโดยรวม">
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-3xl font-bold text-teal-deep">{report.score}</div>
+            <div className="text-3xl font-bold text-teal-deep">{score}</div>
             <div className="text-xs text-ink/50">/100</div>
           </div>
-          <div className="text-sm">{report.scoreLabel}<p className="text-xs text-ink/60">คะแนนนี้ไว้ติดตามพัฒนาการ ไม่ใช่การตัดสิน 💛</p></div>
+          <div className="text-sm">{scoreLabel}<p className="text-xs text-ink/60">คะแนนนี้ไว้ติดตามพัฒนาการ ไม่ใช่การตัดสิน 💛</p></div>
         </div>
 
         {/* A missing pillar and a genuine 0% used to look identical — say which is which,
             and give a way to fill the gap in. */}
         {pending.length > 0 && (
           <p className="mt-2 rounded-lg bg-gold/15 p-2 text-xs">
-            คะแนนนี้คิดจาก <b>{report.pillars.length - pending.length} ใน {report.pillars.length} ส่วน</b> ที่ประเมินแล้ว —
+            คะแนนนี้คิดจาก <b>{pillars.length - pending.length} ใน {pillars.length} ส่วน</b> ที่ประเมินแล้ว —
             ทำอีก {pending.length} ส่วนที่เหลือ แล้วคะแนนจะแม่นขึ้นค่ะ
           </p>
         )}
 
         <div className="mt-3 space-y-2">
-          {report.pillars.map((p) => (
+          {pillars.map((p) => (
             <div key={p.key}>
               <div className="flex items-baseline justify-between gap-2 text-xs">
                 <span>{p.label}</span>
@@ -87,7 +114,9 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                 <div className="mt-1 h-2 rounded-full bg-black/5"><div className="h-2 rounded-full bg-teal" style={{ width: `${p.score}%` }} /></div>
               )}
               {p.score === null && p.toolHref && (
-                <a href={p.toolHref} className="mt-1 inline-block text-xs font-medium text-teal-deep underline">
+                // เปิดแท็บใหม่ ไม่งั้นผู้ใช้จะหลุดจากรายงานที่เพิ่งได้มา
+                <a href={p.toolHref} target="_blank" rel="noreferrer"
+                   className="mt-1 inline-block text-xs font-medium text-teal-deep underline">
                   ทำแบบประเมิน &ldquo;{p.toolLabel}&rdquo; →
                 </a>
               )}
@@ -96,8 +125,14 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
         </div>
 
         {pending.length > 0 && (
-          <p className="mt-3 text-xs text-ink/50">
-            ทำเสร็จแล้ว <a href="/plan" className="font-medium text-teal-deep underline">สร้างแผนใหม่อีกครั้ง</a> เพื่ออัปเดตคะแนนได้เลยค่ะ
+          <button onClick={refresh} className="btn-ghost mt-3 w-full !py-2 text-xs">
+            🔄 ทำแบบประเมินเสร็จแล้ว — อัปเดตคะแนน
+          </button>
+        )}
+        {live && (
+          <p className="mt-2 text-xs text-teal-deep">
+            ✓ อัปเดตจากผลประเมินล่าสุดในเครื่องคุณแล้ว
+            {pending.length === 0 && " — ครบทั้ง 4 ส่วนแล้วค่ะ 🎉"}
           </p>
         )}
       </Section>

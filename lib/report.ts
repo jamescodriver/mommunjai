@@ -58,35 +58,54 @@ const stageThai: Record<string, string> = {
 
 function clamp(n: number) { return Math.max(0, Math.min(100, Math.round(n))); }
 
+/** คำนวณเสาคะแนน + คะแนนรวม จากผลเครื่องมือที่ทำไปแล้ว
+ *  แยกออกมาเป็น pure function เพื่อให้หน้ารายงานเรียกซ้ำได้ตอนผู้ใช้ไปทำแบบประเมินเพิ่มแล้วกลับมา */
+export function computePillars(a: {
+  isMale: boolean;
+  hasPcos?: boolean;
+  tools?: Record<string, { input?: any; output?: any }>;
+}): { pillars: Pillar[]; score: number; scoreLabel: string } {
+  const t = a.tools || {};
+  const pillars: Pillar[] = [];
+  const nut = t.nutrients?.output;
+  const NUT = { toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" };
+  const SLP = { toolHref: "/tools/sleep", toolLabel: "คำนวณการนอน" };
+
+  pillars.push({ key: "egg", label: a.isMale ? "คุณภาพอสุจิ" : "คุณภาพไข่", score: nut ? nut.pillars?.egg ?? null : null,
+    note: nut
+      ? (a.isMale ? "จากอาหารบำรุงอสุจิที่คุณกิน" : "จากอาหารบำรุงไข่ที่คุณกิน")
+      : "ยังไม่ได้ประเมิน", ...NUT });
+  pillars.push({ key: "nutrition", label: "โภชนาการรวม", score: nut ? nut.overall ?? null : null,
+    note: nut ? `กินครบ ${nut.eatenCount ?? 0}/${nut.totalEat ?? 8} อย่าง` : "ยังไม่ได้ประเมิน", ...NUT });
+
+  // โหมด "แนะนำเวลาเข้านอน" คืนแค่รายการเวลา ไม่ได้ประเมินอะไร — ต้องไม่ให้คะแนน
+  const sleep = t.sleep?.output;
+  const assessed = sleep && typeof sleep.goodDuration === "boolean";
+  const sleepScore = assessed ? (sleep.beforeTen && sleep.goodDuration ? 92 : sleep.goodDuration ? 72 : 48) : null;
+  pillars.push({ key: "sleep", label: "การนอน", score: sleepScore,
+    note: assessed ? (sleep.status ? `สถานะ: ${sleep.status}` : "ประเมินแล้ว") : "ยังไม่ได้ประเมิน", ...SLP });
+
+  let hormone: number | null = nut ? nut.pillars?.hormone ?? null : null;
+  if (hormone !== null && a.hasPcos) hormone = clamp(hormone - 10);
+  pillars.push({ key: "hormone", label: "สมดุลฮอร์โมน", score: hormone,
+    note: hormone === null
+      ? "ยังไม่ได้ประเมิน"
+      : (a.hasPcos ? "การดูแลเรื่องน้ำตาลช่วยสมดุลฮอร์โมนได้ — ค่อย ๆ ปรับไปด้วยกันนะคะ" : "จากอาหารปรับสมดุลฮอร์โมน"), ...NUT });
+
+  const done = pillars.filter((x) => x.score !== null);
+  const score = done.length ? clamp(done.reduce((s, x) => s + (x.score as number), 0) / done.length) : 50;
+  const scoreLabel = score >= 80 ? "พร้อมดีมาก 💚" : score >= 60 ? "พร้อมพอควร มีจุดเสริม 💛" : "เริ่มต้นได้ดี มีหลายอย่างที่ทำได้เลย 🌱";
+  return { pillars, score, scoreLabel };
+}
+
 export function generateReport(p: ReportProfile): Report {
   const t = p.tools || {};
   const baseStage: Stage = (p.stage === "infertility" ? "prep" : (p.stage as Stage)) || "prep";
   const isMale = p.stage === "male";
 
   // ----- pillars from whichever tools were completed -----
-  const pillars: Pillar[] = [];
-  const nut = t.nutrients?.output;
-  pillars.push({ key: "egg", label: isMale ? "คุณภาพอสุจิ" : "คุณภาพไข่", score: nut ? nut.pillars?.egg ?? null : null,
-    note: nut
-      ? (isMale ? "จากอาหารบำรุงอสุจิที่คุณกิน" : "จากอาหารบำรุงไข่ที่คุณกิน")
-      : "ยังไม่ได้ประเมิน", toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
-  pillars.push({ key: "nutrition", label: "โภชนาการรวม", score: nut ? nut.overall ?? null : null,
-    note: nut ? `กินครบ ${nut.eatenCount ?? 0}/${nut.totalEat ?? 8} อย่าง` : "ยังไม่ได้ประเมิน", toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
-  const sleep = t.sleep?.output;
-  const sleepScore = sleep ? (sleep.beforeTen && sleep.goodDuration ? 92 : sleep.goodDuration ? 72 : 48) : null;
-  pillars.push({ key: "sleep", label: "การนอน", score: sleepScore,
-    note: sleep ? (sleep.status ? `สถานะ: ${sleep.status}` : "ประเมินแล้ว") : "ยังไม่ได้ประเมิน", toolHref: "/tools/sleep", toolLabel: "คำนวณการนอน" });
-  // hormone pillar blends nutrition-hormone pillar and PCOS/sugar signal
-  let hormone: number | null = nut ? nut.pillars?.hormone ?? null : null;
-  if (hormone !== null && p.hasPcos) hormone = clamp(hormone - 10);
-  pillars.push({ key: "hormone", label: "สมดุลฮอร์โมน", score: hormone,
-    note: hormone === null
-      ? "ยังไม่ได้ประเมิน"
-      : (p.hasPcos ? "การดูแลเรื่องน้ำตาลช่วยสมดุลฮอร์โมนได้ — ค่อย ๆ ปรับไปด้วยกันนะคะ" : "จากอาหารปรับสมดุลฮอร์โมน"), toolHref: "/tools/nutrients", toolLabel: "เช็กสารอาหาร" });
-
+  const { pillars, score, scoreLabel } = computePillars({ isMale, hasPcos: p.hasPcos, tools: t });
   const done = pillars.filter((x) => x.score !== null);
-  const score = done.length ? clamp(done.reduce((s, x) => s + (x.score as number), 0) / done.length) : 50;
-  const scoreLabel = score >= 80 ? "พร้อมดีมาก 💚" : score >= 60 ? "พร้อมพอควร มีจุดเสริม 💛" : "เริ่มต้นได้ดี มีหลายอย่างที่ทำได้เลย 🌱";
 
   // ----- strengths FIRST (research: never lead with a low score for a hurting person) -----
   const strengths: string[] = [];

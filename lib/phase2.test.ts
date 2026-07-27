@@ -132,3 +132,19 @@ describe("report — unassessed pillars", () => {
     expect(hormone?.note).not.toBe("ยังไม่ได้ประเมิน");
   });
 });
+
+describe("report — sleep tool mode A", () => {
+  it("asking for a suggested bedtime is not an assessment, so it scores nothing", () => {
+    // โหมด A คืนแค่รายการเวลาเข้านอน ไม่มี goodDuration/beforeTen — เดิมตกไปได้ 48 คะแนนฟรี ๆ
+    const r = generateReport({ nickname: "แนน", stage: "prep",
+      tools: { sleep: { input: { mode: "A", wake: "06:30" }, output: { bedtimes: ["21:15", "22:45"] } } } });
+    const sleep = r.pillars.find((p) => p.key === "sleep");
+    expect(sleep?.score).toBeNull();
+    expect(sleep?.note).toBe("ยังไม่ได้ประเมิน");
+  });
+  it("mode B does assess and does score", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep",
+      tools: { sleep: { input: { mode: "B" }, output: { hours: 8, goodDuration: true, beforeTen: true, status: "ดี" } } } });
+    expect(r.pillars.find((p) => p.key === "sleep")?.score).toBe(92);
+  });
+});

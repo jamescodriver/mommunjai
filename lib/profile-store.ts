@@ -1,4 +1,10 @@
-// Client-side progressive profile (sessionStorage). No PII persisted server-side until consent (M7).
+// Client-side progressive profile. Stays on the user's own device; nothing reaches the server
+// until they consent (M7).
+//
+// localStorage, not sessionStorage: the report links out to the assessment tools in a new tab,
+// and sessionStorage is per-tab — the new tab's writes never reach the tab holding the report,
+// so the score could never update. localStorage also means someone returning tomorrow still has
+// their tool results. Same device, same user, still client-only.
 "use client";
 
 export interface Profile {
@@ -16,7 +22,7 @@ const KEY = "mmj_profile";
 export function readProfile(): Profile {
   if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(sessionStorage.getItem(KEY) || "{}");
+    return JSON.parse(localStorage.getItem(KEY) || "{}");
   } catch {
     return {};
   }
@@ -26,7 +32,7 @@ export function mergeProfile(patch: Partial<Profile>): Profile {
   const cur = readProfile();
   const next = { ...cur, ...patch };
   if (typeof window !== "undefined")
-    sessionStorage.setItem(KEY, JSON.stringify(next));
+    localStorage.setItem(KEY, JSON.stringify(next));
   return next;
 }
 
