@@ -51,8 +51,8 @@
 | TC | Input | Expected |
 |---|---|---|
 | TC-VI-01 | prep + PCOS | แนะนำ OvaAll + PCO-VIT |
-| TC-VI-02 | male | แนะนำ Motila1 |
-| TC-VI-03 | ทุกเคส | note ไม่มีคำเคลมรักษาโรค/การันตี |
+| TC-VI-02 | male | แนะนำ M-Z All + Ferta + Pure Seed **และทุกตัวต้องมี `howto`** (regression: เคยไม่มีวิธีรับประทานเลย) |
+| TC-VI-03 | ทุกเคส | note + ข้อความสินค้า ไม่มีคำเคลมรักษา/ป้องกันโรค/การันตี (รวม "มะเร็ง", "หย่อนสมรรถภาพ", "ไม่มีผลข้างเคียง") |
 
 ### M7 Lead + Consent + Ticket
 | TC | Input | Expected |

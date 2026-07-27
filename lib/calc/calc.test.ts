@@ -89,9 +89,29 @@ describe("vitamins (M6)", () => {
     expect(r.primary.map((p) => p.id)).toContain("pcovit");
     expect(r.primary.map((p) => p.id)).toContain("ovaall");
   });
-  it("male gets Motila1", () => {
+  it("male gets the men's set", () => {
     const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "none" });
-    expect(r.primary.map((p) => p.id)).toContain("motila1");
+    expect(r.primary.map((p) => p.id)).toEqual(["mzall", "ferta", "pureseed"]);
+  });
+  // Regression: male products shipped with no `howto`, so the report rendered them
+  // with no dosage at all. Every recommended product must carry brand-confirmed dosage.
+  it("every recommended product has dosage instructions", () => {
+    const profiles = [
+      { stage: "male", hasPcos: false, artPlan: "none" },
+      { stage: "prep", hasPcos: false, artPlan: "none" },
+      { stage: "prep", hasPcos: true, artPlan: "none" },
+      { stage: "prep", hasPcos: false, artPlan: "icsi" },
+    ] as const;
+    for (const p of profiles) {
+      for (const prod of recommendVitamins(p).primary) {
+        expect(prod.howto, `${prod.name} ไม่มีวิธีรับประทาน`).toBeTruthy();
+      }
+    }
+  });
+  it("never claims to prevent or cure disease", () => {
+    const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "none" });
+    const text = r.note + r.primary.map((p) => `${p.why}${p.howto ?? ""}${p.detail ?? ""}`).join("");
+    expect(text).not.toMatch(/มะเร็ง|ป้องกันโรค|รักษา|หย่อนสมรรถภาพ|ไม่มีผลข้างเคียง/);
   });
   it("note never claims cure", () => {
     const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "none" });
