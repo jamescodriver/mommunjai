@@ -93,6 +93,41 @@ describe("vitamins (M6)", () => {
     const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "none" });
     expect(r.primary.map((p) => p.id)).toEqual(["mzall", "ferta", "pureseed"]);
   });
+  // The brand's leaflet is 19 items; an earlier version only knew 7 and capped output at 3.
+  it("prep covers the brand's full set, not a token few", () => {
+    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "none" });
+    const all = [...r.core, ...r.targeted, ...r.nutrition, ...r.external];
+    expect(all.length).toBeGreaterThanOrEqual(18);
+    expect(r.core.map((p) => p.id)).toEqual(["ovaall", "ferty", "collatelo", "ferti9oil"]);
+  });
+  // Safety Matrix (product-catalog-master.md §4) — these must never reach the wrong stage.
+  it("drops the products banned in pregnancy", () => {
+    const r = recommendVitamins({ stage: "pregnant", hasPcos: false, artPlan: "none" });
+    const ids = [...r.core, ...r.targeted, ...r.nutrition, ...r.external].map((p) => p.id);
+    for (const banned of ["aos", "kaffirshot", "puregreen", "varginaree", "safflower", "castoroil"]) {
+      expect(ids, `${banned} ห้ามแนะนำช่วงตั้งครรภ์`).not.toContain(banned);
+    }
+    expect(ids).toContain("ovaall");
+  });
+  it("drops Varginaree while breastfeeding", () => {
+    const r = recommendVitamins({ stage: "lactating", hasPcos: false, artPlan: "none" });
+    const ids = [...r.core, ...r.targeted, ...r.nutrition].map((p) => p.id);
+    expect(ids).not.toContain("varginaree");
+  });
+  it("warns ART patients to clear supplements with their doctor first", () => {
+    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "icsi" });
+    expect(r.cautions.join(" ")).toMatch(/ปรึกษาแพทย์/);
+    expect(r.cautions.join(" ")).toMatch(/ใส่ตัวอ่อน/);
+  });
+  it("every product carries dosage, and stop-rules are spelled out", () => {
+    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "ivf" });
+    for (const p of [...r.core, ...r.targeted, ...r.nutrition, ...r.external]) {
+      expect(p.howto, `${p.name} ไม่มีวิธีรับประทาน`).toBeTruthy();
+    }
+    // castor oil is external-only — the app must say so, never imply it is drunk
+    const castor = r.external.find((p) => p.id === "castoroil");
+    expect(castor?.caution).toMatch(/ห้ามรับประทาน/);
+  });
   // Regression: male products shipped with no `howto`, so the report rendered them
   // with no dosage at all. Every recommended product must carry brand-confirmed dosage.
   it("every recommended product has dosage instructions", () => {

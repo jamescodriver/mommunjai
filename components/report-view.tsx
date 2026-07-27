@@ -104,9 +104,13 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
         <div className="mt-2 space-y-2">
           {report.vitamins.map((v) => (
             <div key={v.id} className="rounded-xl bg-white/70 p-3">
-              <div className="flex items-baseline justify-between"><span className="text-sm font-semibold">{v.name}</span><span className="text-xs text-teal-deep">฿{v.price.toLocaleString()}</span></div>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-sm font-semibold">{v.name}</span>
+                <span className="shrink-0 text-xs text-teal-deep">{v.price === null ? "สอบถามราคา" : `฿${v.price.toLocaleString()}`}</span>
+              </div>
               <p className="text-xs text-ink/70">{v.why}</p>
               {v.howto && <p className="text-xs text-teal-deep">วิธีทาน: {v.howto}</p>}
+              {v.caution && <p className="text-xs text-ink/60">{v.caution}</p>}
             </div>
           ))}
         </div>

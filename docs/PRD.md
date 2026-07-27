@@ -89,7 +89,7 @@ retention · # lead→ปิดการขาย · ยอดขายสิน
 | **M3** | Protein Calculator (คำนวณโปรตีน) | P0 | เป้าโปรตีน/วัน ตามน้ำหนัก+สเตจ → แปลงอาหาร/Ferty |
 | **M4** | Nutrient Checklist (คำนวณสารอาหาร) | P0 | เทียบการกินวันนี้กับคัมภีร์ 3 เสา + ของต้องงด |
 | **M5** | Sleep Calculator (คำนวณการนอน) | P0 | เวลานอน/ตื่นตามรอบ 90 นาที + กฎก่อน 4 ทุ่ม |
-| **M6** | Vitamin Recommender (แนะนำวิตามินครูก้อย) | P0 | โปรไฟล์ → สินค้าจริง (OvaAll/PCO-VIT/Motila1…) |
+| **M6** | Vitamin Recommender (แนะนำวิตามินครูก้อย) | P0 | โปรไฟล์ → **ชุดครูก้อยครบ 19 รายการ** แบ่ง 4 กลุ่ม (แกนหลัก/เสริมตามโปรไฟล์/โภชนาการ/ใช้ภายนอก) + **Safety Matrix กรองตามช่วงชีวิต** |
 | **M7** | Lead Capture + Consent + Ticket | P0 | แบบสอบถาม → consent(PDPA) → Supabase → gen ticket |
 | **M8** | Tagging + BFF API + Staff Lookup | P0 | auto/manual tag · BFF endpoints · หน้าค้น ticket (ทีม) |
 
@@ -165,10 +165,14 @@ retention · # lead→ปิดการขาย · ยอดขายสิน
 **กติกา map**
 | โปรไฟล์ | แนะนำหลัก |
 |---|---|
-| เตรียมตั้งครรภ์ทั่วไป | OvaAll + Ferty |
-| PCOS | OvaAll + PCO-VIT + เน้นงดหวาน |
-| ก่อนทำ IUI/IVF/ICSI | OvaAll + Ferty 2 ซอง + คัมภีร์บำรุงไข่ |
-| ตั้งครรภ์/ให้นม | คัมภีร์บำรุงครรภ์-น้ำนม |
+| **แกนหลัก (ทุกโปรไฟล์หญิง)** | OvaAll + Ferty + Colla Telo + Ferti 9 Oil |
+| PCOS | แกนหลัก **+ PCO-VIT** + เน้นงดหวาน |
+| มีบุตรยาก / ก่อนทำ IUI-IVF-ICSI | แกนหลัก **+ A.O.S** + คำเตือน "ปรึกษาแพทย์ก่อนเริ่มทุกตัว" + รายการที่ต้องหยุดหลังใส่ตัวอ่อน |
+| เสริมตามโปรไฟล์ (ทุกคน) | Varginaree + Night Shot |
+| โภชนาการเสริม (11 รายการ) | Phyto Crystal C · Pure Seed · Good Grain · Pure Black · Pure Red · Pure Green · น้ำมะกรูด Shot · น้ำมะกรูด 70% · Gold Ginger & ขิงดำ · Ferty Probiotics · ดอกคำฝอย |
+| ใช้ภายนอก | แพ็คน้ำมันละหุ่ง (**ห้ามรับประทาน**) |
+| ตั้งครรภ์ | ตัด A.O.S · น้ำมะกรูด Shot · Pure Green · Varginaree · ดอกคำฝอย · น้ำมันละหุ่ง ออกอัตโนมัติ |
+| ให้นม | ตัด Varginaree ออกอัตโนมัติ |
 | ชาย | **M-Z All + Ferta + Pure Seed** (ทุกตัวต้องมีวิธีรับประทานที่แบรนด์ยืนยัน · Motila1 ถอดออกชั่วคราวจนกว่าจะได้ dosage — 2026-07-27) |
 **Acceptance Criteria**
 - [ ] Flow คำถาม 3–5 ข้อ (ทีละข้อ, ก้าวหน้าเห็นชัด)

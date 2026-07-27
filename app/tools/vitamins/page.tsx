@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useEmbed } from "@/components/use-embed";
-import { recommendVitamins, VitaminProfile } from "@/lib/calc/vitamins";
-import type { Stage } from "@/lib/calc/protein";
+import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules } from "@/lib/calc/vitamins";
 import { recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
 
 export default function VitaminsPage() {
   const embed = useEmbed();
-  const [stage, setStage] = useState<Stage>("prep");
+  const [stage, setStage] = useState<VitaminStage>("prep");
   const [hasPcos, setHasPcos] = useState(false);
   const [artPlan, setArtPlan] = useState<VitaminProfile["artPlan"]>("none");
   const [res, setRes] = useState<ReturnType<typeof recommendVitamins> | null>(null);
@@ -30,7 +29,7 @@ export default function VitaminsPage() {
           <div>
             <p className="text-sm font-medium">1. คุณอยู่ช่วงไหน</p>
             <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              {([["prep", "เตรียมตั้งครรภ์"], ["infertility" as Stage, "มีบุตรยาก"], ["pregnant", "ตั้งครรภ์"], ["male", "ฝ่ายชาย"]] as [Stage, string][]).map(([v, l]) => (
+              {([["prep", "เตรียมตั้งครรภ์"], ["infertility", "มีบุตรยาก"], ["pregnant", "ตั้งครรภ์"], ["male", "ฝ่ายชาย"]] as [VitaminStage, string][]).map(([v, l]) => (
                 <button key={v} onClick={() => setStage(v)} className={`rounded-xl border px-3 py-2 ${stage === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{l}</button>
               ))}
             </div>
@@ -56,23 +55,80 @@ export default function VitaminsPage() {
         {res && (
           <ResultCard>
             <p className="text-sm text-ink/70">{res.note}</p>
-            <div className="mt-3 space-y-3">
-              {res.primary.map((p) => (
-                <div key={p.id} className="rounded-xl bg-white/70 p-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-semibold">{p.name}</span>
-                    <span className="text-sm text-teal-deep">฿{p.price.toLocaleString()}</span>
-                  </div>
-                  <p className="mt-1 text-xs text-ink/70">{p.why}</p>
-                  {p.detail && <p className="mt-1 text-xs text-ink/50">{p.detail}</p>}
-                  {p.howto && <p className="mt-1 text-xs text-teal-deep">วิธีทาน: {p.howto}</p>}
-                </div>
-              ))}
-            </div>
+
+            <ProductGroup title="ชุดแกนหลัก — ทานประจำทุกวัน" emoji="⭐" items={res.core} />
+            <ProductGroup title="เสริมตามโปรไฟล์ของคุณ" emoji="🎯" items={res.targeted} />
+            <ProductGroup title="โภชนาการเสริมจากชุดครูก้อย" emoji="🥗" items={res.nutrition} collapsed />
+            <ProductGroup title="ใช้ภายนอก" emoji="🤲" items={res.external} collapsed />
+
+            {res.cautions.length > 0 && (
+              <div className="mt-4 rounded-xl border border-rose/30 bg-rose-soft/40 p-3">
+                <p className="text-xs font-semibold text-rose-deep">⚠️ ต้องรู้ก่อนเริ่ม</p>
+                <ul className="mt-1 space-y-1 text-xs text-ink/70">
+                  {res.cautions.map((c, i) => <li key={i}>• {c}</li>)}
+                </ul>
+              </div>
+            )}
             <PlanCta />
           </ResultCard>
         )}
       </ToolShell>
     </>
   );
+}
+
+// Long lists (the brand's set runs to 19 items) are grouped so the core four stay
+// readable; the optional groups start collapsed. Prices we don't have confirmed are
+// shown as "สอบถามราคา" rather than guessed — see lib/calc/vitamins.ts.
+function ProductGroup({ title, emoji, items, collapsed = false }: {
+  title: string; emoji: string; items: Product[]; collapsed?: boolean;
+}) {
+  if (items.length === 0) return null;
+  const list = (
+    <div className="mt-2 space-y-2">
+      {items.map((p) => (
+        <div key={p.id} className="rounded-xl bg-white/70 p-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-semibold">{p.name}</span>
+            <span className="shrink-0 text-sm text-teal-deep">
+              {p.price === null ? "สอบถามราคา" : `฿${p.price.toLocaleString()}`}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-ink/70">{p.why}</p>
+          {p.detail && <p className="mt-1 text-xs text-ink/50">{p.detail}</p>}
+          {p.howto && <p className="mt-1 text-xs text-teal-deep">วิธีทาน: {p.howto}</p>}
+          {p.caution && <p className="mt-1 text-xs text-ink/60">{p.caution}</p>}
+          {p.stop && <p className="mt-1 text-xs font-medium text-rose-deep">❌ หยุดทาน: {stopLabel(p.stop)}</p>}
+        </div>
+      ))}
+    </div>
+  );
+
+  if (!collapsed) {
+    return (
+      <div className="mt-4">
+        <p className="text-sm font-semibold">{emoji} {title} <span className="font-normal text-ink/50">({items.length})</span></p>
+        {list}
+      </div>
+    );
+  }
+  return (
+    <details className="mt-4 group">
+      <summary className="cursor-pointer list-none text-sm font-semibold">
+        <span className="text-teal-deep group-open:hidden">▸</span>
+        <span className="hidden text-teal-deep group-open:inline">▾</span>{" "}
+        {emoji} {title} <span className="font-normal text-ink/50">({items.length})</span>
+      </summary>
+      {list}
+    </details>
+  );
+}
+
+function stopLabel(s: StopRules): string {
+  const parts: string[] = [];
+  if (s.ovulation) parts.push("ช่วงวันไข่ตก");
+  if (s.embryoTransfer) parts.push("หลังใส่ตัวอ่อน");
+  if (s.pregnant) parts.push("ช่วงตั้งครรภ์");
+  if (s.lactating) parts.push("ช่วงให้นม");
+  return parts.join(" · ");
 }
