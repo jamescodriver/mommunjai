@@ -4,6 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { EAT_ITEMS, AVOID_ITEMS, assessNutrients } from "@/lib/calc/nutrients";
 import { recordTool } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
+import { IconSalad } from "@/components/icons";
 
 function Bar({ label, pct }: { label: string; pct: number }) {
   return (
@@ -34,7 +35,7 @@ export default function NutrientsPage() {
   return (
     <>
       {embed && <EmbedAutoResize />}
-      <ToolShell embed={embed} emoji="🥗" title="เช็กสารอาหารวันนี้"
+      <ToolShell embed={embed} icon={<IconSalad />} title="เช็กสารอาหารวันนี้"
         intro="ติ๊กสิ่งที่กินวันนี้ แล้วดูว่าครบตามคัมภีร์ครูก้อย (บำรุงไข่ · ผนังมดลูก · ฮอร์โมน) ไหม">
         <div className="space-y-4">
           <div>

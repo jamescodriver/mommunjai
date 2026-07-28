@@ -4,6 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { bedtimesForWake, assessSleep } from "@/lib/calc/sleep";
 import { recordTool } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
+import { IconMoon } from "@/components/icons";
 
 export default function SleepPage() {
   const embed = useEmbed();
@@ -19,7 +20,7 @@ export default function SleepPage() {
   return (
     <>
       {embed && <EmbedAutoResize />}
-      <ToolShell embed={embed} emoji="🌙" title="คำนวณการนอน"
+      <ToolShell embed={embed} icon={<IconMoon />} title="คำนวณการนอน"
         intro="ครูก้อยแนะนำให้เข้านอนก่อน 4 ทุ่ม (22:00) เพราะเป็นช่วงที่ฮอร์โมนซ่อมแซมร่างกายทำงานดีที่สุด">
         <div className="mb-4 flex gap-2">
           <button className={mode === "A" ? "btn-primary flex-1" : "btn-ghost flex-1"} onClick={() => setMode("A")}>หาเวลานอนที่ดี</button>

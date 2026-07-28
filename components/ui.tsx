@@ -30,13 +30,16 @@ export function Disclaimer({ text }: { text?: string }) {
 export function ToolShell({
   title,
   emoji,
+  icon,
   intro,
   children,
   disclaimer,
   embed,
 }: {
   title: string;
-  emoji: string;
+  /** @deprecated pass `icon` (an <Icon* /> from components/icons.tsx) instead — kept as a fallback */
+  emoji?: string;
+  icon?: ReactNode;
   intro?: string;
   children: ReactNode;
   disclaimer?: string;
@@ -51,12 +54,16 @@ export function ToolShell({
       )}
       <div className="glass mt-3 p-5 sm:p-7">
         <div className="flex items-center gap-3">
-          <span className="text-3xl" aria-hidden>
-            {emoji}
-          </span>
-          <h1 className="text-xl font-semibold">{title}</h1>
+          {icon ? (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
+              {icon}
+            </div>
+          ) : (
+            <span className="text-3xl" aria-hidden>{emoji}</span>
+          )}
+          <h1 className="text-2xl font-semibold">{title}</h1>
         </div>
-        {intro && <p className="mt-2 text-sm text-ink/70">{intro}</p>}
+        {intro && <p className="mt-2 text-base leading-relaxed text-ink/70">{intro}</p>}
         <div className="mt-5">{children}</div>
         <Disclaimer text={disclaimer} />
       </div>
@@ -83,7 +90,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-base font-medium">{label}</span>
       <div className="mt-1">{children}</div>
       {hint && <span className="mt-1 block text-xs text-ink/50">{hint}</span>}
     </label>

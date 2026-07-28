@@ -4,6 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { calcProtein, Stage } from "@/lib/calc/protein";
 import { recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
+import { IconEgg } from "@/components/icons";
 
 const STAGES: { v: Stage; l: string }[] = [
   { v: "prep", l: "เตรียมตั้งครรภ์ / บำรุงไข่" },
@@ -41,7 +42,7 @@ export default function ProteinPage() {
   return (
     <>
       {embed && <EmbedAutoResize />}
-      <ToolShell embed={embed} emoji="🥚" title="คำนวณโปรตีน"
+      <ToolShell embed={embed} icon={<IconEgg />} title="คำนวณโปรตีน"
         intro="โปรตีนสำคัญมากในการบำรุงไข่ให้อ้วนโตสมบูรณ์ มาดูกันว่าคุณควรได้วันละเท่าไหร่">
         <div className="space-y-4">
           <Field label="น้ำหนักตัว (กิโลกรัม)" hint="30–150 กก.">

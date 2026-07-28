@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
+import { IconSprout, IconBelly, IconBottle, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconGift } from "@/components/icons";
 
 // PDF-03 — 4 life-stage categories, client's own order. "มีบุตรยาก" sub-splits
 // into ฝ่ายชาย/ฝ่ายหญิง — both route to /plan?stage=..., reusing the stage
@@ -7,19 +8,19 @@ import { Wordmark } from "@/components/wordmark";
 // see docs/MAPPING-JOURNEY-2607.xlsx journeys ③/⑥ — infertility-male and
 // general-male already resolve to identical product logic in code).
 const CATEGORIES = [
-  { emoji: "🌱", title: "เตรียมตั้งครรภ์", desc: "อยากมีลูก บำรุงร่างกายให้พร้อมล่วงหน้า", href: "/plan?stage=prep" },
-  { emoji: "🤰", title: "ตั้งครรภ์แล้ว", desc: "ดูแลครรภ์ต่อเนื่อง เตรียมพร้อมสำหรับลูก", href: "/plan?stage=pregnant" },
-  { emoji: "🍼", title: "ให้นมบุตร", desc: "ฟื้นฟูร่างกายหลังคลอด บำรุงคุณภาพน้ำนม", href: "/plan?stage=lactating" },
+  { icon: <IconSprout />, title: "เตรียมตั้งครรภ์", desc: "อยากมีลูก บำรุงร่างกายให้พร้อมล่วงหน้า", href: "/plan?stage=prep" },
+  { icon: <IconBelly />, title: "ตั้งครรภ์แล้ว", desc: "ดูแลครรภ์ต่อเนื่อง เตรียมพร้อมสำหรับลูก", href: "/plan?stage=pregnant" },
+  { icon: <IconBottle />, title: "ให้นมบุตร", desc: "ฟื้นฟูร่างกายหลังคลอด บำรุงคุณภาพน้ำนม", href: "/plan?stage=lactating" },
 ];
 
 const TOOLS = [
-  { href: "/tools/ovulation", emoji: "📅", title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสมีลูกจากรอบเดือน — กรอกแทนคู่ได้" },
-  { href: "/tools/protein", emoji: "🥚", title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่ให้สมบูรณ์" },
-  { href: "/tools/nutrients", emoji: "🥗", title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม" },
-  { href: "/tools/sleep", emoji: "🌙", title: "คำนวณการนอน", desc: "เวลานอนที่ดีต่อฮอร์โมนเจริญพันธุ์" },
-  { href: "/tools/water", emoji: "💧", title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่ตามน้ำหนักตัว" },
-  { href: "/tools/vitamins", emoji: "💊", title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
-  { href: "/plan", emoji: "💛", title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
+  { href: "/tools/ovulation", icon: <IconCalendar />, title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสมีลูกจากรอบเดือน — กรอกแทนคู่ได้" },
+  { href: "/tools/protein", icon: <IconEgg />, title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่ให้สมบูรณ์" },
+  { href: "/tools/nutrients", icon: <IconSalad />, title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม" },
+  { href: "/tools/sleep", icon: <IconMoon />, title: "คำนวณการนอน", desc: "เวลานอนที่ดีต่อฮอร์โมนเจริญพันธุ์" },
+  { href: "/tools/water", icon: <IconDroplet />, title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่ตามน้ำหนักตัว" },
+  { href: "/tools/vitamins", icon: <IconPill />, title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
+  { href: "/plan", icon: <IconGift />, title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
 ];
 
 export default function Home() {
@@ -47,18 +48,18 @@ export default function Home() {
       <h2 className="mt-10 text-center text-xl font-semibold sm:text-2xl">
         ตอนนี้คุณอยู่ช่วงไหน?
       </h2>
-      <p className="mt-1 text-center text-sm text-ink/60">เลือกช่วงชีวิตของคุณ แล้วเราจะพาไปแบบสอบถามที่ตรงกับคุณ</p>
+      <p className="mt-1 text-center text-base text-ink/60">เลือกช่วงชีวิตของคุณ แล้วเราจะพาไปแบบสอบถามที่ตรงกับคุณ</p>
 
       <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           href={CATEGORIES[0].href}
           className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-2xl">
-            {CATEGORIES[0].emoji}
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
+            {CATEGORIES[0].icon}
           </div>
           <h3 className="mt-3 text-lg font-semibold">{CATEGORIES[0].title}</h3>
-          <p className="mt-1 text-sm text-ink/70">{CATEGORIES[0].desc}</p>
+          <p className="mt-1 text-base text-ink/70">{CATEGORIES[0].desc}</p>
           <span className="mt-3 inline-block text-sm font-medium text-teal-deep">เริ่มเลย →</span>
         </Link>
 
@@ -66,9 +67,9 @@ export default function Home() {
             infertility" routing stays an explicit open question (client's own
             reply: "แบ่งตามนี้ไปก่อน แล้ว Open Q นี้ไว้") — no card invented for it. */}
         <div className="glass p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-soft text-2xl">💗</div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-soft text-rose-deep" aria-hidden><IconHeart /></div>
           <h3 className="mt-3 text-lg font-semibold">มีบุตรยาก</h3>
-          <p className="mt-1 text-sm text-ink/70">กำลังพยายามอยู่ ต้องการบำรุงเฉพาะทาง</p>
+          <p className="mt-1 text-base text-ink/70">กำลังพยายามอยู่ ต้องการบำรุงเฉพาะทาง</p>
           <div className="mt-3 flex gap-2">
             <Link href="/plan?stage=infertility" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายหญิง →</Link>
             <Link href="/plan?stage=male" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายชาย →</Link>
@@ -81,11 +82,11 @@ export default function Home() {
             href={c.href}
             className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-2xl">
-              {c.emoji}
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
+              {c.icon}
             </div>
             <h3 className="mt-3 text-lg font-semibold">{c.title}</h3>
-            <p className="mt-1 text-sm text-ink/70">{c.desc}</p>
+            <p className="mt-1 text-base text-ink/70">{c.desc}</p>
             <span className="mt-3 inline-block text-sm font-medium text-teal-deep">เริ่มเลย →</span>
           </Link>
         ))}
@@ -94,7 +95,7 @@ export default function Home() {
       <h2 id="tools" className="mt-10 text-center text-xl font-semibold sm:text-2xl">
         หรือใช้เครื่องมือแยกทีละอัน
       </h2>
-      <p className="mt-1 text-center text-sm text-ink/60">เลือกเครื่องมือที่ตรงกับคุณ ใช้ฟรี ไม่ต้องสมัคร</p>
+      <p className="mt-1 text-center text-base text-ink/60">เลือกเครื่องมือที่ตรงกับคุณ ใช้ฟรี ไม่ต้องสมัคร</p>
 
       <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {TOOLS.map((t) => (
@@ -103,11 +104,11 @@ export default function Home() {
             href={t.href}
             className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-2xl">
-              {t.emoji}
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
+              {t.icon}
             </div>
             <h3 className="mt-3 text-lg font-semibold">{t.title}</h3>
-            <p className="mt-1 text-sm text-ink/70">{t.desc}</p>
+            <p className="mt-1 text-base text-ink/70">{t.desc}</p>
             <span className="mt-3 inline-block text-sm font-medium text-teal-deep">
               เริ่มเลย →
             </span>

@@ -4,6 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { calcWater, WaterStage } from "@/lib/calc/water";
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
+import { IconDroplet } from "@/components/icons";
 
 const STAGES: { v: WaterStage; l: string }[] = [
   { v: "prep", l: "เตรียมตั้งครรภ์ / บำรุงไข่" },
@@ -42,7 +43,7 @@ export default function WaterPage() {
   return (
     <>
       {embed && <EmbedAutoResize />}
-      <ToolShell embed={embed} emoji="💧" title="เช็คปริมาณน้ำ"
+      <ToolShell embed={embed} icon={<IconDroplet />} title="เช็คปริมาณน้ำ"
         intro="น้ำเป็นตัวช่วยไหลเวียนเลือดและลำเลียงสารอาหารไปเลี้ยงร่างกาย มาดูกันว่าวันนี้คุณควรดื่มน้ำเท่าไหร่">
         <div className="space-y-4">
           <Field label="น้ำหนักตัว (กิโลกรัม)" hint="30–150 กก.">

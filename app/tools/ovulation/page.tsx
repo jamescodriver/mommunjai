@@ -5,6 +5,7 @@ import { calcOvulation } from "@/lib/calc/ovulation";
 import { OVULATION_DISCLAIMER } from "@/lib/disclaimer";
 import { recordTool } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
+import { IconCalendar } from "@/components/icons";
 
 const fmtTH = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("th-TH", { day: "numeric", month: "long" });
@@ -26,7 +27,7 @@ export default function OvulationPage() {
       {embed && <EmbedAutoResize />}
       <ToolShell
         embed={embed}
-        emoji="📅"
+        icon={<IconCalendar />}
         title="นับวันไข่ตก"
         intro="กรอกวันแรกของประจำเดือนล่าสุด แล้วเราจะช่วยหาช่วงที่มีโอกาสมีลูกสูงสุด — คุณผู้ชายกรอกแทนคู่ได้เลยค่ะ ช่วยกันวางแผนได้ทั้งสองคน 👫"
         disclaimer={OVULATION_DISCLAIMER}

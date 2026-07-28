@@ -4,6 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules } from "@/lib/calc/vitamins";
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
+import { IconPill } from "@/components/icons";
 
 const VITAMIN_STAGES = new Set<VitaminStage>(["prep", "infertility", "pregnant", "male"]);
 
@@ -34,7 +35,7 @@ export default function VitaminsPage() {
   return (
     <>
       {embed && <EmbedAutoResize />}
-      <ToolShell embed={embed} emoji="💊" title="แนะนำวิตามินครูก้อย"
+      <ToolShell embed={embed} icon={<IconPill />} title="แนะนำวิตามินครูก้อย"
         intro="ตอบ 3 ข้อ แล้วครูก้อยจะช่วยเลือกตัวบำรุงให้ตรงกับคุณ (คำแนะนำทั่วไป ไม่ใช่การรักษาโรค)">
         <div className="space-y-4">
           <div>
