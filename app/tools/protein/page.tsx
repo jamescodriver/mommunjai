@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useEmbed } from "@/components/use-embed";
 import { calcProtein, Stage } from "@/lib/calc/protein";
 import { recordTool, mergeProfile } from "@/lib/profile-store";
-import { ToolShell, ResultCard, Field, PlanCta, EmbedAutoResize } from "@/components/ui";
+import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 
 const STAGES: { v: Stage; l: string }[] = [
   { v: "prep", l: "เตรียมตั้งครรภ์ / บำรุงไข่" },
@@ -65,6 +65,7 @@ export default function ProteinPage() {
               ถ้ากินอาหารไม่ถึงเป้า เติมด้วยโปรตีนเฟอร์ตี้ {res.fertyServings.min}–{res.fertyServings.max} ซอง/วัน
             </p>
             <PlanCta />
+            <VitaminsCta />
           </ResultCard>
         )}
       </ToolShell>

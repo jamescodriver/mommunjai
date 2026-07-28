@@ -4,6 +4,7 @@ import { calcProtein } from "./protein";
 import { assessNutrients } from "./nutrients";
 import { bedtimesForWake, assessSleep } from "./sleep";
 import { recommendVitamins } from "./vitamins";
+import { calcWater } from "./water";
 import { autoTags } from "../tagging";
 import { genTicketCode } from "../ticket";
 
@@ -49,6 +50,45 @@ describe("protein (M3)", () => {
   it("rejects invalid weight", () => {
     expect("error" in calcProtein({ weightKg: 0, stage: "prep" })).toBe(true);
     expect("error" in calcProtein({ weightKg: 200, stage: "prep" })).toBe(true);
+  });
+});
+
+describe("water (PDF-17)", () => {
+  it("30-35 ml/kg range for prep, no bonus", () => {
+    const r = calcWater({ weightKg: 60, stage: "prep" });
+    if (!("error" in r)) {
+      expect(r.targetMinMl).toBe(1800); // 60*30
+      expect(r.targetMaxMl).toBe(2100); // 60*35
+    }
+  });
+  it("pregnant/lactating get an extra bonus on top of the base range", () => {
+    const base = calcWater({ weightKg: 60, stage: "prep" });
+    const pregnant = calcWater({ weightKg: 60, stage: "pregnant" });
+    const lactating = calcWater({ weightKg: 60, stage: "lactating" });
+    if (!("error" in base) && !("error" in pregnant) && !("error" in lactating)) {
+      expect(pregnant.targetMinMl).toBe(base.targetMinMl + 300);
+      expect(lactating.targetMinMl).toBe(base.targetMinMl + 700);
+    }
+  });
+  it("rejects invalid weight", () => {
+    expect("error" in calcWater({ weightKg: 0, stage: "prep" })).toBe(true);
+    expect("error" in calcWater({ weightKg: 200, stage: "prep" })).toBe(true);
+  });
+  it("bands current intake into ดี / เกือบถึงเป้า / ควรเพิ่ม without any fear-based wording", () => {
+    const good = calcWater({ weightKg: 60, stage: "prep", currentMl: 2000 });
+    const low = calcWater({ weightKg: 60, stage: "prep", currentMl: 500 });
+    if (!("error" in good) && !("error" in low)) {
+      expect(good.current?.status).toBe("ดี");
+      expect(low.current?.status).toBe("ควรเพิ่ม");
+      // compliance: no scare/threat language in the shortfall explanation
+      for (const r of [good, low]) {
+        expect(r.current?.note).not.toMatch(/อันตราย|เสี่ยง|เสื่อม|กลัว/);
+      }
+    }
+  });
+  it("omits `current` block when currentMl isn't provided", () => {
+    const r = calcWater({ weightKg: 60, stage: "prep" });
+    if (!("error" in r)) expect(r.current).toBeUndefined();
   });
 });
 

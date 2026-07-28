@@ -4,7 +4,7 @@ import { useEmbed } from "@/components/use-embed";
 import { calcOvulation } from "@/lib/calc/ovulation";
 import { OVULATION_DISCLAIMER } from "@/lib/disclaimer";
 import { recordTool } from "@/lib/profile-store";
-import { ToolShell, ResultCard, Field, PlanCta, EmbedAutoResize } from "@/components/ui";
+import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 
 const fmtTH = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("th-TH", { day: "numeric", month: "long" });
@@ -69,6 +69,7 @@ export default function OvulationPage() {
               </p>
             )}
             <PlanCta />
+            <VitaminsCta />
           </ResultCard>
         )}
       </ToolShell>

@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useEmbed } from "@/components/use-embed";
 import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules } from "@/lib/calc/vitamins";
-import { recordTool, mergeProfile } from "@/lib/profile-store";
+import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
+
+const VITAMIN_STAGES = new Set<VitaminStage>(["prep", "infertility", "pregnant", "male"]);
 
 export default function VitaminsPage() {
   const embed = useEmbed();
@@ -11,6 +13,15 @@ export default function VitaminsPage() {
   const [hasPcos, setHasPcos] = useState(false);
   const [artPlan, setArtPlan] = useState<VitaminProfile["artPlan"]>("none");
   const [res, setRes] = useState<ReturnType<typeof recommendVitamins> | null>(null);
+
+  // Prefill from whatever the person already told another tool (/plan, protein, an
+  // earlier vitamins run) so a returning user isn't asked to re-answer these 3 questions.
+  useEffect(() => {
+    const p = readProfile();
+    if (p.stage && VITAMIN_STAGES.has(p.stage as VitaminStage)) setStage(p.stage as VitaminStage);
+    if (p.hasPcos !== undefined) setHasPcos(!!p.hasPcos);
+    if (p.artPlan) setArtPlan(p.artPlan);
+  }, []);
 
   const run = () => {
     const profile = { stage, hasPcos, artPlan };

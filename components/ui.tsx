@@ -98,6 +98,14 @@ export function PlanCta() {
   );
 }
 
+export function VitaminsCta() {
+  return (
+    <Link href="/tools/vitamins" className="btn-secondary mt-2 w-full">
+      💊 ต้องการคำแนะนำเรื่องวิตามิน Baby & Mom
+    </Link>
+  );
+}
+
 export function ProductChip({ name, price }: { name: string; price: number }) {
   return (
     <div className="chip">

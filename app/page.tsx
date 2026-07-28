@@ -6,6 +6,7 @@ const TOOLS = [
   { href: "/tools/protein", emoji: "🥚", title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่ให้สมบูรณ์" },
   { href: "/tools/nutrients", emoji: "🥗", title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม" },
   { href: "/tools/sleep", emoji: "🌙", title: "คำนวณการนอน", desc: "เวลานอนที่ดีต่อฮอร์โมนเจริญพันธุ์" },
+  { href: "/tools/water", emoji: "💧", title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่ตามน้ำหนักตัว" },
   { href: "/tools/vitamins", emoji: "💊", title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
   { href: "/plan", emoji: "💛", title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
 ];

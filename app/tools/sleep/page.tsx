@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useEmbed } from "@/components/use-embed";
 import { bedtimesForWake, assessSleep } from "@/lib/calc/sleep";
 import { recordTool } from "@/lib/profile-store";
-import { ToolShell, ResultCard, Field, PlanCta, EmbedAutoResize } from "@/components/ui";
+import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 
 export default function SleepPage() {
   const embed = useEmbed();
@@ -43,6 +43,7 @@ export default function SleepPage() {
                   ))}
                 </div>
                 <PlanCta />
+                <VitaminsCta />
               </ResultCard>
             )}
           </div>
@@ -67,6 +68,7 @@ export default function SleepPage() {
                   </ul>
                 )}
                 <PlanCta />
+                <VitaminsCta />
               </ResultCard>
             )}
           </div>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useEmbed } from "@/components/use-embed";
 import { EAT_ITEMS, AVOID_ITEMS, assessNutrients } from "@/lib/calc/nutrients";
 import { recordTool } from "@/lib/profile-store";
-import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
+import { ToolShell, ResultCard, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 
 function Bar({ label, pct }: { label: string; pct: number }) {
   return (
@@ -78,6 +78,7 @@ export default function NutrientsPage() {
               <p className="mt-2 text-xs text-rose-deep">ควรเลี่ยง: {res.avoidViolations.join(" · ")}</p>
             )}
             <PlanCta />
+            <VitaminsCta />
           </ResultCard>
         )}
       </ToolShell>
