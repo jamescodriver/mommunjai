@@ -120,7 +120,7 @@ describe("report — unassessed pillars", () => {
   it("every pillar points at the tool that fills it", () => {
     const r = generateReport({ nickname: "แนน", stage: "prep" });
     expect(r.pillars.map((p) => p.toolHref)).toEqual([
-      "/tools/nutrients", "/tools/nutrients", "/tools/sleep", "/tools/nutrients",
+      "/tools/nutrients", "/tools/nutrients", "/tools/sleep", "/tools/nutrients", "/tools/water",
     ]);
     expect(r.pillars.every((p) => !!p.toolLabel)).toBe(true);
   });
@@ -130,6 +130,26 @@ describe("report — unassessed pillars", () => {
     const hormone = r.pillars.find((p) => p.key === "hormone");
     expect(hormone?.score).toBe(0);
     expect(hormone?.note).not.toBe("ยังไม่ได้ประเมิน");
+  });
+});
+
+describe("report — water pillar (PDF-19)", () => {
+  it("checking the target without logging actual intake is not an assessment", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep",
+      tools: { water: { input: { weight: 60, stage: "prep" }, output: { targetMinMl: 1800, targetMaxMl: 2100, targetMidMl: 1950, glasses: [7, 8] } } } });
+    const water = r.pillars.find((p) => p.key === "water");
+    expect(water?.score).toBeNull();
+    expect(water?.note).toBe("ยังไม่ได้ประเมิน");
+  });
+  it("logging actual intake does score, from the % of target", () => {
+    const r = generateReport({ nickname: "แนน", stage: "prep",
+      tools: { water: { input: {}, output: {
+        targetMinMl: 1800, targetMaxMl: 2100, targetMidMl: 1950, glasses: [7, 8],
+        current: { ml: 1950, pct: 100, status: "ดี", shortfallMl: 0, note: "..." },
+      } } } });
+    const water = r.pillars.find((p) => p.key === "water");
+    expect(water?.score).toBe(100);
+    expect(water?.note).toBe("สถานะ: ดี");
   });
 });
 

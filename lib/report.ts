@@ -15,7 +15,7 @@ export interface ReportProfile {
 }
 
 export interface Pillar {
-  key: "egg" | "nutrition" | "sleep" | "hormone";
+  key: "egg" | "nutrition" | "sleep" | "hormone" | "water";
   label: string;
   score: number | null; // null = ยังไม่ได้ทำเครื่องมือนี้
   note: string;
@@ -91,6 +91,15 @@ export function computePillars(a: {
     note: hormone === null
       ? "ยังไม่ได้ประเมิน"
       : (a.hasPcos ? "การดูแลเรื่องน้ำตาลช่วยสมดุลฮอร์โมนได้ — ค่อย ๆ ปรับไปด้วยกันนะคะ" : "จากอาหารปรับสมดุลฮอร์โมน"), ...NUT });
+
+  // PDF-19 — น้ำเป็น pillar ที่ 5 ยังไม่ประเมินจนกว่าผู้ใช้จะกรอก "ดื่มไปแล้วกี่มล." จริง
+  // (แค่กดดูเป้าหมายเฉย ๆ ไม่นับ — เหมือนกฎเดียวกับโหมด A ของการนอน)
+  const WTR = { toolHref: "/tools/water", toolLabel: "เช็คปริมาณน้ำ" };
+  const water = t.water?.output;
+  const waterAssessed = !!water?.current && typeof water.current.pct === "number";
+  const waterScore = waterAssessed ? clamp(water.current.pct) : null;
+  pillars.push({ key: "water", label: "การดื่มน้ำ", score: waterScore,
+    note: waterAssessed ? `สถานะ: ${water.current.status}` : "ยังไม่ได้ประเมิน", ...WTR });
 
   const done = pillars.filter((x) => x.score !== null);
   const score = done.length ? clamp(done.reduce((s, x) => s + (x.score as number), 0) / done.length) : 50;
@@ -197,6 +206,7 @@ export function generateReport(p: ReportProfile): Report {
   const weakest = [...done].sort((a, b) => (a.score as number) - (b.score as number))[0];
   if (weakest?.key === "sleep") weeklyActions.push("สัปดาห์นี้: เข้านอนก่อน 22:00 ให้ได้อย่างน้อย 5 วัน");
   if (weakest?.key === "nutrition" || weakest?.key === "egg") weeklyActions.push("สัปดาห์นี้: กินไข่ต้ม 2 ฟอง + ปลา 1 มื้อทุกวัน");
+  if (weakest?.key === "water") weeklyActions.push("สัปดาห์นี้: เพิ่มน้ำอีก 1 แก้วในแต่ละมื้อ ค่อย ๆ ไปให้ถึงเป้าหมาย");
   if (p.hasPcos) weeklyActions.push("สัปดาห์นี้: งดของหวานทั้งหมด ดื่มน้ำอุ่น 2–3 ลิตร/วัน");
   if (!fertileWindow) weeklyActions.push("ลองทำ ‘นับวันไข่ตก’ เพื่อวางแผนช่วงมีโอกาส");
   if (weeklyActions.length < 3) weeklyActions.push("สัปดาห์นี้: จัดจานตามหลัก 70% อาหาร — โปรตีน ผัก ไขมันดี ให้ครบทุกมื้อ");

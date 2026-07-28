@@ -12,6 +12,17 @@ const STAGES: { v: Stage; l: string }[] = [
   { v: "male", l: "ฝ่ายชาย (บำรุงสเปิร์ม)" },
 ];
 
+// PDF-10 — "แหล่งโปรตีนกับปริมาณ" reference table. Figures sourced from
+// docs/nutrition-protocol.md §1 (the same numbers protein.ts's food-equivalent
+// math is built on) — not invented, and readable on its own without having to
+// calculate a personal target first.
+const PROTEIN_SOURCES: { food: string; amount: string; grams: string }[] = [
+  { food: "🥚 ไข่ต้ม", amount: "1 ฟอง", grams: "≈ 6–7 กรัม" },
+  { food: "🍗 อกไก่", amount: "100 กรัม", grams: "≈ 30 กรัม" },
+  { food: "🐟 ปลา", amount: "100 กรัม", grams: "≈ 20 กรัม" },
+  { food: "🥤 โปรตีนเฟอร์ตี้", amount: "1 ซอง", grams: "≈ 25 กรัม" },
+];
+
 export default function ProteinPage() {
   const embed = useEmbed();
   const [weight, setWeight] = useState<number | "">("");
@@ -44,6 +55,26 @@ export default function ProteinPage() {
           </Field>
           <button className="btn-primary w-full" onClick={run}>คำนวณโปรตีน</button>
         </div>
+
+        <details className="mt-4 group">
+          <summary className="cursor-pointer list-none text-sm font-semibold">
+            <span className="text-teal-deep group-open:hidden">▸</span>
+            <span className="hidden text-teal-deep group-open:inline">▾</span>{" "}
+            🍳 รู้จักแหล่งโปรตีนกับปริมาณ
+          </summary>
+          <div className="mt-2 space-y-2">
+            {PROTEIN_SOURCES.map((s) => (
+              <div key={s.food} className="flex items-center justify-between rounded-xl bg-white/70 p-3 text-sm">
+                <span>{s.food}</span>
+                <span className="text-ink/60">{s.amount}</span>
+                <span className="font-medium text-teal-deep">{s.grams}</span>
+              </div>
+            ))}
+            <p className="text-xs text-ink/60">
+              ถ้ากินอาหารไม่ถึงเป้าในแต่ละวัน เติมด้วย <b>โปรตีนเฟอร์ตี้</b> ได้เลย — 1 ซอง ≈ โปรตีน 25 กรัม
+            </p>
+          </div>
+        </details>
 
         {res && "error" in res && <ResultCard><p className="text-rose-deep">{res.error}</p></ResultCard>}
         {res && !("error" in res) && (
