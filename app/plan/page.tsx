@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { readProfile } from "@/lib/profile-store";
+import { useSearchParams } from "next/navigation";
+import { mergeProfile, readProfile, recordTool } from "@/lib/profile-store";
 import { CONSENT_TEXT } from "@/lib/disclaimer";
 import { Field } from "@/components/ui";
 import ReportView from "@/components/report-view";
@@ -14,7 +15,21 @@ import { track } from "@/lib/track";
 const STEPS = ["intro", "name", "stage", "health", "art", "contact"] as const;
 type Step = (typeof STEPS)[number];
 
+const VALID_STAGES = ["prep", "infertility", "pregnant", "lactating", "male"];
+
 export default function PlanPage() {
+  return (
+    <Suspense fallback={null}>
+      <PlanPageInner />
+    </Suspense>
+  );
+}
+
+function PlanPageInner() {
+  const params = useSearchParams();
+  const rt = params.get("rt");
+  const stageParam = params.get("stage");
+
   const [i, setI] = useState(0);
   const [form, setForm] = useState<any>({ contact_channel: "line", art_plan: "none" });
   const [consent, setConsent] = useState(false);
@@ -23,8 +38,42 @@ export default function PlanPage() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    // Resuming via a LINE-menu link (PDF-05/06): fetch what we already know
+    // about this customer and skip straight past intro/name/stage. An
+    // invalid/expired token just falls back to the normal fresh flow below —
+    // never a hard error.
+    if (rt) {
+      fetch(`/api/customer/resume?rt=${encodeURIComponent(rt)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (!data) return;
+          setForm((f: any) => ({
+            ...f,
+            nickname: data.nickname ?? f.nickname,
+            stage: data.stage ?? f.stage,
+            age_range: data.age_range ?? f.age_range,
+            has_pcos: data.has_pcos ?? f.has_pcos,
+            art_plan: data.art_plan ?? f.art_plan,
+            contact_channel: data.contact_channel ?? f.contact_channel,
+            contact_value: data.contact_value ?? f.contact_value,
+            weightKg: data.weightKg ?? f.weightKg,
+          }));
+          if (data.stage) mergeProfile({ stage: data.stage, hasPcos: data.has_pcos, artPlan: data.art_plan, weightKg: data.weightKg });
+          for (const [tool, r2] of Object.entries<any>(data.tools || {})) recordTool(tool, r2.input, r2.output);
+          setI(STEPS.indexOf("health"));
+        })
+        .catch(() => {});
+      return;
+    }
+
     const p = readProfile();
-    setForm((f: any) => ({ ...f, stage: p.stage || "prep", has_pcos: p.hasPcos, art_plan: p.artPlan || "none", weightKg: p.weightKg, interests: p.interests || [] }));
+    const presetStage = stageParam && VALID_STAGES.includes(stageParam) ? stageParam : p.stage || "prep";
+    setForm((f: any) => ({ ...f, stage: presetStage, has_pcos: p.hasPcos, art_plan: p.artPlan || "none", weightKg: p.weightKg, interests: p.interests || [] }));
+    // Category already picked on the home page — skip straight to "name",
+    // still showing the pre-selected stage on the next screen so they can
+    // confirm or change it (this doubles as the PDF-05 category-switch UX).
+    if (stageParam && VALID_STAGES.includes(stageParam)) setI(STEPS.indexOf("name"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
@@ -45,7 +94,7 @@ export default function PlanPage() {
       const p = readProfile();
       const res = await fetch("/api/lead", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, consent: true, consent_text: CONSENT_TEXT, tools: p.tools || {} }),
+        body: JSON.stringify({ ...form, consent: true, consent_text: CONSENT_TEXT, tools: p.tools || {}, resume_token: rt || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
@@ -107,7 +156,7 @@ export default function PlanPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">ตอนนี้คุณ{form.nickname ? ` ${form.nickname}` : ""}อยู่ช่วงไหน?</h2>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {[["prep", "เตรียมตั้งครรภ์"], ["infertility", "มีบุตรยาก"], ["pregnant", "ตั้งครรภ์แล้ว"], ["male", "ฝ่ายชาย"]].map(([v, l]) => (
+              {[["prep", "เตรียมตั้งครรภ์"], ["infertility", "มีบุตรยาก"], ["pregnant", "ตั้งครรภ์แล้ว"], ["lactating", "ให้นมบุตร"], ["male", "ฝ่ายชาย"]].map(([v, l]) => (
                 <button key={v} onClick={() => setForm((f: any) => ({ ...f, stage: v, ...(v === "male" ? { has_pcos: false } : {}) }))} className={`rounded-xl border px-3 py-3 ${form.stage === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{l}</button>
               ))}
             </div>

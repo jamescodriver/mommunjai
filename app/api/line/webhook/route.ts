@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
-import { verifyLineSignature, extractTicketCode, reportFlex, lineReply } from "@/lib/line";
+import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
 import { generateReport } from "@/lib/report";
+import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
 
 export const runtime = "nodejs";
+
+// Rich Menu button text (configured as a no-code "Text" action in LINE
+// Official Account Manager — see docs/IMPACT-ANALYSIS-2607.md PDF-05/06).
+// A LIFF/LINE-Login-based menu would carry a per-user token directly; this
+// fixed phrase is the buildable-today substitute that still identifies the
+// real tapping user server-side (via the webhook's verified line_user_id).
+const MENU_TRIGGER = "แผนของฉัน";
 
 // LINE Messaging API webhook.
 // When a user sends their ticket code (MJ-XXXXXX) in the OA chat, we:
@@ -27,6 +35,33 @@ export async function POST(req: NextRequest) {
     try {
       if (ev.type !== "message" || ev.message?.type !== "text") continue;
       const lineUserId = ev.source?.userId as string | undefined;
+
+      if (ev.message.text.trim() === MENU_TRIGGER) {
+        const planUrl = `${process.env.NEXT_PUBLIC_APP_URL || ""}/plan`;
+        if (!hasSupabaseEnv() || !lineUserId) {
+          await lineReply(ev.replyToken, [menuFlex({ freshPlanUrl: planUrl })]);
+          continue;
+        }
+        const sb = getServiceClient();
+        const customer = await resolveCustomerByLineUserId(sb, lineUserId);
+        if (!customer?.primary_lead_id) {
+          await lineReply(ev.replyToken, [menuFlex({ freshPlanUrl: planUrl })]);
+          continue;
+        }
+        const { data: lead } = await sb.from("leads").select("nickname").eq("id", customer.primary_lead_id).maybeSingle();
+        const { data: ticket } = await sb.from("tickets").select("code").eq("lead_id", customer.primary_lead_id).maybeSingle();
+        let resumeUrl: string | undefined;
+        try {
+          resumeUrl = `${planUrl}?rt=${encodeURIComponent(signResumeToken(customer.id))}`;
+        } catch {
+          resumeUrl = undefined; // RESUME_TOKEN_SECRET not configured — still send the report link below
+        }
+        await lineReply(ev.replyToken, [
+          menuFlex({ nickname: lead?.nickname, reportCode: ticket?.code, resumeUrl, freshPlanUrl: planUrl }),
+        ]);
+        continue;
+      }
+
       const code = extractTicketCode(ev.message.text);
 
       if (!code) {
@@ -52,6 +87,10 @@ export async function POST(req: NextRequest) {
           { onConflict: "line_user_id" },
         );
         await sb.from("leads").update({ line_user_id: lineUserId }).eq("id", ticket.lead_id);
+        // PDF-05/06: also pull this lead into the customer-identity system,
+        // so the "แผนของฉัน" menu trigger recognizes them going forward.
+        const customerId = await linkLeadToCustomerViaLine(sb, ticket.lead_id, lineUserId);
+        if (customerId) await sb.from("line_bindings").update({ customer_id: customerId }).eq("line_user_id", lineUserId);
       }
 
       // our-side tag: #line-connected

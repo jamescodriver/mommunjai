@@ -62,6 +62,47 @@ export function reportFlex(report: Report, code: string) {
   };
 }
 
+// PDF-05/06 — reply to the Rich Menu's fixed "แผนของฉัน" trigger. If we know
+// this LINE user (found a customer + a lead), offer their latest report plus
+// a resume link to redo/change their info; otherwise just point them to /plan.
+export function menuFlex(opts: { nickname?: string; reportCode?: string; resumeUrl?: string; freshPlanUrl?: string }) {
+  const buttons: any[] = [];
+  if (opts.reportCode && APP_URL) {
+    buttons.push({
+      type: "button", style: "primary", color: "#C85A8A", height: "sm",
+      action: { type: "uri", label: "ดูแผนล่าสุด", uri: `${APP_URL}/r/${opts.reportCode}` },
+    });
+  }
+  if (opts.resumeUrl) {
+    buttons.push({
+      type: "button", style: "secondary", height: "sm",
+      action: { type: "uri", label: "เปลี่ยนข้อมูล / ทำแบบสอบถามใหม่", uri: opts.resumeUrl },
+    });
+  }
+  if (!buttons.length && opts.freshPlanUrl) {
+    buttons.push({
+      type: "button", style: "primary", color: "#C85A8A", height: "sm",
+      action: { type: "uri", label: "เริ่มทำแบบสอบถาม", uri: opts.freshPlanUrl },
+    });
+  }
+  const greeting = opts.nickname ? `สวัสดีค่ะคุณ ${opts.nickname} 💛` : "สวัสดีค่ะ 💛";
+  return {
+    type: "flex",
+    altText: "เมนูของคุณ — Baby & Mom",
+    contents: {
+      type: "bubble",
+      body: {
+        type: "box", layout: "vertical", spacing: "sm",
+        contents: [
+          { type: "text", text: greeting, weight: "bold", size: "md", color: "#C85A8A", wrap: true },
+          { type: "text", text: buttons.length > 1 ? "ดูแผนเดิม หรือทำแบบสอบถามใหม่ได้เลยค่ะ" : "เริ่มทำแบบสอบถามเพื่อรับแผนเฉพาะคุณได้เลยค่ะ", size: "sm", color: "#777777", wrap: true, margin: "sm" },
+        ],
+      },
+      footer: { type: "box", layout: "vertical", spacing: "sm", contents: buttons },
+    },
+  };
+}
+
 export async function lineReply(replyToken: string, messages: any[]): Promise<boolean> {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token) return false;

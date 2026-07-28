@@ -4,6 +4,7 @@ import { autoTags } from "@/lib/tagging";
 import { genTicketCode, rateLimit } from "@/lib/ticket";
 import { CONSENT_POLICY_VERSION } from "@/lib/disclaimer";
 import { generateReport } from "@/lib/report";
+import { verifyResumeToken } from "@/lib/customer";
 
 function reportProfileFromBody(body: any) {
   return {
@@ -94,11 +95,44 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Resuming from a LINE-menu link (PDF-05/06)? Verify server-side — never trust
+  // a client-supplied customer id directly. A missing/misconfigured secret (or
+  // any other verification error) just falls back to "no token" rather than
+  // failing the whole submission.
+  let resumedCustomerId: string | null = null;
+  if (typeof body.resume_token === "string") {
+    try {
+      resumedCustomerId = verifyResumeToken(body.resume_token)?.customerId ?? null;
+    } catch {
+      resumedCustomerId = null;
+    }
+  }
+
   // --- persist via Supabase (BFF, service role) ---
   try {
     const sb = getServiceClient();
     const { data: lead, error: le } = await sb.from("leads").insert(profile).select("id").single();
     if (le || !lead) throw le || new Error("insert lead failed");
+
+    // Link this submission to a customer — either the one the resume token
+    // pointed at, or a brand-new customer for a first-time/no-token submission.
+    // Always a fresh `leads` INSERT above either way — old ticket/report links
+    // for this person's previous submissions stay frozen and untouched.
+    if (resumedCustomerId) {
+      await sb.from("leads").update({ customer_id: resumedCustomerId }).eq("id", lead.id);
+      await sb.from("customers").update({
+        primary_lead_id: lead.id,
+        current_stage: profile.stage,
+        last_active_at: new Date().toISOString(),
+      }).eq("id", resumedCustomerId);
+    } else {
+      const { data: customer } = await sb
+        .from("customers")
+        .insert({ primary_lead_id: lead.id, current_stage: profile.stage })
+        .select("id")
+        .single();
+      if (customer) await sb.from("leads").update({ customer_id: customer.id }).eq("id", lead.id);
+    }
 
     await sb.from("consent_log").insert({
       lead_id: lead.id,
@@ -111,7 +145,7 @@ export async function POST(req: NextRequest) {
     if (body.tools && typeof body.tools === "object") {
       const rows = Object.entries(body.tools).map(([tool, v]: any) => ({
         lead_id: lead.id, tool, input: v?.input ?? null, output: v?.output ?? null,
-      })).filter((r) => ["ovulation", "protein", "nutrients", "sleep", "vitamins"].includes(r.tool));
+      })).filter((r) => ["ovulation", "protein", "nutrients", "sleep", "vitamins", "water"].includes(r.tool));
       if (rows.length) await sb.from("tool_results").insert(rows);
     }
 
