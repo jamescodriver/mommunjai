@@ -55,7 +55,7 @@ export function reportFlex(report: Report, code: string) {
             type: "button", style: "primary", color: "#C85A8A", height: "sm",
             action: { type: "uri", label: "ดูรายงานฉบับเต็ม", uri: `${APP_URL}/r/${code}` },
           } : { type: "text", text: `รหัสของคุณ: ${code}`, size: "sm", align: "center" },
-          { type: "text", text: "ทีมครูก้อยพร้อมช่วยวางแผนต่อค่ะ", size: "xs", color: "#aaaaaa", align: "center" },
+          { type: "text", text: "ทีม Baby & Mom พร้อมช่วยวางแผนต่อค่ะ", size: "xs", color: "#aaaaaa", align: "center" },
         ],
       },
     },

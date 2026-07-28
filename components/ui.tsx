@@ -93,7 +93,7 @@ export function Field({
 export function PlanCta() {
   return (
     <Link href="/plan" className="btn-primary mt-4 w-full">
-      💛 รับแผนบำรุงเฉพาะคุณ + คุยกับทีมครูก้อย
+      💛 รับแผนบำรุงเฉพาะคุณ + คุยกับทีม Baby & Mom
     </Link>
   );
 }

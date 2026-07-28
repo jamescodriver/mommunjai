@@ -7,7 +7,7 @@ const TOOLS = [
   { href: "/tools/nutrients", emoji: "🥗", title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม" },
   { href: "/tools/sleep", emoji: "🌙", title: "คำนวณการนอน", desc: "เวลานอนที่ดีต่อฮอร์โมนเจริญพันธุ์" },
   { href: "/tools/vitamins", emoji: "💊", title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
-  { href: "/plan", emoji: "💛", title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีมครูก้อยผ่าน LINE OA" },
+  { href: "/plan", emoji: "💛", title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
 ];
 
 export default function Home() {
@@ -24,7 +24,7 @@ export default function Home() {
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-ink/70">
           เครื่องมือฟรีช่วยเตรียมร่างกายให้พร้อมตั้งครรภ์ — ดูแลด้วยความรู้ที่มีวิทยาศาสตร์รองรับ
-          ใช้ง่ายบนมือถือ แล้วรับ<b>แผนเฉพาะคุณ</b>จากทีมครูก้อย
+          ใช้ง่ายบนมือถือ แล้วรับ<b>แผนเฉพาะคุณ</b>จากทีม Baby & Mom
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <Link href="/plan" className="btn-primary">💛 รับคำแนะนำเฉพาะคุณ</Link>

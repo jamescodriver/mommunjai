@@ -57,7 +57,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       {/* header */}
       <div className="glass-strong p-6 text-center">
         <Wordmark height={26} />
-        <p className="text-xs font-medium text-ink/50">by ครูก้อย</p>
+        <p className="text-xs font-medium text-ink/50">by Baby & Mom</p>
         <h1 className="mt-1 text-2xl font-semibold text-teal-deep">{report.title}</h1>
         <p className="mt-1 text-sm text-ink/70">{report.tagline}</p>
         <p className="mt-3 text-sm">{report.greeting}</p>
@@ -193,7 +193,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       {/* 8. this week + LINE + close */}
       <Section n="8" title="สัปดาห์นี้ทำ 3 อย่างนี้ ✅">
         <ul className="space-y-1 text-sm">{report.weeklyActions.map((a, i) => <li key={i}>• {a}</li>)}</ul>
-        <a className="btn-primary mt-4 w-full" href={LINE_OA_URL} target="_blank" rel="noreferrer" onClick={() => track("line_click", { code })}>มีคำถามเรื่องแผนของคุณ? คุยกับทีมครูก้อย</a>
+        <a className="btn-primary mt-4 w-full" href={LINE_OA_URL} target="_blank" rel="noreferrer" onClick={() => track("line_click", { code })}>มีคำถามเรื่องแผนของคุณ? คุยกับทีม Baby & Mom</a>
       </Section>
 
       {/* cautions / disclaimer */}

@@ -61,7 +61,7 @@ export default function PlanPage() {
         <div className="mx-auto max-w-2xl px-4 pt-6 text-center">
           <div className="glass-strong p-5">
             <div className="text-3xl">🎉</div>
-            <p className="mt-1 text-sm">แผนของคุณพร้อมแล้ว! เก็บรหัสนี้ไปคุยต่อกับทีมครูก้อยใน LINE OA เพื่อรับคำแนะนำเฉพาะคุณ</p>
+            <p className="mt-1 text-sm">แผนของคุณพร้อมแล้ว! เก็บรหัสนี้ไปคุยต่อกับทีม Baby & Mom ใน LINE OA เพื่อรับคำแนะนำเฉพาะคุณ</p>
             <div className="mx-auto my-3 w-fit rounded-2xl border-2 border-dashed border-teal bg-teal-soft px-6 py-2 text-2xl font-bold tracking-widest text-teal-deep">{result.ticket}</div>
             <button className="btn-ghost" onClick={() => navigator.clipboard?.writeText(result.ticket)}>คัดลอกรหัส</button>
           </div>
@@ -88,7 +88,7 @@ export default function PlanPage() {
           <div className="space-y-4 text-center">
             <div className="text-4xl">💛</div>
             <h1 className="text-xl font-semibold">แผน 90 วัน มั่นใจก่อนมีลูก — ฉบับของคุณ</h1>
-            <p className="text-sm text-ink/70">ตอบไม่กี่ข้อ แล้วครูก้อยจะทำ <b>แผนบำรุง 90 วันเฉพาะคุณ</b> ให้ทันที (ทั้งไข่และอสุจิใช้เวลาสุกราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)</p>
+            <p className="text-sm text-ink/70">ตอบไม่กี่ข้อ แล้วเราจะทำ <b>แผนบำรุง 90 วันเฉพาะคุณ</b> ให้ทันที (ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)</p>
             <button className="btn-primary w-full" onClick={next}>พร้อมลงมือ 90 วัน เริ่มเลย</button>
             <p className="text-xs text-ink/50">ใช้เวลาไม่ถึง 2 นาที · ข้อมูลของคุณถูกเก็บอย่างปลอดภัย</p>
           </div>
@@ -153,7 +153,7 @@ export default function PlanPage() {
         {step === "contact" && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">รับแผนของคุณได้เลย 🎁</h2>
-            <Field label="ช่องทางให้ทีมครูก้อยติดต่อกลับ *" hint="เพื่อส่งแผนและให้คำแนะนำเฉพาะคุณ">
+            <Field label="ช่องทางให้ทีม Baby & Mom ติดต่อกลับ *" hint="เพื่อส่งแผนและให้คำแนะนำเฉพาะคุณ">
               <div className="flex gap-2">
                 <select className="field !w-24" value={form.contact_channel} onChange={(e) => set("contact_channel", e.target.value)}>
                   <option value="line">LINE</option><option value="phone">โทร</option>
