@@ -125,24 +125,24 @@ describe("sleep (M5)", () => {
 
 describe("vitamins (M6)", () => {
   it("PCOS gets PCO-VIT", () => {
-    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "none" });
+    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "ยัง" });
     expect(r.primary.map((p) => p.id)).toContain("pcovit");
     expect(r.primary.map((p) => p.id)).toContain("ovaall");
   });
   it("male gets the men's set", () => {
-    const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "none" });
+    const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "ยัง" });
     expect(r.primary.map((p) => p.id)).toEqual(["mzall", "ferta", "pureseed"]);
   });
   // The brand's leaflet is 19 items; an earlier version only knew 7 and capped output at 3.
   it("prep covers the brand's full set, not a token few", () => {
-    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "none" });
+    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "ยัง" });
     const all = [...r.core, ...r.targeted, ...r.nutrition, ...r.external];
     expect(all.length).toBeGreaterThanOrEqual(18);
     expect(r.core.map((p) => p.id)).toEqual(["ovaall", "ferty", "collatelo", "ferti9oil"]);
   });
   // Safety Matrix (product-catalog-master.md §4) — these must never reach the wrong stage.
   it("drops the products banned in pregnancy", () => {
-    const r = recommendVitamins({ stage: "pregnant", hasPcos: false, artPlan: "none" });
+    const r = recommendVitamins({ stage: "pregnant", hasPcos: false, artPlan: "ยัง" });
     const ids = [...r.core, ...r.targeted, ...r.nutrition, ...r.external].map((p) => p.id);
     for (const banned of ["aos", "kaffirshot", "puregreen", "varginaree", "safflower", "castoroil"]) {
       expect(ids, `${banned} ห้ามแนะนำช่วงตั้งครรภ์`).not.toContain(banned);
@@ -150,17 +150,17 @@ describe("vitamins (M6)", () => {
     expect(ids).toContain("ovaall");
   });
   it("drops Varginaree while breastfeeding", () => {
-    const r = recommendVitamins({ stage: "lactating", hasPcos: false, artPlan: "none" });
+    const r = recommendVitamins({ stage: "lactating", hasPcos: false, artPlan: "ยัง" });
     const ids = [...r.core, ...r.targeted, ...r.nutrition].map((p) => p.id);
     expect(ids).not.toContain("varginaree");
   });
   it("warns ART patients to clear supplements with their doctor first", () => {
-    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "icsi" });
+    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "IVF-ICSI" });
     expect(r.cautions.join(" ")).toMatch(/ปรึกษาแพทย์/);
     expect(r.cautions.join(" ")).toMatch(/ใส่ตัวอ่อน/);
   });
   it("every product carries dosage, and stop-rules are spelled out", () => {
-    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "ivf" });
+    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "IVF-ICSI" });
     for (const p of [...r.core, ...r.targeted, ...r.nutrition, ...r.external]) {
       expect(p.howto, `${p.name} ไม่มีวิธีรับประทาน`).toBeTruthy();
     }
@@ -172,10 +172,10 @@ describe("vitamins (M6)", () => {
   // with no dosage at all. Every recommended product must carry brand-confirmed dosage.
   it("every recommended product has dosage instructions", () => {
     const profiles = [
-      { stage: "male", hasPcos: false, artPlan: "none" },
-      { stage: "prep", hasPcos: false, artPlan: "none" },
-      { stage: "prep", hasPcos: true, artPlan: "none" },
-      { stage: "prep", hasPcos: false, artPlan: "icsi" },
+      { stage: "male", hasPcos: false, artPlan: "ยัง" },
+      { stage: "prep", hasPcos: false, artPlan: "ยัง" },
+      { stage: "prep", hasPcos: true, artPlan: "ยัง" },
+      { stage: "prep", hasPcos: false, artPlan: "IVF-ICSI" },
     ] as const;
     for (const p of profiles) {
       for (const prod of recommendVitamins(p).primary) {
@@ -184,19 +184,19 @@ describe("vitamins (M6)", () => {
     }
   });
   it("never claims to prevent or cure disease", () => {
-    const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "none" });
+    const r = recommendVitamins({ stage: "male", hasPcos: false, artPlan: "ยัง" });
     const text = r.note + r.primary.map((p) => `${p.why}${p.howto ?? ""}${p.detail ?? ""}`).join("");
     expect(text).not.toMatch(/มะเร็ง|ป้องกันโรค|รักษา|หย่อนสมรรถภาพ|ไม่มีผลข้างเคียง/);
   });
   it("note never claims cure", () => {
-    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "none" });
+    const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "ยัง" });
     expect(r.note).not.toMatch(/หายขาด|รักษาให้หาย|การันตี|ท้องแน่นอน/);
   });
 });
 
 describe("tagging (M8)", () => {
   it("auto tags from profile", () => {
-    const t = autoTags({ stage: "infertility", hasPcos: true, artPlan: "icsi", interests: ["ovaall"], toolResultsCount: 4 });
+    const t = autoTags({ stage: "infertility", hasPcos: true, artPlan: "IVF-ICSI", interests: ["ovaall"], toolResultsCount: 4 });
     expect(t).toEqual(expect.arrayContaining(["#PCOS", "#มีบุตรยาก", "#ICSI", "#สนใจ-OvaAll", "#engaged"]));
   });
 });

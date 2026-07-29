@@ -166,6 +166,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
         {report.protein && (
           <p className="mb-2 text-sm">{report.isMale ? "💪" : "🥚"} เป้าโปรตีน: <b>{report.protein.min}–{report.protein.max} กรัม/วัน</b> (เติมด้วย {report.isMale ? "Ferta" : "Ferty"} ~{report.protein.ferty} ซองถ้าอาหารไม่ถึง)</p>
         )}
+        {report.protein?.note && <p className="mb-2 text-xs text-teal-deep">💡 {report.protein.note}</p>}
         <p className="mt-2 text-xs text-ink/60">{report.vitaminNote}</p>
         <div className="mt-2 space-y-2">
           {report.vitamins.map((v) => (

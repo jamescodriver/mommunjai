@@ -3,17 +3,25 @@ import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { autoTags } from "@/lib/tagging";
 import { genTicketCode, rateLimit } from "@/lib/ticket";
 import { CONSENT_POLICY_VERSION } from "@/lib/disclaimer";
-import { generateReport } from "@/lib/report";
+import { generateReport, reportTier, buildTeaser } from "@/lib/report";
 import { verifyResumeToken } from "@/lib/customer";
+import { mapLegacyArtPlan, INFERTILITY_ISSUE_VALUES } from "@/lib/calc/vitamins";
+
+function sanitizeIssues(v: any): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter((x) => (INFERTILITY_ISSUE_VALUES as string[]).includes(x)).slice(0, INFERTILITY_ISSUE_VALUES.length);
+}
 
 function reportProfileFromBody(body: any) {
   return {
     nickname: body.nickname,
     stage: body.stage,
     weightKg: body.weightKg ? Number(body.weightKg) : undefined,
+    heightCm: body.height_cm ? Number(body.height_cm) : undefined,
     ageRange: body.age_range,
     hasPcos: !!body.has_pcos,
-    artPlan: ["none", "iui", "ivf", "icsi"].includes(body.art_plan) ? body.art_plan : "none",
+    artPlan: mapLegacyArtPlan(body.art_plan),
+    infertilityIssues: sanitizeIssues(body.infertility_issues) as any,
     tools: body.tools && typeof body.tools === "object" ? body.tools : {},
   };
 }
@@ -74,23 +82,31 @@ export async function POST(req: NextRequest) {
     stage: body.stage || null,
     age_range: body.age_range || null,
     has_pcos: !!body.has_pcos,
-    art_plan: ["none", "iui", "ivf", "icsi"].includes(body.art_plan) ? body.art_plan : "none",
+    art_plan: mapLegacyArtPlan(body.art_plan),
+    infertility_issues: sanitizeIssues(body.infertility_issues),
+    height_cm: body.height_cm ? Number(body.height_cm) : null,
     interests: Array.isArray(body.interests) ? body.interests.slice(0, 20) : [],
   };
   const tags = autoTags({
     stage: profile.stage || undefined,
     hasPcos: profile.has_pcos,
     artPlan: profile.art_plan,
+    infertilityIssues: profile.infertility_issues,
     interests: profile.interests,
     toolResultsCount: body.tools ? Object.keys(body.tools).length : 0,
   });
 
   const report = generateReport(reportProfileFromBody(body));
+  // R5/R6 — teaser/medium tiers never get the full report body back in this
+  // response. The full report is still generated + stored below exactly as
+  // before; only what /api/lead hands back to the browser changes.
+  const tier = reportTier({ artPlan: profile.art_plan, infertilityIssues: profile.infertility_issues });
+  const reportPayload = tier === "full" ? { report } : { teaser: buildTeaser(report) };
 
   // --- DEV fallback: no Supabase env → return generated ticket + report without persisting ---
   if (!hasSupabaseEnv()) {
     return NextResponse.json(
-      { ticket_code: genTicketCode(), tags, report, dev_mode: true, note: "SUPABASE env ยังไม่ตั้ง — ยังไม่ได้บันทึกจริง" },
+      { ticket_code: genTicketCode(), tags, tier, ...reportPayload, dev_mode: true, note: "SUPABASE env ยังไม่ตั้ง — ยังไม่ได้บันทึกจริง" },
       { headers },
     );
   }
@@ -171,7 +187,7 @@ export async function POST(req: NextRequest) {
     // store the personalized report snapshot (shareable at /r/<code> and via LINE)
     await sb.from("reports").insert({ code, lead_id: lead.id, score: report.score, payload: report });
 
-    return NextResponse.json({ ticket_code: code, tags, report }, { headers });
+    return NextResponse.json({ ticket_code: code, tags, tier, ...reportPayload }, { headers });
   } catch (e: any) {
     return NextResponse.json({ error: "บันทึกไม่สำเร็จ กรุณาลองใหม่" }, { status: 500, headers });
   }

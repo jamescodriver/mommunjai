@@ -4,7 +4,7 @@ import { hashPin, verifyPin, signSession, verifySession, hasPerm } from "./auth"
 import { extractTicketCode } from "./line";
 
 describe("report engine", () => {
-  const base = { nickname: "หมิว", stage: "infertility" as const, hasPcos: true, artPlan: "icsi" as const,
+  const base = { nickname: "หมิว", stage: "infertility" as const, hasPcos: true, artPlan: "IVF-ICSI" as const,
     tools: { nutrients: { output: { pillars: { egg: 80, uterus: 60, hormone: 70 }, overall: 75, eatenCount: 6, totalEat: 8 } },
              sleep: { output: { beforeTen: false, goodDuration: true, status: "ควรปรับ" } },
              ovulation: { output: { ovulationDate: "2026-08-01", fertileStart: "2026-07-27", fertileEnd: "2026-08-02", nextPeriod: "2026-08-15" } } } };
@@ -37,12 +37,12 @@ describe("report engine", () => {
 
 describe("report safety (Lucifer red-team fixes)", () => {
   it("H1: never recommends castor oil (uterus-stimulant, unsafe in pregnancy/ART)", () => {
-    const j = JSON.stringify(generateReport({ nickname: "A", stage: "prep", artPlan: "ivf" }));
+    const j = JSON.stringify(generateReport({ nickname: "A", stage: "prep", artPlan: "IVF-ICSI" }));
     expect(j.toLowerCase()).not.toContain("castor");
     expect(j).not.toContain("กระตุ้นมดลูก) "); // only appears inside the safe warning
   });
   it("H3: ART patient — month-1 gates supplements behind consulting the doctor", () => {
-    const r = generateReport({ nickname: "A", stage: "infertility", artPlan: "icsi" });
+    const r = generateReport({ nickname: "A", stage: "infertility", artPlan: "IVF-ICSI" });
     expect(r.plan90[0].items[0]).toMatch(/ปรึกษาแพทย์.*ก่อนเริ่มวิตามิน/);
   });
   it("H2: referral timing adapts to age (40+ = see doctor now)", () => {

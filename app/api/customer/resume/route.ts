@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyResumeToken } from "@/lib/customer";
+import { mapLegacyArtPlan } from "@/lib/calc/vitamins";
 
 export const runtime = "nodejs";
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
   const { data: lead } = await sb
     .from("leads")
-    .select("nickname, stage, age_range, has_pcos, art_plan, contact_channel, contact_value")
+    .select("nickname, stage, age_range, has_pcos, art_plan, infertility_issues, height_cm, contact_channel, contact_value")
     .eq("id", customer.primary_lead_id)
     .maybeSingle();
   if (!lead) return NextResponse.json({ error: "ไม่พบข้อมูลลูกค้า" }, { status: 400 });
@@ -60,7 +61,11 @@ export async function GET(req: NextRequest) {
     stage: lead.stage,
     age_range: lead.age_range,
     has_pcos: lead.has_pcos,
-    art_plan: lead.art_plan,
+    // R4 — a lead saved before this migration may still carry the old
+    // none|iui|ivf|icsi values; normalize so /plan never has to know about them.
+    art_plan: mapLegacyArtPlan(lead.art_plan),
+    infertility_issues: Array.isArray(lead.infertility_issues) ? lead.infertility_issues : [],
+    height_cm: lead.height_cm ?? undefined,
     contact_channel: lead.contact_channel,
     contact_value: lead.contact_value,
     weightKg,

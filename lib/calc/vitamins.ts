@@ -5,15 +5,54 @@
 // NEVER claim to cure or prevent disease. Never invent a dosage or a price — leave it null
 // and say so, so the team notices and fills it in.
 import type { Stage } from "./protein";
+import type { BmiTier } from "./bmi";
+import { BMI_TIER_NOTE } from "./bmi";
 
 /** protein.ts's Stage has no "infertility" (it has no protein range of its own),
  *  but the questionnaire and leads.stage do — so widen it here. */
 export type VitaminStage = Stage | "infertility";
 
+// R4 (PRD-UPDATE-R2-2607.md) — "เข้าสู่กระบวนการทางการแพทย์ไหม?", 5 options exactly
+// as client wrote them. The Thai label IS the stored/enum value (no separate i18n
+// key) — simplest thing that can't drift out of sync with the UI.
+export const ART_PLAN_VALUES = ["ยัง", "IUI", "IVF-ICSI", "บำรุงไข่", "เตรียมผนังมดลูก"] as const;
+export type ArtPlan = (typeof ART_PLAN_VALUES)[number];
+
+/** Old leads (pre-R4) stored "none"|"iui"|"ivf"|"icsi" — map them forward so
+ *  existing rows keep reading/rendering correctly. Anything already a valid
+ *  new value passes through unchanged; anything unrecognized defaults to "ยัง"
+ *  (never throws — this runs on untrusted DB/body data). */
+export function mapLegacyArtPlan(v: unknown): ArtPlan {
+  if (typeof v === "string" && (ART_PLAN_VALUES as readonly string[]).includes(v)) return v as ArtPlan;
+  const s = typeof v === "string" ? v.toLowerCase() : "";
+  if (s === "none" || s === "") return "ยัง";
+  if (s === "iui") return "IUI";
+  if (s === "ivf" || s === "icsi") return "IVF-ICSI";
+  return "ยัง";
+}
+
+// R2 — "มีบุตรยาก" 7-item checkbox (multi-select; "unsure" is exclusive — see
+// app/plan/page.tsx). Values are internal keys; labels are what the UI shows.
+export const INFERTILITY_ISSUES = [
+  { v: "pcos", label: "PCOS (ถุงน้ำรังไข่)" },
+  { v: "diminished_ovary", label: "รังไข่เสื่อมก่อนวัย" },
+  { v: "low_hormone", label: "ฮอร์โมนเพศต่ำ" },
+  { v: "thin_lining", label: "ผนังมดลูกบาง" },
+  { v: "male_factor", label: "ปัญหาจากฝ่ายชาย" },
+  { v: "overweight", label: "น้ำหนักเกิน" },
+  { v: "unsure", label: "ไม่แน่ใจ" },
+] as const;
+export type InfertilityIssue = (typeof INFERTILITY_ISSUES)[number]["v"];
+export const INFERTILITY_ISSUE_VALUES: InfertilityIssue[] = INFERTILITY_ISSUES.map((i) => i.v);
+
 export interface VitaminProfile {
   stage: VitaminStage;
   hasPcos: boolean;
-  artPlan: "none" | "iui" | "ivf" | "icsi";
+  artPlan: ArtPlan;
+  /** R2 — only meaningful when stage === "infertility"; other stages leave it empty. */
+  infertilityIssues?: InfertilityIssue[];
+  /** R3 — internal-only qualitative signal from height+weight; never a raw BMI number. */
+  weightTier?: BmiTier;
 }
 
 /** Which life stages this product must be stopped in — from the Safety Matrix (§4). */
@@ -245,10 +284,22 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
 
   const core = [PRODUCTS.ovaall, PRODUCTS.ferty, PRODUCTS.collatelo, PRODUCTS.ferti9oil];
 
+  // R2 — PCO-VIT used to key off `hasPcos` alone; the infertility checklist's
+  // "PCOS" item now also triggers it (a plain `hasPcos: true` from the health
+  // step still works exactly as before — this only adds a second path in).
+  const issues = p.infertilityIssues || [];
+  const effectivePcos = p.hasPcos || issues.includes("pcos");
+
   const targeted: Product[] = [];
-  if (p.hasPcos) targeted.push(PRODUCTS.pcovit);
-  if (p.artPlan !== "none" || p.stage === "infertility") targeted.push(PRODUCTS.aos);
+  if (effectivePcos) targeted.push(PRODUCTS.pcovit);
+  if (p.artPlan !== "ยัง" || p.stage === "infertility") targeted.push(PRODUCTS.aos);
   targeted.push(PRODUCTS.varginaree, PRODUCTS.nightshot);
+  // "ปัญหาจากฝ่ายชาย" (R2 table): only M-Z All — Motila1 stays excluded app-wide
+  // until the brand confirms a dosage (see the `motila1` entry above). Add it
+  // back here too, the day Motila1 reopens.
+  if (issues.includes("male_factor")) targeted.push(PRODUCTS.mzall);
+  // dedupe (male_factor + a shared product elsewhere, etc.)
+  const targetedDeduped = Array.from(new Map(targeted.map((x) => [x.id, x])).values());
 
   const nutrition = [
     PRODUCTS.phytocrystalc, PRODUCTS.pureseed, PRODUCTS.goodgrain, PRODUCTS.pureblack,
@@ -261,7 +312,7 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
   const keep = (list: Product[]) => list.filter((x) => allowedIn(p.stage, x));
 
   const cautions: string[] = [];
-  if (p.artPlan !== "none") {
+  if (p.artPlan !== "ยัง") {
     cautions.push(
       "คุณอยู่ระหว่างวางแผนกับแพทย์ — ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มอาหารเสริมทุกตัว เพราะอาจมีผลต่อยาที่ได้รับ",
       "หลังใส่ตัวอ่อนแล้วต้องหยุด: A.O.S · น้ำมะกรูด Shot · Pure Green · Varginaree · ดอกคำฝอย · แพ็คน้ำมันละหุ่ง (Ferti 9 Oil ลดเหลือวันละ 1–2 เม็ด)",
@@ -270,15 +321,18 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
   cautions.push("ช่วงวันไข่ตก ให้หยุดดอกคำฝอยและแพ็คน้ำมันละหุ่ง");
   if (p.stage === "pregnant") cautions.push("รายการที่ต้องหยุดช่วงตั้งครรภ์ถูกตัดออกจากคำแนะนำนี้แล้ว");
   if (p.stage === "lactating") cautions.push("รายการที่ต้องหยุดช่วงให้นมถูกตัดออกจากคำแนะนำนี้แล้ว");
+  // R3 — qualitative BMI-tier note, only when the "น้ำหนักเกิน" issue was picked
+  // and we actually have height+weight to compute a tier from. No number shown.
+  if (issues.includes("overweight") && p.weightTier) cautions.push(BMI_TIER_NOTE[p.weightTier]);
 
-  const note = p.hasPcos
+  const note = effectivePcos
     ? "เน้นบำรุงไข่ + งดหวานเพื่อสมดุลฮอร์โมน (คำแนะนำทั่วไป ไม่ใช่การรักษาโรค)"
-    : p.artPlan !== "none"
+    : p.artPlan !== "ยัง"
       ? "บำรุงไข่ให้พร้อมก่อนเข้าสู่กระบวนการ เพิ่มความพร้อมของร่างกาย"
       : "เริ่มบำรุงล่วงหน้าอย่างน้อย 3 เดือนเพื่อเตรียมความพร้อม";
 
   const c = keep(core);
-  const t = keep(targeted);
+  const t = keep(targetedDeduped);
   return {
     core: c, targeted: t, nutrition: keep(nutrition), external: keep(external),
     primary: [...c, ...t],

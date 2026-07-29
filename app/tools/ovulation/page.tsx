@@ -29,8 +29,7 @@ export default function OvulationPage() {
         embed={embed}
         icon={<IconCalendar />}
         title="นับวันไข่ตก"
-        intro="กรอกวันแรกของประจำเดือนล่าสุด แล้วเราจะช่วยหาช่วงที่มีโอกาสมีลูกสูงสุด — คุณผู้ชายกรอกแทนคู่ได้เลยค่ะ ช่วยกันวางแผนได้ทั้งสองคน 👫"
-        disclaimer={OVULATION_DISCLAIMER}
+        intro="กรอกวันแรกของประจำเดือนล่าสุด แล้วดูวันที่มีโอกาสตั้งครรภ์สูงสุดได้เลย"
       >
         <div className="space-y-4">
           <Field label="วันแรกของประจำเดือนล่าสุด" hint="ของคุณ หรือของคู่ก็ได้">
@@ -48,20 +47,20 @@ export default function OvulationPage() {
         )}
         {res && !("error" in res) && (
           <ResultCard>
+            {/* R9 — ovulation date is now the hero: largest element in the result,
+                fertile window demoted to a smaller secondary chip alongside it. */}
             <div className="text-center">
-              <p className="text-sm text-ink/60">ช่วงมีโอกาสสูง (Fertile window)</p>
-              <p className="text-xl font-semibold text-teal-deep">
-                {fmtTH(res.fertileStart)} – {fmtTH(res.fertileEnd)}
-              </p>
+              <p className="text-xs text-ink/50">วันไข่ตก (โดยประมาณ)</p>
+              <p className="text-4xl font-bold text-teal-deep sm:text-5xl">{fmtTH(res.ovulationDate)}</p>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3 text-center text-sm">
+            <div className="mt-4 grid grid-cols-2 gap-3 text-center text-xs">
               <div className="rounded-xl bg-teal/10 p-3">
-                <div className="text-ink/60">วันไข่ตก (โดยประมาณ)</div>
-                <div className="font-semibold">{fmtTH(res.ovulationDate)}</div>
+                <div className="text-ink/60">ช่วงมีโอกาสสูง</div>
+                <div className="font-medium">{fmtTH(res.fertileStart)} – {fmtTH(res.fertileEnd)}</div>
               </div>
               <div className="rounded-xl bg-rose-soft p-3">
                 <div className="text-ink/60">ประจำเดือนรอบถัดไป</div>
-                <div className="font-semibold">{fmtTH(res.nextPeriod)}</div>
+                <div className="font-medium">{fmtTH(res.nextPeriod)}</div>
               </div>
             </div>
             {res.irregularWarning && (
@@ -69,6 +68,10 @@ export default function OvulationPage() {
                 รอบเดือนของคุณอาจไม่สม่ำเสมอ ผลอาจคลาดเคลื่อน โดยเฉพาะผู้มีภาวะ PCOS — แนะนำปรึกษาแพทย์
               </p>
             )}
+            <details className="mt-3 text-xs text-ink/50">
+              <summary className="cursor-pointer select-none">ℹ️ คำอธิบาย/ข้อจำกัดของผลลัพธ์</summary>
+              <p className="mt-1 leading-relaxed">{OVULATION_DISCLAIMER}</p>
+            </details>
             <PlanCta />
             <VitaminsCta />
           </ResultCard>

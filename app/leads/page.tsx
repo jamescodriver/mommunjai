@@ -72,7 +72,9 @@ export default function LeadsPage() {
             {Object.entries(STAGE_TH).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
           <select className="field !w-auto" value={f.art} onChange={(e) => set("art", e.target.value)}>
-            <option value="">ART: ทั้งหมด</option><option value="none">ยังไม่</option><option value="iui">IUI</option><option value="ivf">IVF</option><option value="icsi">ICSI</option>
+            <option value="">ART: ทั้งหมด</option>
+            <option value="ยัง">ยัง</option><option value="IUI">IUI</option><option value="IVF-ICSI">IVF-ICSI</option>
+            <option value="บำรุงไข่">บำรุงไข่</option><option value="เตรียมผนังมดลูก">เตรียมผนังมดลูก</option>
           </select>
           <select className="field !w-auto" value={f.pcos} onChange={(e) => set("pcos", e.target.value)}>
             <option value="">PCOS: ทั้งหมด</option><option value="true">PCOS เท่านั้น</option>
@@ -108,7 +110,7 @@ export default function LeadsPage() {
                 <td className="p-3 whitespace-nowrap">{r.contact_channel} · {r.contact_value}</td>
                 <td className="p-3 whitespace-nowrap">{STAGE_TH[r.stage] || r.stage || "—"}</td>
                 <td className="p-3">{r.has_pcos ? "✓" : ""}</td>
-                <td className="p-3 uppercase">{r.art_plan !== "none" ? r.art_plan : ""}</td>
+                <td className="p-3">{r.art_plan && r.art_plan !== "ยัง" && r.art_plan !== "none" ? r.art_plan : ""}</td>
                 <td className="p-3">{r.score ?? "—"}</td>
                 <td className="p-3">{r.tag_count || ""}</td>
                 <td className="p-3">{r.line_bound ? <span className="chip !bg-[#06C755]/15 !text-[#06843c] !border-[#06C755]/30">🟢</span> : ""}</td>

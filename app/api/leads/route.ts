@@ -126,7 +126,7 @@ function csvResponse(rows: any[], _by: string) {
       new Date(r.created_at).toLocaleString("th-TH"),
       r.nickname, r.contact_channel, r.contact_value,
       STAGE_TH[r.stage] || r.stage || "", r.age_range || "",
-      r.has_pcos ? "ใช่" : "ไม่", r.art_plan || "none",
+      r.has_pcos ? "ใช่" : "ไม่", r.art_plan || "ยัง",
       r.score ?? "", r.ticket || "", r.tag_count, r.line_bound ? "เชื่อมแล้ว" : "ยัง",
     ].map(esc).join(","),
   );

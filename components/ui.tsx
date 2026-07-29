@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { MEDICAL_DISCLAIMER } from "@/lib/disclaimer";
+import { ConsentGate } from "@/components/consent-gate";
 import { ReactNode, useEffect } from "react";
 
 // Emits its own height to a parent frame so the brand site can auto-resize the widget.
@@ -64,6 +65,8 @@ export function ToolShell({
           <h1 className="text-2xl font-semibold">{title}</h1>
         </div>
         {intro && <p className="mt-2 text-base leading-relaxed text-ink/70">{intro}</p>}
+        {/* R7 — same consent gate as /plan, surfaced before any tool's own questions */}
+        <ConsentGate />
         <div className="mt-5">{children}</div>
         <Disclaimer text={disclaimer} />
       </div>

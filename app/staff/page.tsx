@@ -66,7 +66,15 @@ export default function StaffPage() {
             <span className="chip">{data.ticket?.status}</span>
           </div>
           <div className="mt-2 grid grid-cols-2 gap-1 text-ink/70">
-            <div>ช่องทาง: {data.lead?.contact_channel} — {data.lead?.contact_value}</div>
+            <div>
+              ช่องทาง: {data.lead?.contact_channel} — {data.lead?.contact_value}
+              {/* R8 — LINE user ID stays the sole unique identity key; a phone number
+                  is only ever a soft-match hint shown here for staff to judge manually,
+                  never auto-merged into another lead/customer. */}
+              {data.lead?.contact_channel === "phone" && (
+                <span className="ml-1 text-ink/40">(hint เทียบคนเดิม ไม่ auto-link)</span>
+              )}
+            </div>
             <div>ช่วง: {data.lead?.stage}</div>
             <div>อายุ: {data.lead?.age_range || "—"}</div>
             <div>PCOS: {data.lead?.has_pcos ? "ใช่" : "ไม่"}</div>

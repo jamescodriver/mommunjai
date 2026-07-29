@@ -2,13 +2,13 @@ import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
 import { IconSprout, IconBelly, IconBottle, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconGift } from "@/components/icons";
 
-// PDF-03 — 4 life-stage categories, client's own order. "มีบุตรยาก" sub-splits
-// into ฝ่ายชาย/ฝ่ายหญิง — both route to /plan?stage=..., reusing the stage
-// values the calc/report layer already understands (no schema change needed;
-// see docs/MAPPING-JOURNEY-2607.xlsx journeys ③/⑥ — infertility-male and
-// general-male already resolve to identical product logic in code).
+// R1 (PRD-UPDATE-R2-2607.md) — 4 real categories, no sub-picker except
+// "เตรียมตั้งครรภ์" which gets an inline "ฝ่ายชาย" sub-link (moved here from
+// "มีบุตรยาก", which now goes straight to /plan's own 7-item issue checklist —
+// see R2 — instead of a gender split on the home page).
 const CATEGORIES = [
   { icon: <IconSprout />, title: "เตรียมตั้งครรภ์", desc: "อยากมีลูก บำรุงร่างกายให้พร้อมล่วงหน้า", href: "/plan?stage=prep" },
+  { icon: <IconHeart />, title: "มีบุตรยาก", desc: "กำลังพยายามอยู่ ต้องการบำรุงเฉพาะทาง", href: "/plan?stage=infertility" },
   { icon: <IconBelly />, title: "ตั้งครรภ์แล้ว", desc: "ดูแลครรภ์ต่อเนื่อง เตรียมพร้อมสำหรับลูก", href: "/plan?stage=pregnant" },
   { icon: <IconBottle />, title: "ให้นมบุตร", desc: "ฟื้นฟูร่างกายหลังคลอด บำรุงคุณภาพน้ำนม", href: "/plan?stage=lactating" },
 ];
@@ -51,32 +51,35 @@ export default function Home() {
       <p className="mt-1 text-center text-base text-ink/60">เลือกช่วงชีวิตของคุณ แล้วเราจะพาไปแบบสอบถามที่ตรงกับคุณ</p>
 
       <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link
-          href={CATEGORIES[0].href}
-          className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
-        >
+        {/* เตรียมตั้งครรภ์ — R1: gets an inline "ฝ่ายชาย" sub-link (reachable from
+            here now too, not only from "มีบุตรยาก" like before). */}
+        <div className="glass p-5">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
             {CATEGORIES[0].icon}
           </div>
           <h3 className="mt-3 text-lg font-semibold">{CATEGORIES[0].title}</h3>
           <p className="mt-1 text-base text-ink/70">{CATEGORIES[0].desc}</p>
-          <span className="mt-3 inline-block text-sm font-medium text-teal-deep">เริ่มเลย →</span>
-        </Link>
-
-        {/* มีบุตรยาก — sub-splits ฝ่ายชาย/ฝ่ายหญิง per PDF-03; "general male, not
-            infertility" routing stays an explicit open question (client's own
-            reply: "แบ่งตามนี้ไปก่อน แล้ว Open Q นี้ไว้") — no card invented for it. */}
-        <div className="glass p-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-soft text-rose-deep" aria-hidden><IconHeart /></div>
-          <h3 className="mt-3 text-lg font-semibold">มีบุตรยาก</h3>
-          <p className="mt-1 text-base text-ink/70">กำลังพยายามอยู่ ต้องการบำรุงเฉพาะทาง</p>
           <div className="mt-3 flex gap-2">
-            <Link href="/plan?stage=infertility" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายหญิง →</Link>
+            <Link href={CATEGORIES[0].href} className="btn-primary !min-h-0 flex-1 !py-2 text-sm">เริ่มเลย →</Link>
             <Link href="/plan?stage=male" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายชาย →</Link>
           </div>
         </div>
 
-        {CATEGORIES.slice(1).map((c) => (
+        {/* มีบุตรยาก — R2 replaced the old ฝ่ายหญิง/ฝ่ายชาย sub-split with a
+            7-item issue checklist that now lives inside /plan itself. */}
+        <Link
+          href={CATEGORIES[1].href}
+          className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-rose/30"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-soft text-rose-deep" aria-hidden>
+            {CATEGORIES[1].icon}
+          </div>
+          <h3 className="mt-3 text-lg font-semibold">{CATEGORIES[1].title}</h3>
+          <p className="mt-1 text-base text-ink/70">{CATEGORIES[1].desc}</p>
+          <span className="mt-3 inline-block text-sm font-medium text-rose-deep">เริ่มเลย →</span>
+        </Link>
+
+        {CATEGORIES.slice(2).map((c) => (
           <Link
             key={c.href}
             href={c.href}

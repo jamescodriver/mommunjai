@@ -1,16 +1,21 @@
 // Personalized "Fertility Readiness Report" generator (pure, testable).
 // The reward users get for completing the questionnaire — see docs/MOTIVATION-RESEARCH.md.
 // NEVER claim to cure / guarantee pregnancy. Frames as readiness & preparation.
-import { recommendVitamins, Product, VitaminProfile } from "./calc/vitamins";
+import { recommendVitamins, Product, VitaminProfile, ArtPlan, InfertilityIssue } from "./calc/vitamins";
 import { calcProtein, Stage } from "./calc/protein";
+import { bmiTier } from "./calc/bmi";
 
 export interface ReportProfile {
   nickname?: string;
   stage?: Stage | "infertility";
   weightKg?: number;
+  /** R3 — only collected when the "น้ำหนักเกิน" issue is checked; used internally for a BMI tier only. */
+  heightCm?: number;
   ageRange?: string;
   hasPcos?: boolean;
-  artPlan?: "none" | "iui" | "ivf" | "icsi";
+  artPlan?: ArtPlan;
+  /** R2 — only meaningful when stage === "infertility". */
+  infertilityIssues?: InfertilityIssue[];
   tools?: Record<string, { input?: any; output?: any }>;
 }
 
@@ -40,7 +45,7 @@ export interface Report {
   quickWinToday: string; // 1 thing to do today (dampens "want answer now")
   pillars: Pillar[];
   fertileWindow: { ovulation: string; start: string; end: string; next: string } | null;
-  protein: { min: number; max: number; ferty: number } | null;
+  protein: { min: number; max: number; ferty: number; note?: string } | null;
   vitamins: Product[];
   vitaminNote: string;
   plan90: PlanPhase[];
@@ -111,9 +116,12 @@ export function generateReport(p: ReportProfile): Report {
   const t = p.tools || {};
   const baseStage: Stage = (p.stage === "infertility" ? "prep" : (p.stage as Stage)) || "prep";
   const isMale = p.stage === "male";
+  // R2 — the infertility checklist's "PCOS" item is equivalent to the older
+  // standalone hasPcos flag; either one turns on all the same PCOS-aware copy.
+  const hasPcos = !!p.hasPcos || !!p.infertilityIssues?.includes("pcos");
 
   // ----- pillars from whichever tools were completed -----
-  const { pillars, score, scoreLabel } = computePillars({ isMale, hasPcos: p.hasPcos, tools: t });
+  const { pillars, score, scoreLabel } = computePillars({ isMale, hasPcos, tools: t });
   const done = pillars.filter((x) => x.score !== null);
 
   // ----- strengths FIRST (research: never lead with a low score for a hurting person) -----
@@ -143,13 +151,27 @@ export function generateReport(p: ReportProfile): Report {
     const c = calcProtein({ weightKg: p.weightKg, stage: baseStage });
     if (!("error" in c)) protein = { min: c.minGrams, max: c.maxGrams, ferty: c.fertyServings.max };
   }
+  // R3 — qualitative age modifier only (decision: no new numeric formula yet).
+  if (protein && (p.ageRange === "35–39" || p.ageRange === "40+")) {
+    protein = { ...protein, note: "ช่วงอายุนี้ควรได้โปรตีนในช่วงบนของเกณฑ์ที่แนะนำ" };
+  }
 
   // ----- vitamins -----
-  const vp: VitaminProfile = { stage: baseStage, hasPcos: !!p.hasPcos, artPlan: p.artPlan || "none" };
+  // R3 — internal-only BMI tier (never shown as a number), only computed when
+  // both height+weight are present (height is only ever collected after the
+  // "น้ำหนักเกิน" checkbox in R2 — see app/plan/page.tsx).
+  const weightTier = p.weightKg && p.heightCm ? bmiTier(p.weightKg, p.heightCm) ?? undefined : undefined;
+  const vp: VitaminProfile = {
+    stage: baseStage,
+    hasPcos,
+    artPlan: p.artPlan || "ยัง",
+    infertilityIssues: p.infertilityIssues,
+    weightTier,
+  };
   const rec = recommendVitamins(vp);
 
   // ----- personalized 90-day plan (food/behavior FIRST, products last; ART = consult doctor before supplements) -----
-  const artActive = !!p.artPlan && p.artPlan !== "none";
+  const artActive = !!p.artPlan && p.artPlan !== "ยัง";
   // age-appropriate referral timing (clinical: <35=12mo, 35-39=6mo, 40+=now)
   const referral =
     p.ageRange === "40+"
@@ -177,12 +199,12 @@ export function generateReport(p: ReportProfile): Report {
             artActive ? "เมื่อแพทย์อนุญาต จึงเริ่มวิตามินบำรุง เช่น OvaAll" : "ถ้าต้องการเสริม: OvaAll วันละ 1 ซองพร้อมอาหาร",
           ] },
         { phase: "เดือนที่ 2", title: "เร่งบำรุงไข่ + สมดุลฮอร์โมน", items: [
-            "งดหวาน/คาเฟอีน/น้ำเย็น" + (p.hasPcos ? " (สำคัญมากสำหรับการดูแลสมดุลในกลุ่ม PCOS)" : ""),
+            "งดหวาน/คาเฟอีน/น้ำเย็น" + (hasPcos ? " (สำคัญมากสำหรับการดูแลสมดุลในกลุ่ม PCOS)" : ""),
             "ออกกำลังกายเบา (เดิน/โยคะ) 3 วัน/สัปดาห์",
             "เพิ่มอะโวคาโด+น้ำผึ้งชันโรง ครึ่งผล/วัน",
-            "ถ้าต้องการเสริม: โปรตีนเฟอร์ตี้ช่วยให้ได้โปรตีนครบ" + (p.hasPcos ? " · PCO-VIT สำหรับดูแลสมดุล (ปรึกษาแพทย์/เภสัชกรถ้าใช้ยาอยู่)" : ""),
+            "ถ้าต้องการเสริม: โปรตีนเฟอร์ตี้ช่วยให้ได้โปรตีนครบ" + (hasPcos ? " · PCO-VIT สำหรับดูแลสมดุล (ปรึกษาแพทย์/เภสัชกรถ้าใช้ยาอยู่)" : ""),
           ] },
-        { phase: "เดือนที่ 3", title: artActive ? `เตรียมพร้อมก่อนทำ ${p.artPlan!.toUpperCase()}` : "เตรียมพร้อมสูงสุด", items: [
+        { phase: "เดือนที่ 3", title: artActive ? art3Title(p.artPlan!) : "เตรียมพร้อมสูงสุด", items: [
             "ดูแลผนังมดลูกด้วยโภชนาการ (ธาตุเหล็ก/โฟเลต/วิตามินอี จากอาหาร) — หลีกเลี่ยงการประคบหรือสมุนไพรกระตุ้นมดลูกในช่วงลุ้นผล และปรึกษาแพทย์ก่อนใช้เทคนิคใด ๆ",
             "จดบันทึกรอบเดือน/วันไข่ตกให้แม่นขึ้น",
             artActive ? "ปรึกษาแพทย์เรื่องจังหวะเก็บไข่/ย้ายตัวอ่อน" : referral,
@@ -190,7 +212,7 @@ export function generateReport(p: ReportProfile): Report {
       ];
 
   // ----- quick win today (dampens "want answer now") -----
-  const quickWinToday = p.hasPcos
+  const quickWinToday = hasPcos
     ? "วันนี้: งดของหวานทั้งหมด แล้วดื่มน้ำอุ่น 1 แก้วตอนตื่น"
     : isMale
       ? "วันนี้: เพิ่มไข่ต้ม 2 ฟอง + เมล็ดฟักทองหนึ่งกำมือ"
@@ -207,7 +229,7 @@ export function generateReport(p: ReportProfile): Report {
   if (weakest?.key === "sleep") weeklyActions.push("สัปดาห์นี้: เข้านอนก่อน 22:00 ให้ได้อย่างน้อย 5 วัน");
   if (weakest?.key === "nutrition" || weakest?.key === "egg") weeklyActions.push("สัปดาห์นี้: กินไข่ต้ม 2 ฟอง + ปลา 1 มื้อทุกวัน");
   if (weakest?.key === "water") weeklyActions.push("สัปดาห์นี้: เพิ่มน้ำอีก 1 แก้วในแต่ละมื้อ ค่อย ๆ ไปให้ถึงเป้าหมาย");
-  if (p.hasPcos) weeklyActions.push("สัปดาห์นี้: งดของหวานทั้งหมด ดื่มน้ำอุ่น 2–3 ลิตร/วัน");
+  if (hasPcos) weeklyActions.push("สัปดาห์นี้: งดของหวานทั้งหมด ดื่มน้ำอุ่น 2–3 ลิตร/วัน");
   if (!fertileWindow) weeklyActions.push("ลองทำ ‘นับวันไข่ตก’ เพื่อวางแผนช่วงมีโอกาส");
   if (weeklyActions.length < 3) weeklyActions.push("สัปดาห์นี้: จัดจานตามหลัก 70% อาหาร — โปรตีน ผัก ไขมันดี ให้ครบทุกมื้อ");
 
@@ -215,8 +237,8 @@ export function generateReport(p: ReportProfile): Report {
   const cautions: string[] = [
     "แผนนี้เป็นคำแนะนำทั่วไปเพื่อเตรียมความพร้อม ไม่ใช่การวินิจฉัยหรือรักษาโรค และไม่รับประกันการตั้งครรภ์",
   ];
-  if (p.hasPcos) cautions.push("ผู้มีภาวะ PCOS รอบเดือนอาจไม่สม่ำเสมอ ผลการนับวันไข่ตกอาจคลาดเคลื่อน ควรอยู่ในการดูแลของแพทย์");
-  if (p.artPlan && p.artPlan !== "none")
+  if (hasPcos) cautions.push("ผู้มีภาวะ PCOS รอบเดือนอาจไม่สม่ำเสมอ ผลการนับวันไข่ตกอาจคลาดเคลื่อน ควรอยู่ในการดูแลของแพทย์");
+  if (p.artPlan && p.artPlan !== "ยัง")
     cautions.push("คุณกำลังอยู่ในกระบวนการรักษากับแพทย์ — อย่าหยุดหรือปรับยา/วิตามินเองก่อนปรึกษาแพทย์ เพราะบางอย่างอาจมีผลต่อการรักษา");
   if (p.ageRange === "40+" || p.ageRange === "35–39" || artActive)
     cautions.push("เรื่องเวลาเป็นสิ่งสำคัญ แนะนำปรึกษาแพทย์ผู้เชี่ยวชาญควบคู่ไปด้วย");
@@ -230,6 +252,53 @@ export function generateReport(p: ReportProfile): Report {
     pillars, fertileWindow, protein,
     vitamins: rec.primary, vitaminNote: rec.note,
     plan90, weeklyActions: weeklyActions.slice(0, 4), partnerNudge, isMale, cautions,
-    generatedFor: { stage: stageThai[p.stage || "prep"], hasPcos: p.hasPcos, artPlan: p.artPlan },
+    generatedFor: { stage: stageThai[p.stage || "prep"], hasPcos, artPlan: p.artPlan },
+  };
+}
+
+// R4 — "เตรียมผนังมดลูก" reads awkwardly as "เตรียมพร้อมก่อนทำ เตรียมผนังมดลูก";
+// every other artPlan value still fits the original "เตรียมพร้อมก่อนทำ {X}" phrasing.
+function art3Title(ap: ArtPlan): string {
+  return ap === "เตรียมผนังมดลูก" ? "เตรียมผนังมดลูกให้พร้อมที่สุด" : `เตรียมพร้อมก่อนทำ ${ap}`;
+}
+
+// R5 — which depth of report a submission is allowed to see immediately (see R6
+// for how this gates /api/lead's response). Decided combinations (PRD §Open Q3):
+//  - "เตรียมผนังมดลูก" / "IVF-ICSI" → full (most medically intensive tracks)
+//  - "IUI" / "บำรุงไข่" → medium
+//  - "ยัง" + no issues (or only "ไม่แน่ใจ") → teaser
+//  - "ยัง" + a real issue ticked (e.g. PCOS, but not yet in a medical process)
+//    → medium: not spec-literal (PRD only names IUI/บำรุงไข่ for medium), but a
+//    defined answer is needed for every input combo — flagged in the PM report.
+export type ReportTier = "teaser" | "medium" | "full";
+export function reportTier(p: { artPlan?: ArtPlan; infertilityIssues?: string[] }): ReportTier {
+  const ap = p.artPlan || "ยัง";
+  if (ap === "เตรียมผนังมดลูก" || ap === "IVF-ICSI") return "full";
+  if (ap === "IUI" || ap === "บำรุงไข่") return "medium";
+  const issues = (p.infertilityIssues || []).filter((x) => x !== "unsure");
+  return issues.length > 0 ? "medium" : "teaser";
+}
+
+// R6 — teaser/medium responses never carry the full report body server-side.
+// Full generation/storage in `reports` is unchanged; this just picks what's safe
+// to hand back in /api/lead's JSON for a non-"full" tier.
+export interface TeaserSummary {
+  nickname: string;
+  scoreLabel: string;
+  weakestPillars: { label: string; note: string }[];
+  recommendedProducts: { id: string; name: string; why: string }[];
+  quickWinToday: string;
+}
+export function buildTeaser(report: Report): TeaserSummary {
+  const scored = report.pillars.filter((x) => x.score !== null);
+  const ordered = scored.length
+    ? [...scored].sort((a, b) => (a.score as number) - (b.score as number))
+    : report.pillars; // nothing assessed yet at lead-submit time — still surface something
+  return {
+    nickname: report.nickname,
+    scoreLabel: report.scoreLabel,
+    weakestPillars: ordered.slice(0, 2).map((x) => ({ label: x.label, note: x.note })),
+    recommendedProducts: report.vitamins.slice(0, 3).map((x) => ({ id: x.id, name: x.name, why: x.why })),
+    quickWinToday: report.quickWinToday,
   };
 }

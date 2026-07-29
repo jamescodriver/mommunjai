@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useEmbed } from "@/components/use-embed";
-import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules } from "@/lib/calc/vitamins";
+import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules, ART_PLAN_VALUES, mapLegacyArtPlan } from "@/lib/calc/vitamins";
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
 import { IconPill } from "@/components/icons";
@@ -12,7 +12,7 @@ export default function VitaminsPage() {
   const embed = useEmbed();
   const [stage, setStage] = useState<VitaminStage>("prep");
   const [hasPcos, setHasPcos] = useState(false);
-  const [artPlan, setArtPlan] = useState<VitaminProfile["artPlan"]>("none");
+  const [artPlan, setArtPlan] = useState<VitaminProfile["artPlan"]>("ยัง");
   const [res, setRes] = useState<ReturnType<typeof recommendVitamins> | null>(null);
 
   // Prefill from whatever the person already told another tool (/plan, protein, an
@@ -21,7 +21,8 @@ export default function VitaminsPage() {
     const p = readProfile();
     if (p.stage && VITAMIN_STAGES.has(p.stage as VitaminStage)) setStage(p.stage as VitaminStage);
     if (p.hasPcos !== undefined) setHasPcos(!!p.hasPcos);
-    if (p.artPlan) setArtPlan(p.artPlan);
+    // mapLegacyArtPlan also covers a browser with a pre-R4 cached value.
+    if (p.artPlan) setArtPlan(mapLegacyArtPlan(p.artPlan));
   }, []);
 
   const run = () => {
@@ -54,10 +55,10 @@ export default function VitaminsPage() {
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium">3. วางแผนทำเด็กหลอดแก้วไหม</p>
-            <div className="mt-2 grid grid-cols-4 gap-2 text-sm">
-              {(["none", "iui", "ivf", "icsi"] as const).map((v) => (
-                <button key={v} onClick={() => setArtPlan(v)} className={`rounded-xl border px-2 py-2 ${artPlan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{v === "none" ? "ยังไม่" : v.toUpperCase()}</button>
+            <p className="text-sm font-medium">3. เข้าสู่กระบวนการทางการแพทย์ไหม</p>
+            <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
+              {ART_PLAN_VALUES.map((v) => (
+                <button key={v} onClick={() => setArtPlan(v)} className={`rounded-xl border px-2 py-2 ${artPlan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{v}</button>
               ))}
             </div>
           </div>
