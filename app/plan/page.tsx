@@ -17,8 +17,12 @@ import { track } from "@/lib/track";
 const ALL_STEPS = ["intro", "name", "stage", "issues", "health", "art", "contact"] as const;
 type Step = (typeof ALL_STEPS)[number];
 
-function stepsFor(stage: string | undefined): Step[] {
-  return stage === "infertility" ? [...ALL_STEPS] : ALL_STEPS.filter((s) => s !== "issues");
+function stepsFor(stage: string | undefined, skipStagePicker: boolean): Step[] {
+  return ALL_STEPS.filter((s) => {
+    if (s === "issues") return stage === "infertility";
+    if (s === "stage") return !skipStagePicker;
+    return true;
+  });
 }
 
 const VALID_STAGES = ["prep", "infertility", "pregnant", "lactating", "male"];
@@ -43,8 +47,13 @@ function PlanPageInner() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ ticket: string; tier: ReportTier; report?: Report; teaser?: TeaserSummary } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // R7 fix — the category already chosen on the home page (?stage=) should only
+  // skip the redundant "stage" picker screen, never the "intro" consent step.
+  // (Previously this jumped straight to index 1 "name", bypassing consent
+  // entirely for the primary entry path — caught in QA, see test-report-r2607-r1-r9.html.)
+  const [skipStagePicker] = useState(() => !!(stageParam && VALID_STAGES.includes(stageParam)));
 
-  const steps = useMemo(() => stepsFor(form.stage), [form.stage]);
+  const steps = useMemo(() => stepsFor(form.stage, skipStagePicker), [form.stage, skipStagePicker]);
 
   useEffect(() => {
     // R7 — a device that already answered the consent prompt (via /plan or any
@@ -79,7 +88,7 @@ function PlanPageInner() {
           setConsentChoice(true);
           if (data.stage) mergeProfile({ stage: data.stage, hasPcos: data.has_pcos, artPlan: data.art_plan, weightKg: data.weightKg });
           for (const [tool, r2] of Object.entries<any>(data.tools || {})) recordTool(tool, r2.input, r2.output);
-          setI(stepsFor(data.stage).indexOf("health"));
+          setI(stepsFor(data.stage, true).indexOf("health"));
         })
         .catch(() => {});
       return;
@@ -95,10 +104,9 @@ function PlanPageInner() {
       weightKg: p.weightKg,
       interests: p.interests || [],
     }));
-    // Category already picked on the home page — skip straight to "name",
-    // still showing the pre-selected stage on the next screen so they can
-    // confirm or change it (this doubles as the PDF-05 category-switch UX).
-    if (stageParam && VALID_STAGES.includes(stageParam)) setI(1); // "name" is always index 1
+    // Category already picked on the home page — the "stage" step is filtered
+    // out of `steps` via skipStagePicker above, but intro/consent still shows
+    // first (index 0) like any other entry into /plan.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
