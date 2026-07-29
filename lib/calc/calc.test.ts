@@ -3,10 +3,11 @@ import { calcOvulation } from "./ovulation";
 import { calcProtein } from "./protein";
 import { assessNutrients } from "./nutrients";
 import { bedtimesForWake, assessSleep } from "./sleep";
-import { recommendVitamins } from "./vitamins";
+import { recommendVitamins, mapLegacyArtPlan, ART_PLAN_VALUES, INFERTILITY_ISSUE_VALUES } from "./vitamins";
 import { calcWater } from "./water";
 import { autoTags } from "../tagging";
 import { genTicketCode } from "../ticket";
+import { bmiTier, BMI_TIER_NOTE } from "./bmi";
 
 describe("ovulation (M2)", () => {
   it("computes ovulation 14d before next period for a 28d cycle", () => {
@@ -191,6 +192,132 @@ describe("vitamins (M6)", () => {
   it("note never claims cure", () => {
     const r = recommendVitamins({ stage: "prep", hasPcos: true, artPlan: "ยัง" });
     expect(r.note).not.toMatch(/หายขาด|รักษาให้หาย|การันตี|ท้องแน่นอน/);
+  });
+});
+
+describe("mapLegacyArtPlan (R4 migration)", () => {
+  it("maps every legacy value forward", () => {
+    expect(mapLegacyArtPlan("none")).toBe("ยัง");
+    expect(mapLegacyArtPlan("")).toBe("ยัง");
+    expect(mapLegacyArtPlan("iui")).toBe("IUI");
+    expect(mapLegacyArtPlan("ivf")).toBe("IVF-ICSI");
+    expect(mapLegacyArtPlan("icsi")).toBe("IVF-ICSI");
+  });
+  it("is case-insensitive on legacy values", () => {
+    expect(mapLegacyArtPlan("IVF")).toBe("IVF-ICSI");
+    expect(mapLegacyArtPlan("ICSI")).toBe("IVF-ICSI");
+    expect(mapLegacyArtPlan("IUI")).toBe("IUI"); // also a valid *new* value verbatim
+  });
+  it("passes every new R4 value through unchanged", () => {
+    for (const v of ART_PLAN_VALUES) expect(mapLegacyArtPlan(v)).toBe(v);
+  });
+  it("never throws on garbage/untrusted input — defaults to ยัง", () => {
+    expect(mapLegacyArtPlan(undefined)).toBe("ยัง");
+    expect(mapLegacyArtPlan(null)).toBe("ยัง");
+    expect(mapLegacyArtPlan(123)).toBe("ยัง");
+    expect(mapLegacyArtPlan({})).toBe("ยัง");
+    expect(mapLegacyArtPlan("some-unknown-string")).toBe("ยัง");
+  });
+});
+
+describe("bmiTier (R3 — internal only, never shown as a number)", () => {
+  it("classifies normal/overweight/obese by WHO Asian cutoffs", () => {
+    expect(bmiTier(50, 160)).toBe("normal"); // BMI ≈ 19.5
+    expect(bmiTier(66.5, 170)).toBe("overweight"); // BMI ≈ 23.0
+    expect(bmiTier(75, 170)).toBe("obese"); // BMI ≈ 26.0
+  });
+  it("boundary: BMI exactly 23 is overweight, not normal", () => {
+    const heightM = 1.7;
+    const weightAt23 = 23 * heightM * heightM;
+    expect(bmiTier(weightAt23, 170)).toBe("overweight");
+  });
+  it("boundary: BMI exactly 25 is obese, not overweight", () => {
+    const heightM = 1.7;
+    const weightAt25 = 25 * heightM * heightM;
+    expect(bmiTier(weightAt25, 170)).toBe("obese");
+  });
+  it("boundary: just under 23 is still normal", () => {
+    const heightM = 1.7;
+    const weightJustUnder23 = 23 * heightM * heightM - 0.01;
+    expect(bmiTier(weightJustUnder23, 170)).toBe("normal");
+  });
+  it("rejects invalid/non-finite/non-positive inputs without throwing", () => {
+    expect(bmiTier(0, 160)).toBeNull();
+    expect(bmiTier(-5, 160)).toBeNull();
+    expect(bmiTier(50, 0)).toBeNull();
+    expect(bmiTier(50, -160)).toBeNull();
+    expect(bmiTier(NaN, 160)).toBeNull();
+    expect(bmiTier(50, Infinity)).toBeNull();
+  });
+  it("compliance: the qualitative note never spells out 'BMI' or a decimal BMI-style number (e.g. 27.3)", () => {
+    for (const tier of Object.keys(BMI_TIER_NOTE) as (keyof typeof BMI_TIER_NOTE)[]) {
+      expect(BMI_TIER_NOTE[tier]).not.toMatch(/BMI|ดัชนีมวลกาย/i);
+      expect(BMI_TIER_NOTE[tier]).not.toMatch(/\d+\.\d/); // no decimal figure like a BMI value
+    }
+  });
+});
+
+describe("recommendVitamins — R2 infertility issue checklist", () => {
+  it("issues=['pcos'] triggers PCO-VIT even without the legacy hasPcos flag", () => {
+    const r = recommendVitamins({ stage: "infertility", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["pcos"] });
+    expect(r.primary.map((p) => p.id)).toContain("pcovit");
+  });
+  it("issues=['male_factor'] adds M-Z All but Motila1 stays excluded app-wide", () => {
+    const r = recommendVitamins({ stage: "infertility", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["male_factor"] });
+    const ids = r.primary.map((p) => p.id);
+    expect(ids).toContain("mzall");
+    expect(ids).not.toContain("motila1");
+  });
+  it("issues=['unsure'] behaves like the pre-checklist baseline — no PCO-VIT/M-Z All added", () => {
+    const r = recommendVitamins({ stage: "infertility", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["unsure"] });
+    const ids = r.primary.map((p) => p.id);
+    expect(ids).not.toContain("pcovit");
+    expect(ids).not.toContain("mzall");
+    expect(ids).not.toContain("motila1");
+  });
+  it("multiple issues combine without duplicate products", () => {
+    const r = recommendVitamins({ stage: "infertility", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["pcos", "male_factor", "overweight"] });
+    const ids = r.primary.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length); // no dupes
+    expect(ids).toContain("pcovit");
+    expect(ids).toContain("mzall");
+  });
+  it("'overweight' issue + a computed weightTier adds a qualitative BMI note, never a number", () => {
+    const r = recommendVitamins({ stage: "infertility", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["overweight"], weightTier: "obese" });
+    expect(r.cautions.join(" ")).toMatch(BMI_TIER_NOTE.obese);
+    expect(r.cautions.join(" ")).not.toMatch(/BMI|ดัชนีมวลกาย/);
+    expect(r.cautions.join(" ")).not.toMatch(/\b\d{2}\.\d\b/); // no "27.3"-style number
+  });
+  it("a weightTier with no 'overweight' issue ticked does not surface the BMI note", () => {
+    const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "ยัง", weightTier: "obese" });
+    expect(r.cautions.join(" ")).not.toMatch(BMI_TIER_NOTE.obese);
+  });
+  it("Safety Matrix still drops Varginaree while lactating even via the new issue-checklist path", () => {
+    const r = recommendVitamins({ stage: "lactating", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["pcos", "diminished_ovary"] });
+    const ids = [...r.core, ...r.targeted, ...r.nutrition].map((p) => p.id);
+    expect(ids).not.toContain("varginaree");
+  });
+  it("Safety Matrix still drops embryo-transfer/pregnancy-unsafe items while pregnant via the issue-checklist path", () => {
+    const r = recommendVitamins({ stage: "pregnant", hasPcos: false, artPlan: "ยัง", infertilityIssues: ["thin_lining", "male_factor"] });
+    const ids = [...r.core, ...r.targeted, ...r.nutrition, ...r.external].map((p) => p.id);
+    for (const banned of ["aos", "varginaree", "kaffirshot", "puregreen", "safflower", "castoroil"]) {
+      expect(ids, `${banned} ห้ามแนะนำช่วงตั้งครรภ์`).not.toContain(banned);
+    }
+  });
+  it("INFERTILITY_ISSUE_VALUES has exactly the 7 spec'd keys, 'unsure' included", () => {
+    expect(INFERTILITY_ISSUE_VALUES).toHaveLength(7);
+    expect(INFERTILITY_ISSUE_VALUES).toContain("unsure");
+  });
+});
+
+describe("recommendVitamins — R4 artPlan (5-value schema)", () => {
+  it("only 'ยัง' skips the ART-consult caution; every other value adds it", () => {
+    const skip = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "ยัง" });
+    expect(skip.cautions.join(" ")).not.toMatch(/ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มอาหารเสริม/);
+    for (const ap of ["IUI", "IVF-ICSI", "บำรุงไข่", "เตรียมผนังมดลูก"] as const) {
+      const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: ap });
+      expect(r.cautions.join(" "), `artPlan=${ap}`).toMatch(/ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มอาหารเสริม/);
+    }
   });
 });
 

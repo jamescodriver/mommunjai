@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateReport } from "./report";
+import { generateReport, reportTier, buildTeaser } from "./report";
 import { hashPin, verifyPin, signSession, verifySession, hasPerm } from "./auth";
 import { extractTicketCode } from "./line";
 
@@ -166,5 +166,78 @@ describe("report — sleep tool mode A", () => {
     const r = generateReport({ nickname: "แนน", stage: "prep",
       tools: { sleep: { input: { mode: "B" }, output: { hours: 8, goodDuration: true, beforeTen: true, status: "ดี" } } } });
     expect(r.pillars.find((p) => p.key === "sleep")?.score).toBe(92);
+  });
+});
+
+describe("reportTier (R5) — depth-tiering by artPlan/issues", () => {
+  it("'ยัง' + no issues → teaser", () => {
+    expect(reportTier({ artPlan: "ยัง", infertilityIssues: [] })).toBe("teaser");
+    expect(reportTier({})).toBe("teaser"); // missing artPlan defaults to ยัง
+  });
+  it("'ยัง' + only 'unsure' ticked → still teaser ('unsure' never counts as a real issue)", () => {
+    expect(reportTier({ artPlan: "ยัง", infertilityIssues: ["unsure"] })).toBe("teaser");
+  });
+  it("'เตรียมผนังมดลูก' and 'IVF-ICSI' → full, regardless of issues", () => {
+    expect(reportTier({ artPlan: "เตรียมผนังมดลูก" })).toBe("full");
+    expect(reportTier({ artPlan: "IVF-ICSI" })).toBe("full");
+    expect(reportTier({ artPlan: "เตรียมผนังมดลูก", infertilityIssues: ["unsure"] })).toBe("full");
+  });
+  it("'IUI' and 'บำรุงไข่' → medium", () => {
+    expect(reportTier({ artPlan: "IUI" })).toBe("medium");
+    expect(reportTier({ artPlan: "บำรุงไข่" })).toBe("medium");
+  });
+  it("'ยัง' + a real issue ticked (not just 'unsure') → medium", () => {
+    expect(reportTier({ artPlan: "ยัง", infertilityIssues: ["pcos"] })).toBe("medium");
+  });
+  it("a mix of 'unsure' with a real issue still counts as a real issue → medium", () => {
+    // Shouldn't happen via the UI (unsure is exclusive there — app/plan/page.tsx toggleIssue),
+    // but reportTier is a pure function taking untrusted-shaped input and must not throw/misclassify.
+    expect(reportTier({ artPlan: "ยัง", infertilityIssues: ["unsure", "pcos"] })).toBe("medium");
+  });
+});
+
+describe("buildTeaser (R6) — server-side gate, never leaks full report fields", () => {
+  const fullReport = generateReport({
+    nickname: "หมิว", stage: "infertility", hasPcos: true, artPlan: "ยัง",
+    tools: {
+      nutrients: { output: { pillars: { egg: 40, uterus: 60, hormone: 70 }, overall: 55, eatenCount: 4, totalEat: 8 } },
+      sleep: { output: { beforeTen: false, goodDuration: false, status: "ควรปรับ" } },
+    },
+  });
+
+  it("picks the 2 weakest-scored pillars, sorted ascending", () => {
+    const t = buildTeaser(fullReport);
+    expect(t.weakestPillars).toHaveLength(2);
+    const scored = fullReport.pillars.filter((p) => p.score !== null).sort((a, b) => (a.score as number) - (b.score as number));
+    expect(t.weakestPillars.map((p) => p.label)).toEqual(scored.slice(0, 2).map((p) => p.label));
+  });
+  it("caps recommended products at 3", () => {
+    const t = buildTeaser(fullReport);
+    expect(t.recommendedProducts.length).toBeLessThanOrEqual(3);
+    expect(t.recommendedProducts.length).toBeGreaterThan(0);
+  });
+  it("recommended product entries never carry price/dosage/detail — only id/name/why", () => {
+    const t = buildTeaser(fullReport);
+    for (const p of t.recommendedProducts) {
+      expect(Object.keys(p).sort()).toEqual(["id", "name", "why"]);
+    }
+    const json = JSON.stringify(t);
+    expect(json).not.toMatch(/"price"|"howto"|"detail"/);
+  });
+  it("carries nickname, scoreLabel and quickWinToday through", () => {
+    const t = buildTeaser(fullReport);
+    expect(t.nickname).toBe(fullReport.nickname);
+    expect(t.scoreLabel).toBe(fullReport.scoreLabel);
+    expect(t.quickWinToday).toBe(fullReport.quickWinToday);
+  });
+  it("still surfaces something even when nothing was assessed yet at submit time", () => {
+    const bare = generateReport({ nickname: "A", stage: "prep" });
+    const t = buildTeaser(bare);
+    expect(t.weakestPillars.length).toBeGreaterThan(0);
+  });
+  it("the teaser JSON never contains a full plan90/pillars/protein/vitamins body (R6 server-side gate)", () => {
+    const t = buildTeaser(fullReport);
+    const json = JSON.stringify(t);
+    expect(json).not.toMatch(/"plan90"|"protein"|"fertileWindow"|"weeklyActions"/);
   });
 });
