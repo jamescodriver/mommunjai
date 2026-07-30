@@ -15,6 +15,11 @@ interface AdminHandoffCtaProps {
   tool: string;
   toolInput?: unknown;
   toolOutput?: unknown;
+  /** R10 red-team — default text mentions "โปรโมชั่น" (fits the vitamins page,
+   *  where it means product discounts). On the labs tool that phrase could
+   *  read as "lab-test package promotion", which is out of scope (GFC
+   *  partnership still blocked — see PDF-18) — override it there. */
+  label?: string;
 }
 
 type Phase = "idle" | "submitting" | "done";
@@ -28,13 +33,14 @@ type Phase = "idle" | "submitting" | "done";
 // LINE (or the "แผนของฉัน" menu trigger) pulls up everything they just answered.
 // Never collects anything without consent already granted (ConsentGate, shown
 // once at the top of every ToolShell page, gates this).
-export default function AdminHandoffCta({ stage, artPlan, infertilityIssues, interests, tool, toolInput, toolOutput }: AdminHandoffCtaProps) {
+export default function AdminHandoffCta({ stage, artPlan, infertilityIssues, interests, tool, toolInput, toolOutput, label }: AdminHandoffCtaProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [nickname, setNickname] = useState("");
   const [contactValue, setContactValue] = useState("");
   const [ticket, setTicket] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  const ctaLabel = label || "สอบถามรายละเอียดเพิ่มเติม และโปรโมชั่นได้ที่ LINE OA";
   const consent = typeof window !== "undefined" ? !!readProfile().consent : false;
 
   // Declined (or never asked) consent — still let them reach an admin, just
@@ -48,7 +54,7 @@ export default function AdminHandoffCta({ stage, artPlan, infertilityIssues, int
         rel="noreferrer"
         onClick={() => track("line_click", { source: `${tool}_no_consent` })}
       >
-        💬 สอบถามรายละเอียดเพิ่มเติม และโปรโมชั่นได้ที่ LINE OA
+        💬 {ctaLabel}
       </a>
     );
   }
@@ -107,7 +113,7 @@ export default function AdminHandoffCta({ stage, artPlan, infertilityIssues, int
 
   return (
     <div className="mt-3 rounded-xl border border-black/10 bg-white/60 p-3">
-      <p className="text-xs font-medium text-ink">💬 สอบถามรายละเอียดเพิ่มเติม และโปรโมชั่นได้ที่ LINE OA</p>
+      <p className="text-xs font-medium text-ink">💬 {ctaLabel}</p>
       <p className="mt-0.5 text-xs text-ink/50">ฝากชื่อเล่น + LINE ไว้ก่อน แอดมินจะได้เห็นคำตอบที่คุณตอบไว้แล้ว ไม่ต้องเล่าใหม่</p>
       <div className="mt-2 space-y-2">
         <input

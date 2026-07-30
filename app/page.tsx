@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
-import { IconSprout, IconBelly, IconBottle, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconGift, IconRun } from "@/components/icons";
+import { IconSprout, IconBelly, IconBottle, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconGift, IconRun, IconClipboard } from "@/components/icons";
 
 // R1 (PRD-UPDATE-R2-2607.md) — 4 real categories, no sub-picker except
 // "เตรียมตั้งครรภ์" which gets an inline "ฝ่ายชาย" sub-link (moved here from
@@ -21,6 +21,7 @@ const TOOLS = [
   { href: "/tools/water", icon: <IconDroplet />, title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่ตามน้ำหนักตัว" },
   { href: "/tools/exercise", icon: <IconRun />, title: "แนะนำการออกกำลังกาย", desc: "โปรแกรมที่เหมาะกับช่วงของคุณ อ้างอิง WHO/ACOG" },
   { href: "/tools/vitamins", icon: <IconPill />, title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
+  { href: "/tools/labs", icon: <IconClipboard />, title: "ตรวจร่างกาย ควรตรวจอะไรบ้าง", desc: "ความรู้เบื้องต้นเรื่องฮอร์โมน/ค่าน้ำเชื้อ อ้างอิง ASRM/WHO" },
   { href: "/plan", icon: <IconGift />, title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
 ];
 
