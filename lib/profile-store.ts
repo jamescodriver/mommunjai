@@ -6,7 +6,7 @@
 // so the score could never update. localStorage also means someone returning tomorrow still has
 // their tool results. Same device, same user, still client-only.
 "use client";
-import type { ArtPlan } from "./calc/vitamins";
+import type { ArtPlan, InfertilityIssue } from "./calc/vitamins";
 
 export interface Profile {
   stage?: "prep" | "infertility" | "pregnant" | "lactating" | "male";
@@ -14,6 +14,8 @@ export interface Profile {
   ageRange?: string;
   hasPcos?: boolean;
   artPlan?: ArtPlan;
+  /** R2 — only meaningful when stage === "infertility"; the issue-picker never appears for other stages. */
+  infertilityIssues?: InfertilityIssue[];
   interests?: string[];
   tools?: Record<string, { input: unknown; output: unknown }>;
   /** R7 — has this device answered the consent prompt at least once, and what did they say. */

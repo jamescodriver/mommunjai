@@ -1,43 +1,63 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useEmbed } from "@/components/use-embed";
-import { recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules, ART_PLAN_VALUES, mapLegacyArtPlan } from "@/lib/calc/vitamins";
+import {
+  recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules, InfertilityIssue,
+  INFERTILITY_ISSUES, ART_PLAN_VALUES, mapLegacyArtPlan,
+} from "@/lib/calc/vitamins";
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
 import { IconPill } from "@/components/icons";
+import AdminHandoffCta from "@/components/admin-handoff-cta";
 
 const VITAMIN_STAGES = new Set<VitaminStage>(["prep", "infertility", "pregnant", "male"]);
 
 export default function VitaminsPage() {
   const embed = useEmbed();
   const [stage, setStage] = useState<VitaminStage>("prep");
-  const [hasPcos, setHasPcos] = useState(false);
+  // R2 comment-round-3 — the issue checklist only ever belongs to "มีบุตรยาก"; every
+  // other stage is "บำรุงธรรมดา" with no issue-picker at all (this standalone tool
+  // used to ask a free-standing PCOS yes/no regardless of stage — that was the bug).
+  const [issues, setIssues] = useState<InfertilityIssue[]>([]);
   const [artPlan, setArtPlan] = useState<VitaminProfile["artPlan"]>("ยัง");
   const [res, setRes] = useState<ReturnType<typeof recommendVitamins> | null>(null);
 
   // Prefill from whatever the person already told another tool (/plan, protein, an
-  // earlier vitamins run) so a returning user isn't asked to re-answer these 3 questions.
+  // earlier vitamins run) so a returning user isn't asked to re-answer these questions.
   useEffect(() => {
     const p = readProfile();
     if (p.stage && VITAMIN_STAGES.has(p.stage as VitaminStage)) setStage(p.stage as VitaminStage);
-    if (p.hasPcos !== undefined) setHasPcos(!!p.hasPcos);
+    if (p.infertilityIssues?.length) setIssues(p.infertilityIssues);
+    else if (p.hasPcos) setIssues(["pcos"]);
     // mapLegacyArtPlan also covers a browser with a pre-R4 cached value.
     if (p.artPlan) setArtPlan(mapLegacyArtPlan(p.artPlan));
   }, []);
 
+  const toggleIssue = (v: InfertilityIssue) => {
+    setIssues((cur) => {
+      if (v === "unsure") return cur.includes("unsure") ? [] : ["unsure"];
+      return cur.includes(v) ? cur.filter((x) => x !== v) : [...cur.filter((x) => x !== "unsure"), v];
+    });
+  };
+
+  const effectiveIssues = stage === "infertility" ? issues : [];
+
   const run = () => {
-    const profile = { stage, hasPcos, artPlan };
+    const profile = { stage, hasPcos: effectiveIssues.includes("pcos"), artPlan, infertilityIssues: effectiveIssues };
     const r = recommendVitamins(profile);
     setRes(r);
     recordTool("vitamins", profile, r);
-    mergeProfile({ stage, hasPcos, artPlan, interests: r.primary.map((p) => p.id) });
+    mergeProfile({
+      stage, hasPcos: effectiveIssues.includes("pcos"), artPlan,
+      infertilityIssues: effectiveIssues, interests: r.primary.map((p) => p.id),
+    });
   };
 
   return (
     <>
       {embed && <EmbedAutoResize />}
       <ToolShell embed={embed} icon={<IconPill />} title="แนะนำวิตามินครูก้อย"
-        intro="ตอบ 3 ข้อ แล้วครูก้อยจะช่วยเลือกตัวบำรุงให้ตรงกับคุณ (คำแนะนำทั่วไป ไม่ใช่การรักษาโรค)">
+        intro="ตอบไม่กี่ข้อ แล้วครูก้อยจะช่วยเลือกตัวบำรุงให้ตรงกับคุณ (คำแนะนำทั่วไป ไม่ใช่การรักษาโรค)">
         <div className="space-y-4">
           <div>
             <p className="text-sm font-medium">1. คุณอยู่ช่วงไหน</p>
@@ -47,15 +67,23 @@ export default function VitaminsPage() {
               ))}
             </div>
           </div>
-          <div>
-            <p className="text-sm font-medium">2. มีภาวะ PCOS (ถุงน้ำรังไข่) ไหม</p>
-            <div className="mt-2 flex gap-2 text-sm">
-              <button onClick={() => setHasPcos(true)} className={`flex-1 rounded-xl border px-3 py-2 ${hasPcos ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>ใช่ / ไม่แน่ใจ</button>
-              <button onClick={() => setHasPcos(false)} className={`flex-1 rounded-xl border px-3 py-2 ${!hasPcos ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>ไม่มี</button>
+          {/* R2 comment-round-3 — issue checklist stays with "มีบุตรยาก" only; every
+              other stage skips straight to the ART question below (regular nourishment). */}
+          {stage === "infertility" && (
+            <div>
+              <p className="text-sm font-medium">2. มีปัญหาข้อไหนบ้าง (เลือกได้หลายข้อ)</p>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                {INFERTILITY_ISSUES.map((it) => (
+                  <label key={it.v} className={`flex items-center gap-2 rounded-xl border px-3 py-2 cursor-pointer ${issues.includes(it.v) ? "border-teal bg-teal/10" : "border-black/10 bg-white/60"}`}>
+                    <input type="checkbox" className="accent-teal" checked={issues.includes(it.v)} onChange={() => toggleIssue(it.v)} />
+                    {it.label}
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           <div>
-            <p className="text-sm font-medium">3. เข้าสู่กระบวนการทางการแพทย์ไหม</p>
+            <p className="text-sm font-medium">{stage === "infertility" ? "3." : "2."} เข้าสู่กระบวนการทางการแพทย์ไหม</p>
             <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
               {ART_PLAN_VALUES.map((v) => (
                 <button key={v} onClick={() => setArtPlan(v)} className={`rounded-xl border px-2 py-2 ${artPlan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{v}</button>
@@ -83,6 +111,15 @@ export default function VitaminsPage() {
               </div>
             )}
             <PlanCta />
+            <AdminHandoffCta
+              stage={stage}
+              artPlan={artPlan}
+              infertilityIssues={effectiveIssues}
+              interests={res.primary.map((p) => p.id)}
+              tool="vitamins"
+              toolInput={{ stage, artPlan, infertilityIssues: effectiveIssues }}
+              toolOutput={res}
+            />
           </ResultCard>
         )}
       </ToolShell>
@@ -91,8 +128,11 @@ export default function VitaminsPage() {
 }
 
 // Long lists (the brand's set runs to 19 items) are grouped so the core four stay
-// readable; the optional groups start collapsed. Prices we don't have confirmed are
-// shown as "สอบถามราคา" rather than guessed — see lib/calc/vitamins.ts.
+// readable; the optional groups start collapsed. R2 comment-round-3 — client asked
+// to drop price/dosage/detail from this page entirely (that's now an LINE OA/admin
+// conversation via AdminHandoffCta below); only the product name + one-line "why"
+// + safety-critical caution/stop-rule text stay, since those are compliance
+// requirements (legal-compliance.md), not commercial detail.
 function ProductGroup({ title, emoji, items, collapsed = false }: {
   title: string; emoji: string; items: Product[]; collapsed?: boolean;
 }) {
@@ -101,15 +141,8 @@ function ProductGroup({ title, emoji, items, collapsed = false }: {
     <div className="mt-2 space-y-2">
       {items.map((p) => (
         <div key={p.id} className="rounded-xl bg-white/70 p-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="font-semibold">{p.name}</span>
-            <span className="shrink-0 text-sm text-teal-deep">
-              {p.price === null ? "สอบถามราคา" : `฿${p.price.toLocaleString()}`}
-            </span>
-          </div>
+          <span className="font-semibold">{p.name}</span>
           <p className="mt-1 text-xs text-ink/70">{p.why}</p>
-          {p.detail && <p className="mt-1 text-xs text-ink/50">{p.detail}</p>}
-          {p.howto && <p className="mt-1 text-xs text-teal-deep">วิธีทาน: {p.howto}</p>}
           {p.caution && <p className="mt-1 text-xs text-ink/60">{p.caution}</p>}
           {p.stop && <p className="mt-1 text-xs font-medium text-rose-deep">❌ หยุดทาน: {stopLabel(p.stop)}</p>}
         </div>
