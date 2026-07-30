@@ -108,6 +108,18 @@ export function IconBottle(props: IconProps) {
   );
 }
 
+export function IconRun(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="14.2" cy="4.8" r="1.7" fill="currentColor" stroke="none" />
+      <path d="M9.5 8.6l3 1.6 2.6-1.8" />
+      <path d="M12.5 10.2l-1 3.6 3 1.7-.8 4.8" />
+      <path d="M11.5 13.8l-3.2 1.4-1.8 3.4" />
+      <path d="M15.1 11.4l2.4 1-.6 2.6" />
+    </svg>
+  );
+}
+
 export function IconGift(props: IconProps) {
   return (
     <svg {...base(props)}>

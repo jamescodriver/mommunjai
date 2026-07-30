@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Requirement Traceability Matrix — Mommunjai 2607</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --indigo:#6366F1; --indigo-deep:#4338CA; --indigo-soft:#E9E9FE;
+  --gray:#9CA3AF; --gray-deep:#5B6472; --gray-soft:#EEF1F4;
+  --imp-s:#22C55E; --imp-sm:#65A30D; --imp-m:#F59E0B; --imp-ml:#FB923C;
+  --imp-l:#EA580C; --imp-xl:#DC2626; --imp-q:#8B5CF6; --imp-done:#9CA3AF;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;background:var(--bg)}
+.font-d{font-family:'Poppins','Prompt',sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:18px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins;font-size:21px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.85}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;transition:.15s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06)}
+.stat.on{box-shadow:0 0 0 2px var(--teal) inset}
+.stat .n{font-family:Poppins;font-size:22px;font-weight:600}
+.stat .l{font-size:11.5px;color:#6B7280;margin-top:2px}
+.stat.total .n{color:var(--ink)}
+.stat.done .n{color:var(--teal-deep)}
+.stat.partial .n{color:var(--gold-deep)}
+.stat.blocked .n{color:var(--rose-deep)}
+.stat.phase2 .n{color:var(--indigo-deep)}
+
+.sticky-wrap{position:sticky;top:8px;z-index:40;background:var(--bg);padding-top:2px;margin-bottom:16px}
+.sticky-wrap .panel{margin-bottom:12px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+.sticky-wrap .panel:last-child{margin-bottom:0}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.panel h2{margin:0 0 10px;font-size:13.5px;font-family:Poppins;font-weight:600;color:#374151;display:flex;align-items:center;gap:8px}
+.minilinks{font-size:11px;font-weight:400;color:#9CA3AF}
+.linkbtn{background:none;border:0;padding:0;font-family:inherit;font-size:11px;color:var(--teal-deep);cursor:pointer;text-decoration:underline}
+.linkbtn:hover{color:var(--teal)}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#4B5563;transition:.15s;user-select:none}
+.chip[data-on="1"]{color:#fff;border-color:transparent}
+.chip.imp-done[data-on="1"]{background:var(--imp-done)}
+.chip.imp-S[data-on="1"]{background:var(--imp-s)}
+.chip.imp-SM[data-on="1"]{background:var(--imp-sm)}
+.chip.imp-M[data-on="1"]{background:var(--imp-m)}
+.chip.imp-ML[data-on="1"]{background:var(--imp-ml)}
+.chip.imp-L[data-on="1"]{background:var(--imp-l)}
+.chip.imp-XL[data-on="1"]{background:var(--imp-xl)}
+.chip.imp-Q[data-on="1"]{background:var(--imp-q)}
+.chip.st-done[data-on="1"]{background:var(--teal)}
+.chip.st-partial[data-on="1"]{background:var(--gold)}
+.chip.st-blocked[data-on="1"]{background:var(--rose)}
+.chip.st-phase2[data-on="1"]{background:var(--indigo)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.search{flex:1;min-width:200px}
+.search input{width:100%;font-family:inherit;font-size:13px;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;padding:9px 16px;border-radius:999px;white-space:nowrap;
+  background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(27,192,186,.3)}
+.btn.ghost{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal)}
+.btn.small{padding:6px 12px;font-size:12px;box-shadow:none}
+
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+thead th{background:var(--teal-soft);color:var(--teal-deep);font-family:Poppins;font-size:11.5px;font-weight:600;text-align:left;padding:11px 12px;cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{background:#D9F1EF}
+thead th .arrow{opacity:.5;margin-left:3px;font-size:10px}
+tbody tr.row{border-top:1px solid var(--line);cursor:pointer}
+tbody tr.row:hover{background:#FAFDFD}
+tbody td{padding:11px 12px;font-size:12.8px;vertical-align:top}
+.tc-id{font-family:Poppins;font-size:12px;font-weight:600;color:var(--teal-deep);background:var(--teal-soft);padding:2px 9px;border-radius:8px;white-space:nowrap}
+.req{max-width:340px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:#fff;white-space:nowrap}
+.badge.imp-done{background:var(--imp-done)}
+.badge.imp-S{background:var(--imp-s)}
+.badge.imp-SM{background:var(--imp-sm)}
+.badge.imp-M{background:var(--imp-m)}
+.badge.imp-ML{background:var(--imp-ml)}
+.badge.imp-L{background:var(--imp-l)}
+.badge.imp-XL{background:var(--imp-xl)}
+.badge.imp-Q{background:var(--imp-q)}
+.badge.st-done{background:var(--teal)}
+.badge.st-partial{background:var(--gold)}
+.badge.st-blocked{background:var(--rose-deep)}
+.badge.st-phase2{background:var(--indigo)}
+.caret{color:#9CA3AF;font-size:11px;margin-right:4px;display:inline-block;transition:.15s}
+tr.row.open .caret{transform:rotate(90deg)}
+
+tr.detail td{background:#FAFBFC;border-top:none;padding:14px 16px 18px}
+tr.detail.hidden{display:none}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dcol h4{margin:0 0 6px;font-size:11.5px;font-family:Poppins;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.3px}
+.dcol blockquote{margin:0 0 12px;padding:9px 12px;background:#fff;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;font-size:12.5px;color:#4B5563;white-space:pre-line}
+.dcol .reply{background:var(--rose-soft);border-left-color:var(--rose-deep);white-space:pre-line}
+.dcol .note{font-size:12.5px;color:#4B5563}
+.followbox{width:100%;min-height:60px;font-family:inherit;font-size:12.5px;padding:8px 12px;border-radius:10px;
+  border:1.5px solid var(--line);resize:vertical}
+.followbox:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.savedmark{font-size:11px;color:var(--teal-deep);opacity:0;transition:opacity .3s;margin-top:4px}
+.savedmark.show{opacity:1}
+.empty{text-align:center;padding:40px;color:#9CA3AF;font-size:13px}
+footer.note{margin-top:18px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media(max-width:760px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .dgrid{grid-template-columns:1fr}
+  table,thead,tbody,tr,td,th{display:block}
+  thead tr{display:none}
+  tbody tr.row{padding:10px 4px}
+  tbody td{padding:3px 6px}
+  .req{max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>📋 Requirement Traceability Matrix — Mommunjai PDF Review 2607</h1>
+    <p>ไล่จาก คอมเมนต์ต้นฉบับ (PDF) → ตีความเป็น System Requirement → ระดับผลกระทบ (Impact) → สถานะพัฒนาปัจจุบัน — ครบ 19 รายการ</p>
+    <div class="src">ที่มา: <code>docs/IMPACT-ANALYSIS-2607.md</code> (คำตอบทีมครูก้อย 28/7/69) · อัปเดตสถานะ: 29/7/2569 · คลิกแถวเพื่อดูรายละเอียด + ใส่คอมเมนต์เพิ่มเติมได้</div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="sticky-wrap">
+    <div class="panel">
+      <div class="toolbar">
+        <div class="search"><input id="search" type="text" placeholder="ค้นหา PDF-xx, คำในคอมเมนต์ หรือ requirement…"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost small" id="resetBtn">↺ ล้างตัวกรอง</button>
+          <button class="btn small" id="exportBtn">⬇️ Export .md (รวมคอมเมนต์)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>กรองตาม Impact <span class="minilinks"><button class="linkbtn" id="impAll">เลือกทั้งหมด</button> · <button class="linkbtn" id="impNone">ไม่เลือกเลย</button></span></h2>
+      <div class="chiprow" id="impChips"></div>
+      <h2>กรองตาม Status <span class="minilinks"><button class="linkbtn" id="stAll">เลือกทั้งหมด</button> · <button class="linkbtn" id="stNone">ไม่เลือกเลย</button></span></h2>
+      <div class="chiprow" id="stChips"></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="id">ID <span class="arrow"></span></th>
+        <th data-sort="none">System Requirement</th>
+        <th data-sort="impact">Impact <span class="arrow"></span></th>
+        <th data-sort="status">Status <span class="arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none">ไม่มีรายการที่ตรงตัวกรอง</div>
+
+  <footer class="note">
+    คอมเมนต์เพิ่มเติมบันทึกอัตโนมัติในเบราว์เซอร์นี้ (localStorage) — กด "Export .md" เมื่อพร้อมส่งไฟล์ให้ทีม แล้วเปิดหน้านี้ใหม่มาแก้ต่อได้เสมอ
+  </footer>
+</div>
+
+<script>
+var DATA = [
+{id:"PDF-01",section:"A",bucket:1,
+ quote:"คำว่า 'ทีมครูก้อย' ใช้คำว่า ทีม baby and mom",
+ requirement:"เปลี่ยนคำเรียกทีมงานจาก \"ทีมครูก้อย\" เป็น \"ทีม Baby & Mom\" ในทุกจุดที่ผู้ใช้เห็น (เว็บแอป + ข้อความ LINE OA)",
+ impact:"S",impactLabel:"เล็ก",
+ clientReply:"ตรง by ครูก้อย เป็น by Baby & Mom",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"เปลี่ยนครบ 6 จุดในโค้ด (หน้าแรก, /plan, ปุ่มหลังคำนวณ, ข้อความ LINE Flex) รวม \"by ครูก้อย\" → \"by Baby & Mom\" แล้ว"},
+
+{id:"PDF-02",section:"A",bucket:1,
+ quote:"หลังกดเข้ำ 'รับคำแนะนำเฉพาะคุณ' หน้าถัดมา ตอบไม่กี่ข้อแล้ว ..เรา.. จะทำ แผนบำรุง 90 วัน......(ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน....)",
+ requirement:"ปรับข้อความ intro หน้าแบบสอบถาม (/plan) ให้กล่าวถึงทั้งไข่และอสุจิว่าใช้เวลาพัฒนาสมบูรณ์ราว 90 วัน ไม่เจาะจงเพศหญิงอย่างเดียว",
+ impact:"done",impactLabel:"ทำแล้ว (ก่อน reply)",
+ clientReply:"แก้ให้ตรง pdf เป๊ะ",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"แก้ข้อความให้ตรงคำ PDF เป๊ะ (\"ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน\") + \"ครูก้อยจะทำ\"→\"เราจะทำ\" แล้ว"},
+
+{id:"PDF-03",section:"A",bucket:2,
+ quote:"ตั้ง category หน้าแรก เป็น 4 category ดังนี้ 1.เตรียมตั้งครรภ์ 2.มีบุตรยาก/กดเข้าไปเลือกต่อ แบ่งเป็นฝ่ายชาย ฝ่ายหญิง 3.ตั้งครรภ์แล้ว 4.ให้นมบุตร",
+ requirement:"ปรับโครงสร้างหน้าแรก (IA) จาก flat list เป็น 4 หมวดชีวิต โดยหมวด \"มีบุตรยาก\" มีทางเลือกย่อยฝ่ายชาย/หญิง",
+ impact:"L",impactLabel:"ใหญ่",
+ clientReply:"แบ่งตามนี้ไปก่อน แล้ว Open Q นี้ไว้",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"4-category home page + มีบุตรยาก sub-split (ฝ่ายหญิง→stage=infertility, ฝ่ายชาย→stage=male) dev จริงแล้ว · 🔴 Open Q \"ผู้ชายทั่วไปไม่ได้มีบุตรยาก จะเข้าทางไหน\" ยังไม่ตอบ ตามที่ทีมขอพักไว้ก่อน"},
+
+{id:"PDF-04",section:"A",bucket:2,
+ quote:"user interface unfriendly การแสดงผล ตัวอักษรเล็ก ไม่มีภาพประกอบ ควรใส่เป็น icon ควรมีภาพ product ด้วย ลองยึด app FLO : period & Cycle Health เป็นตัวอย่าง",
+ requirement:"ปรับ UI ให้เป็นมิตรขึ้น — เพิ่ม icon ประกอบหัวข้อ + ภาพสินค้าประกอบคำแนะนำ + ขยายตัวอักษรให้อ่านง่าย อ้างอิงสไตล์แอป FLO",
+ impact:"ML",impactLabel:"กลาง–ใหญ่",
+ clientReply:"เพิ่มไอคอนประกอบหัวข้อ + ภาพสินค้าประกอบคำแนะนำ + ขยายขนาดตัวอักษรให้อ่านง่าย โดยอ้างอิงสไตล์จากแอป FLO ไปลองดู",
+ status:"partial",statusLabel:"ทำบางส่วน",
+ statusNote:"ทำ icon set (SVG เส้นบาง 11 แบบ) + ขยายตัวอักษร (text-base) ครบทุกหน้าแล้ว · ⚠️ ภาพสินค้าจริง — ตรวจ repo แล้วไม่มีภาพสินค้าเลยแม้แต่ไฟล์เดียว (มีแค่โลโก้) จึงยังไม่ทำ รอแบรนด์ส่ง asset ก่อน ไม่ทำ AI-generate/stock เองเพราะเสี่ยงหลุด CI"},
+
+{id:"PDF-05",section:"A",bucket:2,
+ quote:"เมื่อคนคนนึงเปลี่ยน category จะทำอย่างไร เช่นวันนึงเค้าท้องขึ้นมาแล้ว จากตอนแรกเค้าอยู่ใน cat.เตรียมตั้งครรภ์ อาจมีปุ่มให้ switch category ได้ด้วย",
+ requirement:"เพิ่มกลไกให้ผู้ใช้สลับ category ได้เอง เมื่อสถานะชีวิตเปลี่ยน",
+ impact:"M",impactLabel:"กลาง",
+ clientReply:"ลูกค้าสามารถ manage การประเมินได้ใหม่ จากการเรียก form ใน line oa แล้วขึ้น web มาใหม่",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"ทำผ่านปุ่ม Rich Menu ข้อความคงที่ \"แผนของฉัน\" → webhook รู้ตัวตนจริง → ส่งลิงก์ resume-token กลับให้กดเข้า /plan แก้ข้อมูล/เปลี่ยน category ได้ (ไม่ใช้ LIFF)"},
+
+{id:"PDF-06",section:"A",bucket:2,
+ quote:"ให้ใช้ ฐำนdatabase ด้วย เก็บข้อมุลไว้กับเรา เช่น เก็บสถิติวันไข่ตก ของทุกๆเดือน กลับเข้ามาใช้ app ไม่ต้องกรอกใหม่",
+ requirement:"เพิ่มระบบฐานข้อมูลฝั่งเซิร์ฟเวอร์เก็บผลการใช้เครื่องมือของผู้ใช้ เพื่อกลับมาใช้แอปซ้ำได้โดยไม่ต้องกรอกใหม่ — จดจำจาก LINE ID ที่กรอกหลัง consent, ทำแบบสอบถามซ้ำนับเป็นคนเดิม",
+ impact:"L",impactLabel:"ใหญ่",
+ clientReply:"ทำแบบสอบถามซ้ำ ต้องนับเป็นคนเดิม แต่มีโอกาสเปลี่ยน Catagory ตาม PDF-05 ได้ โดยระบบจำลูกค้าจาก line id ที่กรอกหลัง consent และลูกค้าสามารถ manage การประเมินได้ใหม่จากการเรียก form ใน line oa แล้วขึ้น web มาใหม่ แต่ถ้า refresh แล้วเข้า browser มาใหม่ ทำประเมินใหม่ จะยังไม่รู้ว่าเป็นใคร จนกระทั่งกรอก line id ใหม่มาซ้ำ ให้เด้งถามเทียบกับข้อมูลเดิมว่าจะ update ไหม อะไรบ้าง ให้ติ๊ก",
+ status:"done",statusLabel:"เสร็จแล้ว (โค้ด)",
+ statusNote:"ตาราง customers + lib/customer.ts (HMAC resume-token) + /api/customer/resume + prefill ใน /plan ทำครบแล้ว · ⚠️ ค้าง 3 ขั้นที่ต้องทำมือ: (1) apply migration 0003 ขึ้น Supabase จริง (2) ตั้ง env RESUME_TOKEN_SECRET บน Vercel (3) ตั้งปุ่ม Rich Menu ข้อความ \"แผนของฉัน\" ใน LINE OA Manager"},
+
+{id:"PDF-07",section:"A",bucket:1,
+ quote:"แต่ละปัญหำ แต่ละ journey จะต้อง lead ไปผลิตภัณฑ์ที่แตกต่ำงกัน แต่ละ cat. จะมีผลิตภัณฑ์ดูแลต่ำงกัน",
+ requirement:"ออกแบบให้แต่ละ category แนะนำสินค้ากลุ่มที่แตกต่างกัน ตรงกับปัญหาของกลุ่มนั้น",
+ impact:"SM",impactLabel:"เล็ก–กลาง",
+ clientReply:"ตรวจให้ที แล้ว สร้าง excel mapping journey ให้อีกที ตรงไหนไม่มีข้อมูล ให้ highlight แดงไว้เลย ให้ลูกค้าเติม",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"ส่งมอบ docs/MAPPING-JOURNEY-2607.xlsx (journey→สินค้า ครบทุก category ปัจจุบัน, ช่องไม่มีข้อมูล highlight แดงให้ทีมเติม)"},
+
+{id:"PDF-08",section:"A",bucket:1,
+ quote:"เพิ่มปุ่ ม ในทุกหน้ำ ตอนคำนวณเสร็จ ใต้คำว่า รับแผนบำรุงเฉพาะคุณ ... เพิ่มอีกปุ่ มเป็น 'ต้องกำรคำแนะนำเรื่องวิตำมินเบบี้แอนด์มัม' >> รวมผลิตภัณฑ์ตอบโจทย์ปัญหำcategory นั้นๆ",
+ requirement:"เพิ่มปุ่ม CTA \"ต้องการคำแนะนำเรื่องวิตามิน Baby & Mom\" ใต้ปุ่มรับแผนบำรุง ในทุกหน้าเครื่องมือหลังคำนวณเสร็จ",
+ impact:"M",impactLabel:"กลาง",
+ clientReply:"ทำตามแนะนำ",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"ทำเป็น shared component VitaminsCta ใช้ร่วมทุกเครื่องมือ + prefill /tools/vitamins จาก profile-store ที่เคยตอบไว้แล้ว"},
+
+{id:"PDF-09",section:"B",bucket:2,
+ quote:"นับวันไข่ตก ผลคำนวณผิด (เอาตำราแพทย์ใส่เข้าไปเป็น code)และเพิ่มหัวข้อ สีประจำเดือน มูกตกไข่ และระยะเวลาที่มีประจำเดือนคือวันที่เลือดออก",
+ requirement:"(1) ตรวจ/แก้สูตรคำนวณวันไข่ตกให้อ้างอิงตำราแพทย์ (2) เพิ่มฟิลด์สีประจำเดือน, มูกตกไข่, ระยะเวลาเลือดออก (แยกจากความยาวรอบเดือน)",
+ impact:"Q",impactLabel:"ต้องถามก่อนเริ่ม",
+ clientReply:"open Q ไว้ ขอข้อมูลเพิ่ม",
+ status:"blocked",statusLabel:"รอข้อมูล",
+ statusNote:"สูตรปัจจุบัน (วันไข่ตก = วันแรกประจำเดือนรอบถัดไป −14 วัน) เป็นสูตรมาตรฐานทางการแพทย์ที่ใช้ทั่วไป — รอเคสตัวอย่าง (input + ผลที่ทีมคาดว่าถูก) ก่อนแก้ ไม่งั้นเสี่ยงแก้ของถูกให้ผิด"},
+
+{id:"PDF-10",section:"B",bucket:2,
+ quote:"คานวณโปรตีน เพิ่มการกรอกส่วนสูง น้าหนัก อายุ เป้าหมาย status/stage ... และมีเพิ่มความรู้ให้เขาเข้าไปอ่านเองได้ เรื่องแหล่งโปรตีนกับจานวนโปรตีน ที่เป็นภาพ อาจเป็นตาราง + tiein สินค้าเราเช่น Protein ferty",
+ requirement:"ขยายเครื่องมือคำนวณโปรตีนให้รับส่วนสูง+อายุ+เป้าหมาย เพิ่มจากน้ำหนักเดิม และเพิ่มตารางความรู้ \"แหล่งโปรตีนกับปริมาณ\" พร้อม tie-in สินค้า Ferty",
+ impact:"SM",impactLabel:"เล็ก–กลาง",
+ clientReply:"ตาม Agent แนะนำ open Q ไว้ ว่าจะใช้สูตรไหนในการคำนวน",
+ status:"partial",statusLabel:"ทำบางส่วน",
+ statusNote:"ตารางแหล่งโปรตีน (ไข่/อกไก่/ปลา/Protein Ferty) + tie-in Ferty ทำแล้วในหน้า /tools/protein · ⚠️ ส่วนสูง/อายุยังไม่เพิ่ม — สูตรมาตรฐานใช้น้ำหนักเป็นหลัก ไม่ได้ใช้ส่วนสูงตรง ๆ รอทีมตอบว่าจะให้ส่วนสูงมีผลต่อสูตรยังไง"},
+
+{id:"PDF-11",section:"B",bucket:3,
+ quote:"เช็กสารอาหาร(อยากได้เป็น ถ่ายรูป หรือ เขียน ระบุลงไปแล้ว แปลผลออกมาได้และยังขาดอะไรเท่าไหร่ ) >> ใส่ตาราแพทย์ใน code เช่นกัน แนะนาโภชนาการที่เป็นอาหารไทยต่อ",
+ requirement:"ขยายเครื่องมือเช็กสารอาหารให้ถ่ายรูป/พิมพ์บรรยายแล้วแปลผลอัตโนมัติ พร้อมแนะนำเมนูอาหารไทย",
+ impact:"XL",impactLabel:"มหาศาล — แยกโปรเจกต์",
+ clientReply:"ทำได้ แต่ Out of Scope สำหรับ Phase นี้ เข้า Waiting list Phase 2",
+ status:"phase2",statusLabel:"Phase 2",
+ statusNote:"ต้องใช้ AI vision/NLP ใหม่ทั้งหมด — ลูกค้ายืนยันเป็น Phase 2 แล้ว ไม่ต้องทำรอบนี้"},
+
+{id:"PDF-12",section:"B",bucket:3,
+ quote:"จะมีอำหำรแนะน ำในแต่ละ cat. ถ้ำใน cat.คุณแม่ให้นมบุตร โภชนำกำรแม่ควรกินอะไรให้น ้ำนมเยอะ แนบให้ควำมรู้เพิ่มเติม",
+ requirement:"เพิ่มคำแนะนำอาหารเฉพาะ category — โดยเฉพาะกลุ่มให้นมบุตร แนะนำอาหารเพิ่มน้ำนม พร้อมเนื้อหาความรู้",
+ impact:"M",impactLabel:"กลาง",
+ clientReply:"ใช้องค์ความรู้ไหน ?",
+ status:"blocked",statusLabel:"รอข้อมูล",
+ statusNote:"เดิมขึ้นกับ PDF-03 (ต้องมี category ให้นมบุตรก่อน) — ตอนนี้ PDF-03 เสร็จแล้ว จึงพร้อมทำได้ทันทีที่ได้แหล่งความรู้/รายการอาหารจากทีม"},
+
+{id:"PDF-13",section:"B",bucket:3,
+ quote:"ค านวณการนอน แบ่งเป็น 2 ทำง 1.sync กับนาฬกา (Duration, sleep quality, REM, SREM) 2.กรอกเองด้วยได้ ... ตั้งชื่อผลคะแนน เช่น healthy mother",
+ requirement:"ขยายเครื่องมือคำนวณการนอนเป็น 2 โหมด: sync นาฬิกาอัจฉริยะ + กรอกเอง แล้วตั้งชื่อระดับคะแนน",
+ impact:"XL",impactLabel:"มหาศาล — แยกโปรเจกต์",
+ clientReply:"เชื่อม Wearable ต้องไป Phase 2",
+ status:"phase2",statusLabel:"Phase 2",
+ statusNote:"sync นาฬิกาต้อง integrate HealthKit/Google Fit/Fitbit — ยืนยัน Phase 2 แล้ว · โหมดกรอกเองมีอยู่แล้วบางส่วนในเครื่องมือปัจจุบัน"},
+
+{id:"PDF-14",section:"B",bucket:2,
+ quote:"แนะน ำวิตำมิน วิตำมินเรำเลย แนะน ำตำม category",
+ requirement:"ให้เครื่องมือแนะนำวิตามินแนะนำสินค้าตาม category ใหม่ทั้ง 4 กลุ่ม",
+ impact:"M",impactLabel:"กลาง",
+ clientReply:"ขอ Confirm Mapping",
+ status:"blocked",statusLabel:"รอยืนยัน",
+ statusNote:"Excel mapping (PDF-07) ส่งไปให้ทีมตรวจแล้ว — รอทีมยืนยันก่อนแก้ logic วิตามิน โดยเฉพาะกลุ่มให้นมบุตรที่ยังไม่มี logic เฉพาะ (ต้องเช็ค Safety Matrix เช่น Varginaree ห้ามช่วงให้นม)"},
+
+{id:"PDF-15",section:"B",bucket:2,
+ quote:"เพิ่มเรื่องแนะน ำกำรออกกำ ลงักำย ต้อง weight เท่าไหร่ cardio เท่าไหร่ ส าหรับคนแต่ละ category",
+ requirement:"เพิ่มเครื่องมือใหม่ \"แนะนำการออกกำลังกาย\" ระบุน้ำหนัก+cardio ที่เหมาะสม แยกตาม category",
+ impact:"L",impactLabel:"ใหญ่",
+ clientReply:"ใช้สูตรไหน หลักการอะไร ?",
+ status:"done",statusLabel:"เสร็จแล้ว (dev)",
+ statusNote:"ปลดล็อกด้วยงานวิจัยจริง: Uriel (research agent) ค้น WHO/ACOG/ACSM/SOGC-CSEP guideline ตัวเต็ม → docs/EXERCISE-RESEARCH-BRIEF.md (มี citation ทุกข้อ) → สร้าง /tools/exercise แล้ว ผ่าน red-team (lucifer) แล้ว 1 รอบ พบ+แก้บั๊ก stale-state ที่อาจโชว์แผนเก่าหลังติ๊กภาวะห้ามออกกำลังกาย + citation/ข้อความขัดแย้งกันหลายจุด · คัดกรองความปลอดภัยกลุ่มตั้งครรภ์ด้วย SOGC/CSEP contraindication list (ไม่ใช่แต่งเอง) · ไม่ใช้อายุเป็นตัวแบ่ง tier (มีหลักฐานรองรับว่าแนวทางสากลไม่แยกตามอายุในช่วงวัยเจริญพันธุ์) · ⚠️ ยังไม่ผ่านสายตาผู้เชี่ยวชาญออกกำลังกายคนท้องตัวจริง (มีแค่ AI research agent + AI red-team) — ควรให้คนดูจริงอีกรอบก่อนประกาศให้ลูกค้าใช้วงกว้าง"},
+
+{id:"PDF-16",section:"B",bucket:3,
+ quote:"เพิ่มเรื่องความเครียด แบบทดสอบ เป็นคะแนน",
+ requirement:"เพิ่มเครื่องมือใหม่ \"แบบทดสอบความเครียด\" ให้ผลเป็นคะแนน",
+ impact:"L",impactLabel:"ใหญ่",
+ clientReply:"ใช้สูตรไหน หลักการไหน ?",
+ status:"blocked",statusLabel:"รอข้อมูล",
+ statusNote:"ควรใช้แบบทดสอบมาตรฐานมีสิทธิ์ใช้งานถูกต้อง (เช่น Perceived Stress Scale) แทนแต่งเอง — ต้องตรวจลิขสิทธิ์/ขออนุญาตก่อน"},
+
+{id:"PDF-17",section:"B",bucket:1,
+ quote:"เพิ่มเรื่องเชค็ปริมาณน ้า(อายุเท่านี้ น ้าหนักเท่านี้ควรกินน ้าเท่าไหร่ คะแนนจะเป็นเท่าไหร่ ส่งผลอย่างไร ขาดอีกเท่าไหร่ จะเกิดอะไร)",
+ requirement:"เพิ่มเครื่องมือใหม่ \"เช็คปริมาณน้ำ\" คำนวณจากอายุ+น้ำหนัก ให้คะแนน และอธิบายผลกระทบถ้าดื่มไม่ถึงเป้า",
+ impact:"M",impactLabel:"กลาง",
+ clientReply:"ทำตามมาตรฐานที่แนะนำก่อน",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"เครื่องมือ /tools/water ทำแล้ว ใช้สูตรมาตรฐาน 30–35 มล./น้ำหนักตัว 1 กก. + เกณฑ์คะแนนแบบไม่ขู่ให้กลัวเกินจริง"},
+
+{id:"PDF-18",section:"B",bucket:3,
+ quote:"เพิ่มเรื่องค่าผล lab ที่เกี่ยวข้องในแต่ละ category (ให้สำหรับ GFC มา join) ... อำจเพิ่มปุ่ม ไม่เคยตรวจและสนใจตรวจ ... แล้ว lead to GFC contact (ที่ไม่ใช้ link)",
+ requirement:"เพิ่มฟีเจอร์ \"ผลตรวจ Lab ที่เกี่ยวข้อง\" แยกฝ่ายหญิง/ชาย + ปุ่มสนใจตรวจ (อาจแนบโค้ดส่วนลด GFC) → lead to GFC contact",
+ impact:"XL",impactLabel:"มหาศาล — แยกโปรเจกต์",
+ clientReply:"ไปทำ Phase 2 ขอ confirm ว่าจะเก็บ parameter อะไร",
+ status:"phase2",statusLabel:"Phase 2",
+ statusNote:"ต้องมีข้อตกลงทางธุรกิจ (partnership) กับ GFC ก่อนเริ่ม dev — ยืนยัน Phase 2 แล้ว รอทีม confirm parameter ที่จะเก็บ"},
+
+{id:"PDF-19",section:"B",bucket:2,
+ quote:"รวมทุกหัวข้อ100 คะแนน สร้ำงคะแนนควำมพร้อม คุณได้ 85 แปลว่ำอยู่ในเกณฑ์ไหน อำจท ำเป็น dashboard หรือ ภำพสรุปภำพรวม",
+ requirement:"รวมคะแนนจากทุกหัวข้อเป็นคะแนนความพร้อมรวม 100 คะแนน พร้อมคำอธิบายเกณฑ์ แสดงผลเป็น dashboard/ภาพสรุป",
+ impact:"L",impactLabel:"ใหญ่",
+ clientReply:"สร้างระบบ scoring ตามแนะนำให้ที",
+ status:"done",statusLabel:"เสร็จแล้ว",
+ statusNote:"ขยายเป็น 5 pillar (คุณภาพไข่/อสุจิ, โภชนาการ, การนอน, สมดุลฮอร์โมน, น้ำ) แล้ว — คงกฎ \"ยังไม่ได้ประเมิน ≠ คะแนน 0%\" ครอบคลุมทุก pillar ใหม่ด้วย verify แล้วในเบราว์เซอร์จริง"},
+];
+
+var IMPACT_ORDER = ["done","S","SM","M","ML","L","XL","Q"];
+var IMPACT_LABEL = {done:"— ทำแล้ว",S:"S เล็ก",SM:"S–M เล็ก–กลาง",M:"M กลาง",ML:"M–L กลาง–ใหญ่",L:"L ใหญ่",XL:"XL มหาศาล",Q:"❓ ต้องถาม"};
+var IMPACT_RANK = {done:0,S:1,SM:2,M:3,ML:4,L:5,XL:6,Q:7};
+var STATUS_ORDER = ["done","partial","blocked","phase2"];
+var STATUS_LABEL = {done:"✅ เสร็จแล้ว",partial:"🟡 ทำบางส่วน",blocked:"🔴 รอคำตอบ/ข้อมูล",phase2:"🔵 Phase 2"};
+var STATUS_RANK = {done:0,partial:1,blocked:2,phase2:3};
+
+var LS_KEY = "mmj_rtm_comments_2607";
+function loadComments(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }catch(e){ return {}; } }
+function saveComments(o){ localStorage.setItem(LS_KEY, JSON.stringify(o)); }
+var comments = loadComments();
+
+var state = {
+  impactOn: {}, statusOn: {}, search: "",
+  sortKey: "id", sortDir: 1, openRows: {}
+};
+IMPACT_ORDER.forEach(function(k){ state.impactOn[k] = true; });
+STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+
+function renderStats(){
+  var counts = {total:DATA.length, done:0, partial:0, blocked:0, phase2:0};
+  DATA.forEach(function(d){ counts[d.status]++; });
+  var el = document.getElementById("stats");
+  el.innerHTML = [
+    ["total","ทั้งหมด",counts.total],
+    ["done","เสร็จแล้ว",counts.done],
+    ["partial","ทำบางส่วน",counts.partial],
+    ["blocked","รอคำตอบ",counts.blocked],
+    ["phase2","Phase 2",counts.phase2],
+  ].map(function(s){
+    return '<div class="stat '+s[0]+'"><div class="n">'+s[2]+'</div><div class="l">'+s[1]+'</div></div>';
+  }).join("");
+}
+
+function renderChips(){
+  var impEl = document.getElementById("impChips");
+  impEl.innerHTML = IMPACT_ORDER.map(function(k){
+    return '<button class="chip imp-'+k+'" data-kind="impact" data-key="'+k+'" data-on="'+(state.impactOn[k]?1:0)+'">'+IMPACT_LABEL[k]+'</button>';
+  }).join("");
+  var stEl = document.getElementById("stChips");
+  stEl.innerHTML = STATUS_ORDER.map(function(k){
+    return '<button class="chip st-'+k+'" data-kind="status" data-key="'+k+'" data-on="'+(state.statusOn[k]?1:0)+'">'+STATUS_LABEL[k]+'</button>';
+  }).join("");
+  document.querySelectorAll(".chip").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var kind = btn.getAttribute("data-kind"), key = btn.getAttribute("data-key");
+      var map = kind === "impact" ? state.impactOn : state.statusOn;
+      map[key] = !map[key];
+      renderChips(); renderRows();
+    });
+  });
+}
+
+function getFiltered(){
+  var q = state.search.trim().toLowerCase();
+  var list = DATA.filter(function(d){
+    if(!state.impactOn[d.impact]) return false;
+    if(!state.statusOn[d.status]) return false;
+    if(q && (d.id+" "+d.requirement+" "+d.quote+" "+d.clientReply).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  list.sort(function(a,b){
+    var av, bv;
+    if(state.sortKey === "id"){ av = a.id; bv = b.id; }
+    else if(state.sortKey === "impact"){ av = IMPACT_RANK[a.impact]; bv = IMPACT_RANK[b.impact]; }
+    else if(state.sortKey === "status"){ av = STATUS_RANK[a.status]; bv = STATUS_RANK[b.status]; }
+    else { return 0; }
+    if(av < bv) return -1 * state.sortDir;
+    if(av > bv) return 1 * state.sortDir;
+    return 0;
+  });
+  return list;
+}
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderRows(){
+  var list = getFiltered();
+  var tbody = document.getElementById("tbody");
+  document.getElementById("emptyMsg").style.display = list.length ? "none" : "block";
+  tbody.innerHTML = list.map(function(d){
+    var open = !!state.openRows[d.id];
+    var savedComment = comments[d.id] || "";
+    return (
+      '<tr class="row'+(open?' open':'')+'" data-id="'+d.id+'">'+
+        '<td><span class="caret">▶</span><span class="tc-id">'+d.id+'</span></td>'+
+        '<td class="req">'+esc(d.requirement)+'</td>'+
+        '<td><span class="badge imp-'+d.impact+'">'+esc(IMPACT_LABEL[d.impact])+'</span></td>'+
+        '<td><span class="badge st-'+d.status+'">'+esc(STATUS_LABEL[d.status])+'</span></td>'+
+      '</tr>'+
+      '<tr class="detail'+(open?'':' hidden')+'" data-detail-for="'+d.id+'"><td colspan="4">'+
+        '<div class="dgrid">'+
+          '<div class="dcol">'+
+            '<h4>ต้นฉบับ (PDF)</h4>'+
+            '<blockquote>'+esc(d.quote)+'</blockquote>'+
+            '<h4>คำตอบทีมครูก้อย</h4>'+
+            '<blockquote class="reply">'+esc(d.clientReply)+'</blockquote>'+
+          '</div>'+
+          '<div class="dcol">'+
+            '<h4>รายละเอียดสถานะ</h4>'+
+            '<p class="note">'+esc(d.statusNote)+'</p>'+
+            '<h4>คอมเมนต์เพิ่มเติม (ของต้น)</h4>'+
+            '<textarea class="followbox" data-comment-for="'+d.id+'" placeholder="พิมพ์โน้ต/คำถามเพิ่มเติมตรงนี้ — บันทึกอัตโนมัติ">'+esc(savedComment)+'</textarea>'+
+            '<div class="savedmark" data-mark-for="'+d.id+'">✓ บันทึกแล้ว</div>'+
+          '</div>'+
+        '</div>'+
+      '</td></tr>'
+    );
+  }).join("");
+
+  tbody.querySelectorAll("tr.row").forEach(function(tr){
+    tr.addEventListener("click", function(){
+      var id = tr.getAttribute("data-id");
+      state.openRows[id] = !state.openRows[id];
+      renderRows();
+    });
+  });
+  tbody.querySelectorAll("textarea.followbox").forEach(function(ta){
+    ta.addEventListener("click", function(e){ e.stopPropagation(); });
+    var timer = null;
+    ta.addEventListener("input", function(){
+      var id = ta.getAttribute("data-comment-for");
+      comments[id] = ta.value;
+      saveComments(comments);
+      var mark = tbody.querySelector('[data-mark-for="'+id+'"]');
+      if(mark){
+        mark.classList.add("show");
+        clearTimeout(timer);
+        timer = setTimeout(function(){ mark.classList.remove("show"); }, 1400);
+      }
+    });
+  });
+}
+
+function renderSortArrows(){
+  document.querySelectorAll("thead th").forEach(function(th){
+    var key = th.getAttribute("data-sort");
+    var arrow = th.querySelector(".arrow");
+    if(!arrow) return;
+    arrow.textContent = (key === state.sortKey) ? (state.sortDir === 1 ? "▲" : "▼") : "";
+  });
+}
+
+document.querySelectorAll("thead th").forEach(function(th){
+  th.addEventListener("click", function(){
+    var key = th.getAttribute("data-sort");
+    if(key === "none") return;
+    if(state.sortKey === key){ state.sortDir *= -1; }
+    else { state.sortKey = key; state.sortDir = 1; }
+    renderSortArrows();
+    renderRows();
+  });
+});
+
+document.getElementById("search").addEventListener("input", function(e){
+  state.search = e.target.value;
+  renderRows();
+});
+
+document.getElementById("impAll").addEventListener("click", function(){
+  IMPACT_ORDER.forEach(function(k){ state.impactOn[k] = true; });
+  renderChips(); renderRows();
+});
+document.getElementById("impNone").addEventListener("click", function(){
+  IMPACT_ORDER.forEach(function(k){ state.impactOn[k] = false; });
+  renderChips(); renderRows();
+});
+document.getElementById("stAll").addEventListener("click", function(){
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+  renderChips(); renderRows();
+});
+document.getElementById("stNone").addEventListener("click", function(){
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = false; });
+  renderChips(); renderRows();
+});
+
+document.getElementById("resetBtn").addEventListener("click", function(){
+  IMPACT_ORDER.forEach(function(k){ state.impactOn[k] = true; });
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+  state.search = ""; document.getElementById("search").value = "";
+  state.sortKey = "id"; state.sortDir = 1;
+  renderChips(); renderSortArrows(); renderRows();
+});
+
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var lines = [];
+  lines.push("# Requirement Traceability Matrix — Mommunjai 2607");
+  lines.push("");
+  lines.push("> Export จาก rtm-2607.html เมื่อ " + new Date().toISOString().slice(0,10));
+  lines.push("> คอลัมน์: PDF comment → System Requirement → Impact → Status → คอมเมนต์เพิ่มเติม");
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+  DATA.forEach(function(d){
+    lines.push("## " + d.id + " — ส่วน " + d.section);
+    lines.push("");
+    lines.push("**ต้นฉบับ (PDF):**");
+    lines.push("> " + d.quote);
+    lines.push("");
+    lines.push("**System Requirement:** " + d.requirement);
+    lines.push("");
+    lines.push("**Impact:** " + IMPACT_LABEL[d.impact]);
+    lines.push("");
+    lines.push("**คำตอบทีมครูก้อย:** " + d.clientReply);
+    lines.push("");
+    lines.push("**Status:** " + STATUS_LABEL[d.status]);
+    lines.push("");
+    lines.push("**รายละเอียด:** " + d.statusNote);
+    lines.push("");
+    var c = comments[d.id];
+    lines.push("**คอมเมนต์เพิ่มเติม:** " + (c && c.trim() ? c.trim() : "_(ไม่มี)_"));
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  });
+  var blob = new Blob([lines.join("\n")], {type:"text/markdown;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "rtm-2607-comments.md";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+renderStats();
+renderChips();
+renderSortArrows();
+renderRows();
+</script>
+</body>
+</html>
