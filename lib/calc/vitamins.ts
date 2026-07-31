@@ -18,6 +18,20 @@ export type VitaminStage = Stage | "infertility";
 export const ART_PLAN_VALUES = ["ยัง", "IUI", "IVF-ICSI", "บำรุงไข่", "เตรียมผนังมดลูก"] as const;
 export type ArtPlan = (typeof ART_PLAN_VALUES)[number];
 
+// R8 (PRD-UPDATE-R3-3107.md · TC-08-01/02) — ป้ายที่ "แสดง" เท่านั้น
+// ⚠️ ค่าที่เก็บลง DB/tag/analytics ยังเป็น ART_PLAN_VALUES เดิมเป๊ะ ("IVF-ICSI")
+// ห้ามเอา label ไปเขียนทับค่า ไม่งั้นข้อมูลเก่าและ lib/tagging.ts จะหลุดทันที
+export const ART_PLAN_LABELS: Record<ArtPlan, string> = {
+  ยัง: "ยัง",
+  IUI: "IUI",
+  "IVF-ICSI": "IVF-ICSI (เด็กหลอดแก้ว)",
+  บำรุงไข่: "บำรุงไข่",
+  เตรียมผนังมดลูก: "เตรียมผนังมดลูก",
+};
+export function artPlanLabel(v: string): string {
+  return ART_PLAN_LABELS[v as ArtPlan] ?? v;
+}
+
 /** Old leads (pre-R4) stored "none"|"iui"|"ivf"|"icsi" — map them forward so
  *  existing rows keep reading/rendering correctly. Anything already a valid
  *  new value passes through unchanged; anything unrecognized defaults to "ยัง"
@@ -45,6 +59,54 @@ export const INFERTILITY_ISSUES = [
 export type InfertilityIssue = (typeof INFERTILITY_ISSUES)[number]["v"];
 export const INFERTILITY_ISSUE_VALUES: InfertilityIssue[] = INFERTILITY_ISSUES.map((i) => i.v);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// R3 (PRD-UPDATE-R3-3107.md) — ตัวเลือกของแบบสอบถามที่ logic ฝั่งสินค้าต้องรู้จัก
+// เก็บไว้ที่เดียวกับ ART_PLAN_VALUES/INFERTILITY_ISSUES ตามแพตเทิร์นเดิมของโปรเจกต์
+// (หน้าจอ · /api/lead · report ล้วน import จากไฟล์นี้ จึงไม่มีทางหลุดจากกัน)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** ช่วงอายุ — ค่าที่เก็บ = ข้อความไทยตรง ๆ เหมือนเดิม (มีข้อมูลเก่าอยู่แล้ว ห้ามเปลี่ยน) */
+export const AGE_RANGES = ["ต่ำกว่า 30", "30–34", "35–39", "40+"] as const;
+
+/** R2 · TC-02-01/02 — ช่วงอายุที่ทำให้ได้ A.O.S เพิ่ม (ไข่มีอายุ → เน้นสารต้านอนุมูลอิสระ)
+ *  รับทั้ง en-dash "35–39" (ค่าที่ฟอร์มใช้) และ hyphen "35-39" (ข้อมูลที่พิมพ์มือจากหน้า /leads) */
+export const AOS_AGE_RANGES = ["35–39", "40+"] as const;
+export function isAosAgeRange(v: unknown): boolean {
+  if (typeof v !== "string") return false;
+  const norm = v.replace(/-/g, "–").trim();
+  return (AOS_AGE_RANGES as readonly string[]).includes(norm);
+}
+
+/** R4 · TC-04-03 — ความถี่ออกกำลังกาย (ค่าที่เก็บ = v, ที่แสดง = label) */
+export const EXERCISE_FREQS = [
+  { v: "0", label: "0 ครั้ง/สัปดาห์" },
+  { v: "1-2", label: "1–2 ครั้ง/สัปดาห์" },
+  { v: "3-4", label: "3–4 ครั้ง/สัปดาห์" },
+  { v: "daily", label: "ทุกวัน" },
+] as const;
+export type ExerciseFreq = (typeof EXERCISE_FREQS)[number]["v"];
+export const EXERCISE_FREQ_VALUES: ExerciseFreq[] = EXERCISE_FREQS.map((x) => x.v);
+
+/** R4 — PCOS 3 สถานะ แทน boolean เดิม
+ *  "unsure" = ผู้ใช้ติ๊ก "ไม่แน่ใจ" → **ไม่แนะนำ PCO-VIT** แต่ชวนไปตรวจยืนยันกับแพทย์
+ *  (คอลัมน์ has_pcos เดิมยังถูกเขียนคู่กันไว้ที่ /api/lead: has_pcos = pcos_status === "yes") */
+export const PCOS_STATUS_VALUES = ["yes", "unsure", "no"] as const;
+export type PcosStatus = (typeof PCOS_STATUS_VALUES)[number];
+
+/** R6 · R7 — พฤติกรรมฝ่ายชาย (เลือกได้หลายข้อ) */
+export const MALE_BEHAVIORS = [
+  { v: "smoke", label: "สูบบุหรี่" },
+  { v: "alcohol", label: "ดื่มแอลกอฮอล์" },
+  { v: "stress", label: "เครียด" },
+] as const;
+export type MaleBehavior = (typeof MALE_BEHAVIORS)[number]["v"];
+export const MALE_BEHAVIOR_VALUES: MaleBehavior[] = MALE_BEHAVIORS.map((x) => x.v);
+
+/** R9 · TC-09-01/03 — "ท้องด้วยวิธีไหน" เริ่ม 2 ตัวเลือก แต่ต้องเติมข้อ 3 ได้โดยแก้ที่เดียว
+ *  (เช่น IUI / บำรุงไข่ ตาม P2 ใน PRD) — logic ทุกที่อ่านจาก array นี้ ห้าม hardcode ซ้ำ */
+export const CONCEPTION_METHODS = ["ท้องธรรมชาติ", "ท้องด้วย ICSI"] as const;
+export type ConceptionMethod = (typeof CONCEPTION_METHODS)[number];
+
 export interface VitaminProfile {
   stage: VitaminStage;
   hasPcos: boolean;
@@ -53,6 +115,17 @@ export interface VitaminProfile {
   infertilityIssues?: InfertilityIssue[];
   /** R3 — internal-only qualitative signal from height+weight; never a raw BMI number. */
   weightTier?: BmiTier;
+  /** R2 (R3 rev.) — ช่วงอายุ 35–39 / 40+ เพิ่ม A.O.S (ยังต้องผ่าน allowedIn() ตามปกติ) */
+  ageRange?: string;
+  /** R4 — 3 สถานะ; ถ้าไม่ส่งมาจะ fallback ไป hasPcos/issues เพื่อ backward compat */
+  pcosStatus?: PcosStatus;
+  /** R6 — พฤติกรรมของผู้กรอกเอง เมื่อ stage === "male" */
+  behaviors?: MaleBehavior[];
+  /** R7 — พฤติกรรมของ "คู่" (ฝ่ายชาย) เมื่อผู้หญิง stage infertility ติ๊ก male_factor
+   *  แยกจาก behaviors เพราะเป็นคนละคน ห้ามปนกัน */
+  partnerBehaviors?: MaleBehavior[];
+  /** R9 — เบาหวานขณะตั้งครรภ์ → ต้องมีข้อความให้อยู่ในการดูแลของแพทย์ */
+  hasGdm?: boolean;
 }
 
 /** Which life stages this product must be stopped in — from the Safety Matrix (§4). */
@@ -225,12 +298,34 @@ export const PRODUCTS: Record<string, Product> = {
     caution: "‼️ ใช้ภายนอกเท่านั้น ห้ามรับประทาน · ผ้าคอตตอนแฟลนเนลแยกจำหน่าย ฿295",
   },
 
+  // ---------- อาหาร/เครื่องดื่มบำรุง (เพิ่มรอบ R3) ----------
+  // ราคาจาก docs/product-catalog.md · ทั้ง 3 ตัวยังไม่มี howto — ดู NO_DOSAGE_YET ด้านล่าง
+  goatmilk: {
+    id: "goatmilk", name: "นมแพะคัดเกรด Goats Milk", price: 650, group: "nutrition",
+    why: "แคลเซียมและโปรตีนจากนมแพะ ย่อยง่ายกว่านมวัวสำหรับบางคน",
+    // TODO(dosage): แบรนด์ยังไม่ยืนยันวิธีรับประทาน/ปริมาณต่อวัน — client อนุมัติให้
+    // แสดงสินค้าโดยไม่มีวิธีทานไปก่อน (PRD R3 §Reversals · คอมเมนต์ TC-06-08 / TC-10-04)
+    // ห้ามเดาเอง: เติมเมื่อทีมครูก้อยส่ง dosage มา (Open Question #2)
+  },
+  blackchickensoup: {
+    id: "blackchickensoup", name: "ซุปไก่ดำ BY ครูก้อยเข้าครัว", price: 1800, group: "nutrition",
+    why: "อาหารบำรุงกำลังสำหรับช่วงฟื้นฟูร่างกาย",
+    // TODO(dosage): ยังไม่มีวิธีรับประทานยืนยันจากแบรนด์ — เหตุผลเดียวกับ goatmilk ข้างบน
+  },
+  bananaflower: {
+    id: "bananaflower", name: "น้ำหัวปลี มามอง", price: 1850, group: "nutrition",
+    why: "เครื่องดื่มบำรุงจากหัวปลี นิยมใช้ในช่วงหลังคลอด/ให้นม",
+    // TODO(dosage): ยังไม่มีวิธีรับประทานยืนยันจากแบรนด์ — เหตุผลเดียวกับ goatmilk ข้างบน
+  },
+
   // ---------- บำรุงชาย ----------
-  // ⏳ Motila1 ไม่แนะนำในแอปจนกว่าแบรนด์จะยืนยันวิธีรับประทาน (product-catalog-master.md §3)
-  // อย่าเดา dosage เอง — สินค้าที่ไม่มี howto จะแสดงในรายงานแบบไม่มีวิธีทาน
   motila1: {
     id: "motila1", name: "Motila1 โมทิล่าวัน", price: 1990, group: "core",
     why: "บำรุงสเปิร์มสำหรับฝ่ายชาย",
+    // TODO(dosage): 🔄 R3 กลับมติเดิม — เดิม (R2) ถอด Motila1 ออกจากแอปทั้งหมดจนกว่าจะมี
+    // dosage ยืนยัน ตอนนี้ client อนุมัติแล้วว่า *"ยินยอมให้แสดงแบบไม่มี Dosage ไปก่อน
+    // แต่ mark flag ไว้เติมทีหลัง"* (คอมเมนต์ TC-06-08) → แนะนำได้ แต่ **ห้ามเดา howto เอง**
+    // รอทีมครูก้อยยืนยัน (Open Question #2 · product-catalog-master.md §3)
   },
   mzall: {
     id: "mzall", name: "M-Z All", price: 1990, group: "core",
@@ -249,69 +344,194 @@ export const PRODUCTS: Record<string, Product> = {
 export interface VitaminResult {
   /** ชุดแกนหลัก — ทานประจำทุกวัน */
   core: Product[];
-  /** เสริมตามโปรไฟล์ (PCOS / ART / การนอน ฯลฯ) */
+  /** เสริมตามโปรไฟล์ (PCOS / ART / อายุ / พฤติกรรมฝ่ายชาย ฯลฯ) */
   targeted: Product[];
   /** โภชนาการเสริมจากชุดครูก้อย */
   nutrition: Product[];
   /** ใช้ภายนอก */
   external: Product[];
-  /** core + targeted — ชุดย่อที่ใช้ในรายงาน 90 วัน (ไม่เทกระจาดทั้ง 19 ตัว) */
+  /** ชุดย่อที่ใช้ในรายงาน 90 วัน (ไม่เทกระจาดทั้ง 19 ตัว) — core + targeted + ชุดตาม artPlan (R3) */
   primary: Product[];
   note: string;
   /** คำเตือนระดับโปรไฟล์ จาก Safety Matrix */
   cautions: string[];
 }
 
-/** ตัดสินค้าที่ต้องหยุดสำหรับช่วงชีวิตนี้ออก (Safety Matrix §4) */
+/** สินค้าที่ "อนุมัติให้แนะนำได้ทั้งที่ยังไม่มีวิธีรับประทาน" (R3 §Reversals · คอมเมนต์ TC-06-08)
+ *  ทุก id ในลิสต์นี้ต้องมี `TODO(dosage)` กำกับไว้ใน PRODUCTS ด้านบน
+ *  ⚠️ ห้ามเพิ่มชื่อใหม่เข้ามาเองโดยไม่มีคำยืนยันจากทีมครูก้อย — unit test ใช้ลิสต์นี้เป็น
+ *  ข้อยกเว้น *เดียว* ของกฎเดิม "ทุกสินค้าที่แนะนำต้องมี howto" */
+export const NO_DOSAGE_YET: string[] = ["motila1", "goatmilk", "blackchickensoup", "bananaflower"];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// R12 · TS-12 — ตาราง product mapping ของ "มีบุตรยาก" (คัดจากตารางที่ทีมครูก้อยให้ ตรงช่อง)
+// ทุกการแก้ mapping ให้แก้ที่ 2 ค่านี้ที่เดียว แล้ว unit test จะไล่ตรวจทีละแถวให้เอง
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** ชุดพื้นฐาน (base 4) ของทุกคนที่อยู่ stage "มีบุตรยาก"
+ *  หมายเหตุ "น้ำมะกรูด" = SKU **Shot 100% (฿600)** ไม่ใช่สูตร 70%+น้ำผึ้งชันโรง (฿2,376)
+ *  — สมมติฐานที่ระบุไว้ใน PRD Open Question #1 (non-blocking) แก้ได้ที่บรรทัดนี้จุดเดียว */
+export const INFERTILITY_BASE_SET: string[] = ["ferty", "ovaall", "kaffirshot", "ferti9oil"];
+
+/** สินค้าที่ "เพิ่ม" ต่อจาก base 4 ตามปัญหาที่ติ๊ก (union แบบ dedupe เมื่อติ๊กหลายข้อ) */
+export const INFERTILITY_PRODUCT_MAP: Record<InfertilityIssue, string[]> = {
+  pcos: ["pcovit"],                          // TC-12-01 — ยืนยันแล้วว่า *ไม่* มี Colla Telo/Varginaree
+  diminished_ovary: ["varginaree"],          // TC-12-02
+  low_hormone: ["varginaree"],               // TC-12-03
+  thin_lining: ["collatelo", "varginaree"],  // TC-12-04
+  male_factor: ["ferta", "mzall", "motila1"],// TC-07-01 (+ A.O.S ถ้าคู่ติ๊ก "เครียด" — ดู R6/R7)
+  overweight: ["pcovit"],                    // TC-13-02 (+ คำแนะนำโภชนาการ/ออกกำลังกายใน cautions)
+  unsure: [],                                // TC-12-06 — base 4 เท่านั้น
+};
+
+/** R3 · TS-03 — "เตรียมผนังมดลูก" ได้ชุดเฉพาะ 4 ตัว
+ *  ⚠️ ผูกกับ **ค่า artPlan** ไม่ใช่ stage === "prep" เพราะ R5 ตัดคำถาม ART ออกจาก prep แล้ว
+ *  ถ้าไปผูกกับ stage กฎนี้จะไม่มีวันทำงาน (ดู PRD §Reversals ย่อหน้า "ผลพวงที่ต้องรู้") */
+export const LINING_PREP_SET: string[] = ["collatelo", "safflower", "castoroil", "probiotics"];
+
+/** R10/R11 — ชุดสินค้าประจำ stage ตั้งครรภ์/ให้นม
+ *  🔒 ต้องตรงกับ PREGNANCY_PRODUCT_IDS / LACTATION_PRODUCT_IDS ใน lib/calc/pregnancy.ts
+ *  และ lactation.ts เป๊ะ (มีเทสต์ล็อกไว้) — ประกาศซ้ำที่นี่เพื่อเลี่ยง circular import
+ *  เพราะ 2 โมดูลนั้น import productsForStage() จากไฟล์นี้อยู่แล้ว
+ *  ⚠️ น้ำหัวปลีของ pregnant ถูกเพิ่มตามอายุครรภ์ ≥16 สัปดาห์ในชั้น R10 ไม่ใช่ที่นี่ */
+export const STAGE_CORE_PREGNANT: string[] = ["goatmilk", "ferty", "ferti9oil", "probiotics"];
+export const STAGE_CORE_LACTATING: string[] = [
+  "goatmilk", "ferty", "ferti9oil", "probiotics", "bananaflower", "ginger", "blackchickensoup",
+];
+
+/** ตัดสินค้าที่ต้องหยุดสำหรับช่วงชีวิตนี้ออก (Safety Matrix §4)
+ *  🔒 นี่คือด่านความปลอดภัยเดียวของไฟล์นี้ — ทุกกฎใหม่ต้องไหลผ่านฟังก์ชันนี้เสมอ
+ *  ห้ามมีเส้นทางไหน push สินค้าเข้าผลลัพธ์โดยข้าม keep() ท้ายฟังก์ชัน */
 function allowedIn(stage: VitaminStage, p: Product): boolean {
   if (stage === "pregnant" && p.stop?.pregnant) return false;
   if (stage === "lactating" && p.stop?.lactating) return false;
   return true;
 }
 
+/** R10/R11 — ชุดสินค้าของ "หน้าความรู้" (ตั้งครรภ์ / ให้นมบุตร)
+ *  🔒 ต้องไหลผ่าน allowedIn() เหมือนทุกเส้นทางที่แนะนำสินค้า — ห้ามให้หน้าความรู้
+ *  หยิบ PRODUCTS ตรง ๆ ไม่งั้น Safety Matrix จะถูกข้าม (เช่น Varginaree ที่ stop.lactating)
+ *  คืนตามลำดับ id ที่ส่งเข้ามา · ตัด id ที่ไม่มีจริงและตัวซ้ำออกให้ */
+export function productsForStage(stage: VitaminStage, ids: string[]): Product[] {
+  return dedupe(byId(ids)).filter((x) => allowedIn(stage, x));
+}
+
+/** R6 · TC-06-03..07 — กฎสินค้าจากพฤติกรรม 3 ข้อ (คอมเมนต์ TC-06-07 ระบุ `>= 2` ชัดเจน)
+ *    ติ๊ก >= 2 ข้อ            → A.O.S + Motila1
+ *    มิฉะนั้น ติ๊ก "เครียด"      → A.O.S
+ *    มิฉะนั้น ติ๊กบุหรี่/ดื่ม     → Motila1
+ *  ใช้ Set เพื่อกันค่าซ้ำจาก client (["stress","stress"] ต้องนับเป็น 1 ไม่ใช่ 2) */
+export function behaviorProductIds(behaviors?: MaleBehavior[] | string[]): string[] {
+  const picked = new Set(
+    (behaviors || []).filter((b): b is MaleBehavior => (MALE_BEHAVIOR_VALUES as string[]).includes(b as string)),
+  );
+  if (picked.size >= 2) return ["aos", "motila1"];
+  if (picked.has("stress")) return ["aos"];
+  if (picked.has("smoke") || picked.has("alcohol")) return ["motila1"];
+  return [];
+}
+
+/** R4 — สรุปสถานะ PCOS จากทุกทางเข้า (ช่องใหม่ 3 สถานะ / checklist / boolean เดิม)
+ *  ลำดับความสำคัญ: checklist ของ "มีบุตรยาก" > ช่อง pcos_status ใหม่ > has_pcos เดิม
+ *  (ข้อมูลเก่าที่มีแต่ has_pcos จึงยังทำงานเหมือนเดิมทุกประการ) */
+export function resolvePcosStatus(p: {
+  pcosStatus?: PcosStatus;
+  hasPcos?: boolean;
+  infertilityIssues?: InfertilityIssue[];
+}): PcosStatus {
+  if (p.infertilityIssues?.includes("pcos")) return "yes";
+  if (p.pcosStatus && (PCOS_STATUS_VALUES as readonly string[]).includes(p.pcosStatus)) return p.pcosStatus;
+  return p.hasPcos ? "yes" : "no";
+}
+
+const byId = (ids: string[]): Product[] => ids.map((id) => PRODUCTS[id]).filter(Boolean);
+const dedupe = (list: Product[]): Product[] => Array.from(new Map(list.map((x) => [x.id, x])).values());
+
 export function recommendVitamins(p: VitaminProfile): VitaminResult {
+  const issues = p.infertilityIssues || [];
+  const pcosStatus = resolvePcosStatus(p);
+  const effectivePcos = pcosStatus === "yes";
+  // R2 — กฎอายุใหม่: 35–39 / 40+ → A.O.S (เดิมผูกกับ artPlan/stage เท่านั้น)
+  const agedAos = isAosAgeRange(p.ageRange);
+  // R3 — ชุด "เตรียมผนังมดลูก" ผูกกับค่า artPlan ไม่ใช่ stage
+  // ไม่ใช้กับ stage "male": คำถาม ART ของฝ่ายชายถามถึงการรักษา *ของคู่* สินค้าบำรุงผนังมดลูก
+  // จึงไม่ควรไปโผล่ในแผนของเขาเอง (จุดที่ PRD ไม่ได้ระบุ — บันทึกไว้เพื่อให้ทีมเคาะทีหลังได้)
+  const liningPrep = p.artPlan === "เตรียมผนังมดลูก" && p.stage !== "male";
+
+  const keep = (list: Product[]) => dedupe(list).filter((x) => allowedIn(p.stage, x));
+  const cautions: string[] = [];
+
+  // ── stage "ฝ่ายชาย" ────────────────────────────────────────────────────────
   if (p.stage === "male") {
-    // ใช้ M-Z All แทน Motila1 ชั่วคราว: ทุกตัวที่แนะนำต้องมีวิธีรับประทานที่แบรนด์ยืนยันแล้ว
-    const core = [PRODUCTS.mzall, PRODUCTS.ferta];
-    const nutrition = [PRODUCTS.pureseed];
+    const core = byId(["mzall", "ferta"]);
+    // R6 — พฤติกรรม + อายุ เพิ่มของเข้ากลุ่ม targeted (ผ่าน keep() เหมือนกลุ่มอื่น)
+    const targeted = byId(behaviorProductIds(p.behaviors));
+    if (agedAos) targeted.push(PRODUCTS.aos);
+    if (p.artPlan !== "ยัง") targeted.push(PRODUCTS.aos);
+    const nutrition = byId(["pureseed"]);
+
+    const c = keep(core);
+    const t = keep(targeted);
+    if (p.artPlan !== "ยัง") {
+      cautions.push("คู่ของคุณอยู่ระหว่างวางแผนกับแพทย์ — ปรึกษาแพทย์ที่ดูแลก่อนเริ่มอาหารเสริมทุกตัว");
+    }
     return {
-      core, targeted: [], nutrition, external: [],
-      primary: [...core, ...nutrition],
+      core: c, targeted: t, nutrition: keep(nutrition), external: [],
+      primary: dedupe([...c, ...t, ...keep(nutrition)]),
       note: "บำรุงฝ่ายชายควบคู่ฝ่ายหญิง เพื่อเตรียมความพร้อมของร่างกายทั้งคู่ · ทานต่อเนื่องได้ในฐานะอาหารเสริม หากมีโรคประจำตัวหรือใช้ยาอยู่ ปรึกษาแพทย์/เภสัชกรก่อน",
-      cautions: [],
+      cautions,
     };
   }
 
-  const core = [PRODUCTS.ovaall, PRODUCTS.ferty, PRODUCTS.collatelo, PRODUCTS.ferti9oil];
-
-  // R2 — PCO-VIT used to key off `hasPcos` alone; the infertility checklist's
-  // "PCOS" item now also triggers it (a plain `hasPcos: true` from the health
-  // step still works exactly as before — this only adds a second path in).
-  const issues = p.infertilityIssues || [];
-  const effectivePcos = p.hasPcos || issues.includes("pcos");
-
+  // ── stage ฝ่ายหญิง ─────────────────────────────────────────────────────────
   const targeted: Product[] = [];
-  if (effectivePcos) targeted.push(PRODUCTS.pcovit);
-  if (p.artPlan !== "ยัง" || p.stage === "infertility") targeted.push(PRODUCTS.aos);
-  targeted.push(PRODUCTS.varginaree, PRODUCTS.nightshot);
-  // "ปัญหาจากฝ่ายชาย" (R2 table): only M-Z All — Motila1 stays excluded app-wide
-  // until the brand confirms a dosage (see the `motila1` entry above). Add it
-  // back here too, the day Motila1 reopens.
-  if (issues.includes("male_factor")) targeted.push(PRODUCTS.mzall);
-  // dedupe (male_factor + a shared product elsewhere, etc.)
-  const targetedDeduped = Array.from(new Map(targeted.map((x) => [x.id, x])).values());
+  let core: Product[];
 
-  const nutrition = [
-    PRODUCTS.phytocrystalc, PRODUCTS.pureseed, PRODUCTS.goodgrain, PRODUCTS.pureblack,
-    PRODUCTS.purered, PRODUCTS.puregreen, PRODUCTS.kaffirshot, PRODUCTS.kaffirhoney,
-    PRODUCTS.ginger, PRODUCTS.probiotics, PRODUCTS.safflower,
-  ];
+  if (p.stage === "infertility") {
+    // R12 — ยึดตาราง mapping ของทีมเป๊ะ: base 4 + ของที่เพิ่มตามปัญหาที่ติ๊ก
+    core = byId(INFERTILITY_BASE_SET);
+    for (const issue of issues) targeted.push(...byId(INFERTILITY_PRODUCT_MAP[issue] || []));
+    // R7 — ติ๊ก "ปัญหาจากฝ่ายชาย" แล้วคู่กรอกฟอร์มฝ่ายชายมาด้วย: กฎพฤติกรรม R6 ทำงานกับ
+    // ข้อมูลชุดนั้น (ติ๊ก "เครียด" → A.O.S เข้ารายการ ตามตาราง R12 แถว "ปัญหาจากฝ่ายชาย")
+    if (issues.includes("male_factor")) targeted.push(...byId(behaviorProductIds(p.partnerBehaviors)));
+    // ข้อมูลเก่า/resume ที่มีแต่ has_pcos และ *ยังไม่ได้ตอบเช็กลิสต์เลย* — ยังควรได้ PCO-VIT
+    // เหมือนที่เคยได้ แต่ถ้าตอบเช็กลิสต์แล้ว ให้เช็กลิสต์เป็นใหญ่เสมอ (TC-12-06: ติ๊ก
+    // "ไม่แน่ใจ" ต้องได้ base 4 เท่านั้น แม้ has_pcos เดิมจะเป็น true)
+    if (effectivePcos && issues.length === 0) targeted.push(PRODUCTS.pcovit);
+  } else if (p.stage === "pregnant" || p.stage === "lactating") {
+    // 🔒 R10/R11 — 2 stage นี้มีชุดสินค้าของตัวเองตาม PRD
+    // เดิมตกลงมาที่ else-branch ของ prep ทำให้แม่ท้อง/ให้นมเห็น "วิตามินที่แนะนำสำหรับคุณ"
+    // เป็น OvaAll ("บำรุงไข่") + Colla Telo ("เตรียมผนังมดลูก") อยู่เหนือบล็อกความรู้ที่
+    // แนะนำอีกชุดหนึ่ง = สินค้า 2 ชุดขัดกันในหน้าเดียว ซึ่งคือ Problem Statement ของ R3 เอง
+    // (Lucifer red-team 31/7) — รายการต้องตรงกับ PREGNANCY_PRODUCT_IDS / LACTATION_PRODUCT_IDS
+    // ใน lib/calc/pregnancy.ts และ lactation.ts · มีเทสต์ล็อกไว้ไม่ให้ 2 ที่หลุดจากกัน
+    core = byId(p.stage === "pregnant" ? STAGE_CORE_PREGNANT : STAGE_CORE_LACTATING);
+  } else {
+    // prep — ชุดเดิมของแบรนด์ตามที่ทำมาตั้งแต่ R2
+    core = byId(["ovaall", "ferty", "collatelo", "ferti9oil"]);
+    if (effectivePcos) targeted.push(PRODUCTS.pcovit);
+    targeted.push(PRODUCTS.varginaree, PRODUCTS.nightshot);
+  }
 
-  const external = [PRODUCTS.castoroil];
+  if (p.artPlan !== "ยัง") targeted.push(PRODUCTS.aos);
+  if (agedAos) targeted.push(PRODUCTS.aos); // R2 — dedupe ด้านล่างทำให้ปรากฏครั้งเดียว (TC-02-04)
+  if (liningPrep) targeted.push(...byId(LINING_PREP_SET));
 
-  const keep = (list: Product[]) => list.filter((x) => allowedIn(p.stage, x));
+  const nutrition = byId([
+    "phytocrystalc", "pureseed", "goodgrain", "pureblack",
+    "purered", "puregreen", "kaffirshot", "kaffirhoney",
+    "ginger", "probiotics", "safflower",
+  ]);
+  const external = byId(["castoroil"]);
 
-  const cautions: string[] = [];
+  const c = keep(core);
+  const t = keep(targeted).filter((x) => !c.some((y) => y.id === x.id));
+  const usedIds = new Set([...c, ...t].map((x) => x.id));
+  // สินค้าที่ถูกยกขึ้นไปเป็น core/targeted แล้ว ไม่ต้องโชว์ซ้ำในกลุ่มโภชนาการ/ใช้ภายนอก
+  const n = keep(nutrition).filter((x) => !usedIds.has(x.id));
+  const e = keep(external).filter((x) => !usedIds.has(x.id));
+
+  // ----- cautions (Safety Matrix + เส้นแดง compliance) -----
   if (p.artPlan !== "ยัง") {
     cautions.push(
       "คุณอยู่ระหว่างวางแผนกับแพทย์ — ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มอาหารเสริมทุกตัว เพราะอาจมีผลต่อยาที่ได้รับ",
@@ -319,11 +539,31 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
     );
   }
   cautions.push("ช่วงวันไข่ตก ให้หยุดดอกคำฝอยและแพ็คน้ำมันละหุ่ง");
+  // R3 · TC-03-02 🔒 — ดอกคำฝอย/น้ำมันละหุ่งเป็นตัวกระตุ้นมดลูก และ "เตรียมผนัง" มักอยู่ใกล้
+  // ช่วงใส่ตัวอ่อนมาก คำเตือนจึงต้องมาพร้อมคำแนะนำเสมอ ห้ามหายไปเพราะกฎใหม่นี้
+  if (liningPrep) {
+    cautions.push(
+      // ⚠️ ห้ามใส่ markdown (**bold**) — report-view.tsx render cautions เป็น plain text
+      // ผู้ใช้จะเห็นดอกจันโผล่กลางคำเตือนที่สำคัญที่สุดในแอป
+      "ชุดเตรียมผนังมดลูก: ดอกคำฝอยและแพ็คน้ำมันละหุ่ง ต้องหยุดทันที เมื่อถึงวันไข่ตก · หลังใส่ตัวอ่อน · และตลอดช่วงตั้งครรภ์",
+      "น้ำมันละหุ่งใช้ประคบภายนอกเท่านั้น ห้ามรับประทาน",
+    );
+  }
   if (p.stage === "pregnant") cautions.push("รายการที่ต้องหยุดช่วงตั้งครรภ์ถูกตัดออกจากคำแนะนำนี้แล้ว");
   if (p.stage === "lactating") cautions.push("รายการที่ต้องหยุดช่วงให้นมถูกตัดออกจากคำแนะนำนี้แล้ว");
-  // R3 — qualitative BMI-tier note, only when the "น้ำหนักเกิน" issue was picked
-  // and we actually have height+weight to compute a tier from. No number shown.
-  if (issues.includes("overweight") && p.weightTier) cautions.push(BMI_TIER_NOTE[p.weightTier]);
+  // R4 — "ไม่แน่ใจ" ต้องไม่ได้ PCO-VIT และต้องไม่ถูกบอกว่า "คุณเป็น PCOS"
+  if (pcosStatus === "unsure") {
+    cautions.push("คุณระบุว่ายังไม่แน่ใจเรื่องภาวะ PCOS — แนะนำตรวจยืนยันกับแพทย์ก่อนค่ะ เราจึงยังไม่แนะนำวิตามินเฉพาะกลุ่ม PCOS ให้");
+  }
+  // R9 🔒 — เบาหวานขณะตั้งครรภ์ต้องอยู่ในการดูแลของแพทย์ ห้ามให้คำแนะนำที่ทำให้ชะลอการพบแพทย์
+  if (p.hasGdm) {
+    cautions.push("คุณระบุว่ามีภาวะเบาหวานขณะตั้งครรภ์ — ต้องอยู่ในการดูแลของแพทย์/นักโภชนาการที่ดูแลครรภ์ของคุณ อาหารเสริมทุกตัวให้ปรึกษาแพทย์ก่อนเสมอ");
+  }
+  // R13 — คำแนะนำสำหรับคนที่ติ๊ก "น้ำหนักเกิน" (ตัวเลข BMI แสดงในรายงาน ดู lib/calc/bmi.ts)
+  if (issues.includes("overweight")) {
+    cautions.push("แนะนำลดคาร์บขัดสี เพิ่มโปรตีนให้ถึงเป้าต่อวัน และขยับร่างกายตามคำแนะนำในเครื่องมือ ‘แนะนำการออกกำลังกาย’ ควบคู่ไปกับการบำรุง");
+    if (p.weightTier) cautions.push(BMI_TIER_NOTE[p.weightTier]);
+  }
 
   const note = effectivePcos
     ? "เน้นบำรุงไข่ + งดหวานเพื่อสมดุลฮอร์โมน (คำแนะนำทั่วไป ไม่ใช่การรักษาโรค)"
@@ -331,11 +571,12 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
       ? "บำรุงไข่ให้พร้อมก่อนเข้าสู่กระบวนการ เพิ่มความพร้อมของร่างกาย"
       : "เริ่มบำรุงล่วงหน้าอย่างน้อย 3 เดือนเพื่อเตรียมความพร้อม";
 
-  const c = keep(core);
-  const t = keep(targetedDeduped);
   return {
-    core: c, targeted: t, nutrition: keep(nutrition), external: keep(external),
-    primary: [...c, ...t],
+    core: c, targeted: t, nutrition: n, external: e,
+    // R3 — ชุด "เตรียมผนังมดลูก" ปกติกระจายอยู่คนละกลุ่ม (ดอกคำฝอย = โภชนาการ,
+    // น้ำมันละหุ่ง = ใช้ภายนอก) จึงถูกยกขึ้นมาไว้ใน targeted ด้านบน แล้วกรองออกจากกลุ่มเดิม
+    // เพื่อไม่ให้แสดงซ้ำ — ผลคือรายงาน (primary) เห็นครบทั้ง 4 ตัวตาม TC-03-01
+    primary: dedupe([...c, ...t]),
     note: note + " · ยึดหลัก 70% อยู่ในจาน 30% วิตามินเสริม — แผนมีค่าแม้ยังไม่ซื้ออะไรเลย",
     cautions,
   };

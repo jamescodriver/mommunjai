@@ -8,6 +8,7 @@ import {
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 import { IconRun } from "@/components/icons";
+import AdminHandoffCta from "@/components/admin-handoff-cta";
 
 const STAGES: { v: ExerciseStage; l: string }[] = [
   { v: "prep", l: "เตรียมตั้งครรภ์ / บำรุงไข่" },
@@ -157,6 +158,16 @@ export default function ExercisePage() {
 
             <PlanCta />
             <VitaminsCta />
+            {/* R3 — เดิมหน้านี้ไม่มีทางส่งต่อให้แอดมินเลย ผู้ใช้ต้องไปเริ่มที่ /plan ใหม่
+                ตอนนี้ผลถูกเก็บลง tool_results ได้แล้ว (migration 0007) แอดมินจึงเห็นบริบท
+                ตอนคุยต่อใน LINE OA โดยไม่ต้องถามซ้ำ */}
+            <AdminHandoffCta
+              stage={stage}
+              tool="exercise"
+              toolInput={{ stage, baseline, issues }}
+              toolOutput={res}
+              label="อยากปรึกษาเรื่องการออกกำลังกายเพิ่มเติม ทักได้ที่ LINE OA"
+            />
           </ResultCard>
         )}
       </ToolShell>

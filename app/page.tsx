@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
-import { IconSprout, IconBelly, IconBottle, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconGift, IconRun, IconClipboard } from "@/components/icons";
+import { IconSprout, IconBelly, IconHeart, IconCalendar, IconEgg, IconSalad, IconMoon, IconDroplet, IconPill, IconRun, IconClipboard } from "@/components/icons";
 
 // R1 (PRD-UPDATE-R2-2607.md) — 4 real categories, no sub-picker except
 // "เตรียมตั้งครรภ์" which gets an inline "ฝ่ายชาย" sub-link (moved here from
@@ -10,7 +10,10 @@ const CATEGORIES = [
   { icon: <IconSprout />, title: "เตรียมตั้งครรภ์", desc: "อยากมีลูก บำรุงร่างกายให้พร้อมล่วงหน้า", href: "/plan?stage=prep" },
   { icon: <IconHeart />, title: "มีบุตรยาก", desc: "กำลังพยายามอยู่ ต้องการบำรุงเฉพาะทาง", href: "/plan?stage=infertility" },
   { icon: <IconBelly />, title: "ตั้งครรภ์แล้ว", desc: "ดูแลครรภ์ต่อเนื่อง เตรียมพร้อมสำหรับลูก", href: "/plan?stage=pregnant" },
-  { icon: <IconBottle />, title: "ให้นมบุตร", desc: "ฟื้นฟูร่างกายหลังคลอด บำรุงคุณภาพน้ำนม", href: "/plan?stage=lactating" },
+  // 🔴 พ.ร.บ.นมผง (legal-compliance §2) — ห้ามใช้ไอคอนขวดนม/จุกนม และห้ามเคลมเรื่องน้ำนม
+  // ผูกกับ funnel สินค้า · เดิมใช้ IconBottle + "บำรุงคุณภาพน้ำนม" ซึ่งเข้าข่ายทั้งสองข้อ
+  // (มาตรา ๑๔ ผูกกับ "ผู้ใด" = ตัวแอปเองก็เป็นผู้กระทำได้) — Lucifer red-team 31/7
+  { icon: <IconSprout />, title: "ให้นมบุตร", desc: "ฟื้นฟูร่างกายหลังคลอด ดูแลตัวคุณแม่", href: "/plan?stage=lactating" },
 ];
 
 const TOOLS = [
@@ -22,7 +25,10 @@ const TOOLS = [
   { href: "/tools/exercise", icon: <IconRun />, title: "แนะนำการออกกำลังกาย", desc: "โปรแกรมที่เหมาะกับช่วงของคุณ อ้างอิง WHO/ACOG" },
   { href: "/tools/vitamins", icon: <IconPill />, title: "แนะนำวิตามินครูก้อย", desc: "เลือกวิตามินให้ตรงกับคุณ" },
   { href: "/tools/labs", icon: <IconClipboard />, title: "ตรวจร่างกาย ควรตรวจอะไรบ้าง", desc: "ความรู้เบื้องต้นเรื่องฮอร์โมน/ค่าน้ำเชื้อ อ้างอิง ASRM/WHO" },
-  { href: "/plan", icon: <IconGift />, title: "รับแผนเฉพาะคุณ", desc: "คุยกับทีม Baby & Mom ผ่าน LINE OA" },
+  // R14 · TC-14-01 — การ์ดตำแหน่งสุดท้ายเปลี่ยนจาก "รับแผนเฉพาะคุณ" เป็นแบบประเมินความเครียด
+  // ตามที่ต้นยืนยัน · ทางเข้า /plan ยังอยู่ครบที่การ์ดหมวดชีวิต 4 ใบด้านบน + ปุ่ม CTA ท้ายทุก
+  // เครื่องมือ (PlanCta) จึงไม่เสียทางเข้าหลักไป
+  { href: "/tools/stress", icon: <IconHeart />, title: "แบบประเมินความเครียด", desc: "5 ข้อสั้น ๆ จากแบบประเมินกรมสุขภาพจิต (ST-5)" },
 ];
 
 export default function Home() {
@@ -62,7 +68,10 @@ export default function Home() {
           <h3 className="mt-3 text-lg font-semibold">{CATEGORIES[0].title}</h3>
           <p className="mt-1 text-base text-ink/70">{CATEGORIES[0].desc}</p>
           <div className="mt-3 flex gap-2">
-            <Link href={CATEGORIES[0].href} className="btn-primary !min-h-0 flex-1 !py-2 text-sm">เริ่มเลย →</Link>
+            {/* R1 (PRD-UPDATE-R3-3107 · TC-01-01) — ปุ่มหลักของการ์ดนี้ใบเดียวเปลี่ยนเป็น
+                "ฝ่ายหญิง →" ให้เป็นคู่กับปุ่มรอง "ฝ่ายชาย →" · การ์ดอีก 3 ใบยังเป็น
+                "เริ่มเลย →" เหมือนเดิม (TC-01-02) */}
+            <Link href={CATEGORIES[0].href} className="btn-primary !min-h-0 flex-1 !py-2 text-sm">ฝ่ายหญิง →</Link>
             <Link href="/plan?stage=male" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายชาย →</Link>
           </div>
         </div>

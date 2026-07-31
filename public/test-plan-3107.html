@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Plan — Mommunjai "แก้ไข 31.7.26" (Product Mapping)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --indigo:#6366F1; --indigo-deep:#4338CA; --indigo-soft:#E9E9FE;
+  --gray:#9CA3AF; --gray-deep:#5B6472; --gray-soft:#EEF1F4;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:18px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins,'Prompt',sans-serif;font-size:20px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.85}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center}
+.stat .n{font-family:Poppins,sans-serif;font-size:22px;font-weight:600}
+.stat .l{font-size:11.5px;color:#6B7280;margin-top:2px}
+.stat.flag .n{color:var(--rose-deep)}
+.stat.total .n{color:var(--ink)}
+.stat.cases .n{color:var(--teal-deep)}
+.stat.done .n{color:var(--gold-deep)}
+
+.banner{background:var(--rose-soft);border:1.5px solid var(--rose);border-radius:16px;padding:16px 18px;margin-bottom:18px}
+.banner h2{margin:0 0 8px;font-size:14px;font-family:Poppins,sans-serif;font-weight:600;color:var(--rose-deep)}
+.banner ol{margin:0;padding-left:20px;font-size:12.8px}
+.banner li{margin-bottom:6px}
+.banner a{color:var(--rose-deep);font-weight:600;text-decoration:underline;cursor:pointer}
+
+.sticky-wrap{position:sticky;top:8px;z-index:40;background:var(--bg);padding-top:2px;margin-bottom:16px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:12px;box-shadow:0 6px 20px rgba(15,23,42,.06)}
+.panel h2{margin:0 0 8px;font-size:12.5px;font-family:Poppins,sans-serif;font-weight:600;color:#374151;display:flex;align-items:center;gap:8px}
+.minilinks{font-size:11px;font-weight:400;color:#9CA3AF}
+.linkbtn{background:none;border:0;padding:0;font-family:inherit;font-size:11px;color:var(--teal-deep);cursor:pointer;text-decoration:underline}
+.linkbtn:hover{color:var(--teal)}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#4B5563;transition:.15s;user-select:none}
+.chip[data-on="1"]{color:#fff;border-color:transparent;background:var(--teal)}
+.chip.flagchip[data-on="1"]{background:var(--rose-deep)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:10px}
+.search{flex:1;min-width:200px}
+.search input{width:100%;font-family:inherit;font-size:13px;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;padding:9px 16px;border-radius:999px;white-space:nowrap;
+  background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(27,192,186,.3)}
+.btn.ghost{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal);box-shadow:none}
+
+.scenario{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:16px;scroll-margin-top:220px}
+.scenario.hasflag{border-color:var(--rose);box-shadow:0 0 0 1px var(--rose) inset}
+.shead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px}
+.tsid{font-family:Poppins,sans-serif;font-size:12px;font-weight:600;color:var(--teal-deep);background:var(--teal-soft);padding:3px 10px;border-radius:8px;white-space:nowrap}
+.areachip{font-size:11px;font-weight:600;color:var(--indigo-deep);background:var(--indigo-soft);padding:3px 10px;border-radius:8px;white-space:nowrap}
+.pageref{font-size:11px;color:#9CA3AF}
+.flagbadge{font-size:11px;font-weight:600;color:#fff;background:var(--rose-deep);padding:3px 10px;border-radius:8px;white-space:nowrap}
+.stitle{margin:2px 0 8px;font-size:15.5px;font-weight:600}
+.req{background:var(--teal-soft);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:9px 13px;font-size:12.8px;color:#374151;margin-bottom:10px;white-space:pre-line}
+.flagbox{background:var(--rose-soft);border-left:3px solid var(--rose-deep);border-radius:0 10px 10px 0;padding:10px 13px;font-size:12.6px;color:#7a1f4c;margin-bottom:12px;white-space:pre-line}
+.flagbox b{color:var(--rose-deep)}
+
+.cases{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.case{padding:10px 13px;border-top:1px solid var(--line)}
+.case:first-child{border-top:none}
+.case.flagged{background:#FFF7FA}
+.caseid{font-family:Poppins,sans-serif;font-size:11px;font-weight:600;color:var(--teal-deep);background:#fff;border:1px solid var(--teal);padding:1px 8px;border-radius:6px;margin-right:6px;white-space:nowrap}
+.caseflag{font-size:10.5px;font-weight:600;color:var(--rose-deep);margin-left:4px}
+.gwt{font-size:12.6px;margin-top:4px;line-height:1.55}
+.gwt b{color:#4B5563}
+
+.reviewrow{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px}
+.reviewrow select{font-family:inherit;font-size:12.5px;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+.reviewrow textarea{flex:1;min-width:220px;min-height:56px;font-family:inherit;font-size:12.5px;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);resize:vertical}
+.reviewrow textarea:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.savedmark{font-size:11px;color:var(--teal-deep);opacity:0;transition:opacity .3s;margin-left:2px}
+.savedmark.show{opacity:1}
+
+.empty{text-align:center;padding:40px;color:#9CA3AF;font-size:13px}
+footer.note{margin-top:18px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>📋 Test Plan — "App mommunjai แก้ไข 31.7.26" (Product Mapping)</h1>
+    <p>แปลงคอมเมนต์จาก PDF ต้นฉบับ → Test Scenario → Test Case พร้อมช่องให้คอมเมนต์/สถานะต่อ Scenario</p>
+    <p class="src">ที่มา: App mommunjai แก้ไข_31.7.26.pdf (10 หน้า) · แปลงเป็นเอกสารนี้: 31/7/2569 · <b>ยังไม่มีอะไรถูกสร้าง — นี่คือ test-design ก่อนลงมือ build</b></p>
+  </header>
+
+  <div class="stats">
+    <div class="stat total"><div class="n" id="statScenarios">–</div><div class="l">Test Scenario ทั้งหมด</div></div>
+    <div class="stat cases"><div class="n" id="statCases">–</div><div class="l">Test Case ทั้งหมด</div></div>
+    <div class="stat flag"><div class="n" id="statFlags">–</div><div class="l">🚩 มีประเด็นต้องยืนยันก่อนสร้าง</div></div>
+    <div class="stat done"><div class="n" id="statReviewed">–</div><div class="l">Scenario ที่ใส่สถานะแล้ว</div></div>
+  </div>
+
+  <div class="banner">
+    <h2>🚩 ประเด็นที่ต้องยืนยันกับทีมก่อนลงมือสร้าง (สรุปจากทุก Scenario)</h2>
+    <ol id="flagList"></ol>
+  </div>
+
+  <div class="sticky-wrap">
+    <div class="panel">
+      <h2>กรองตามหมวด <span class="minilinks">(<span class="linkbtn" onclick="selectAllAreas()">เลือกทั้งหมด</span> · <span class="linkbtn" onclick="clearAreas()">ไม่เลือกเลย</span>)</span></h2>
+      <div class="chiprow" id="areaChips"></div>
+      <div class="toolbar">
+        <div class="search"><input id="searchBox" placeholder="ค้นหาในหัวข้อ/requirement…" oninput="render()"></div>
+        <button class="chip flagchip" id="flagOnlyBtn" data-on="0" onclick="toggleFlagOnly()">🚩 เฉพาะที่มีประเด็นต้องยืนยัน</button>
+        <button class="btn" onclick="exportMd()">⬇️ Export .md (รวมคอมเมนต์)</button>
+        <button class="btn ghost" onclick="if(confirm('ล้างคอมเมนต์/สถานะทั้งหมดที่บันทึกไว้ในเบราว์เซอร์นี้?')){localStorage.removeItem(LS_KEY);loadState();render();}">↺ ล้างคอมเมนต์ทั้งหมด</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <footer class="note">คอมเมนต์/สถานะบันทึกอัตโนมัติในเบราว์เซอร์นี้เท่านั้น (localStorage) — กด "Export .md" เมื่อพร้อมส่งให้ทีมครูก้อยดู แล้วเปิดหน้านี้ใหม่มาแก้ต่อได้เสมอ</footer>
+</div>
+
+<script>
+var AREAS = {
+  home:"หน้าแรก", prep:"เตรียมตั้งครรภ์", male:"ฝ่ายชาย", pregnant:"ตั้งครรภ์แล้ว",
+  lactating:"ให้นมบุตร", infertility:"มีบุตรยาก", tools:"เครื่องมือแยก", report:"รายงานฉบับเต็ม"
+};
+
+var SCENARIOS = [
+{ id:"TS-01", area:"home", page:"หน้า 1",
+  title:"การ์ด \"เตรียมตั้งครรภ์\" หน้าแรก — เปลี่ยนปุ่มหลักจาก \"เริ่มเลย\" เป็น \"ฝ่ายหญิง\"",
+  requirement:"ตอนนี้อยู่ช่วงไหน > เตรียมตั้งครรภ์ > เปลี่ยน 'เริ่มเลย' เป็น 'ฝ่ายหญิง' (ให้คู่กับปุ่มรอง \"ฝ่ายชาย →\" ที่มีอยู่แล้วข้าง ๆ กัน)",
+  flag:"เอกสารพูดถึงเฉพาะการ์ด \"เตรียมตั้งครรภ์\" — ต้องยืนยันว่าการ์ดอื่น (มีบุตรยาก/ตั้งครรภ์แล้ว/ให้นมบุตร) ยังใช้ \"เริ่มเลย →\" เหมือนเดิม ไม่เปลี่ยนตาม",
+  cases:[
+    {id:"TC-01-01", given:"อยู่หน้าแรก", when:"ดูปุ่มหลักของการ์ด \"เตรียมตั้งครรภ์\"", then:"ข้อความปุ่มเป็น \"ฝ่ายหญิง →\" (ไม่ใช่ \"เริ่มเลย →\") และคลิกแล้วยังพาไป /plan?stage=prep เหมือนเดิม"},
+    {id:"TC-01-02", given:"อยู่หน้าแรก", when:"ดูปุ่มหลักของการ์ดอื่นอีก 3 การ์ด", then:"ยังคงเป็น \"เริ่มเลย →\" เหมือนเดิม ไม่ถูกเปลี่ยนไปด้วย", flag:true},
+  ]},
+
+{ id:"TS-02", area:"prep", page:"หน้า 1",
+  title:"อายุ 35-39 และ 40+ → เพิ่ม A.O.S เป็นสินค้าที่แนะนำ",
+  requirement:"ถ้าอายุ 35-39 กับ 40+ ให้ใส่ A.O.S เป็นสินค้าที่จะถูกแนะนำในระบบ",
+  flag:"โค้ดปัจจุบัน (lib/calc/vitamins.ts) แนะนำ A.O.S จากเงื่อนไข artPlan≠\"ยัง\" หรือ stage=\"infertility\" เท่านั้น — ไม่เคยผูกกับอายุมาก่อน ต้องยืนยัน: (1) กฎอายุนี้ใช้ทุก stage หรือเฉพาะเตรียมตั้งครรภ์ (2) ถ้าเข้าเงื่อนไข AOS จากทั้งอายุและ artPlan พร้อมกัน ต้องไม่ซ้ำ",
+  cases:[
+    {id:"TC-02-01", given:"กรอกช่วงอายุ 35-39", when:"ดูผลลัพธ์วิตามิน", then:"A.O.S ปรากฏในรายการแนะนำ"},
+    {id:"TC-02-02", given:"กรอกช่วงอายุ 40+", when:"ดูผลลัพธ์วิตามิน", then:"A.O.S ปรากฏในรายการแนะนำ"},
+    {id:"TC-02-03", given:"กรอกอายุต่ำกว่า 35 และไม่มีปัจจัยอื่นที่ทำให้แนะนำ A.O.S", when:"ดูผลลัพธ์วิตามิน", then:"ไม่มี A.O.S ในรายการ"},
+    {id:"TC-02-04", given:"อายุ 40+ และ artPlan≠\"ยัง\" (เข้าเงื่อนไขได้ A.O.S จาก 2 ทาง)", when:"ดูผลลัพธ์", then:"A.O.S ปรากฏแค่ครั้งเดียว ไม่ซ้ำในรายการ", flag:true},
+  ]},
+
+{ id:"TS-03", area:"prep", page:"หน้า 1",
+  title:"\"เตรียมผนังมดลูก\" → ชุดสินค้าเฉพาะ (Colla Tello, ดอกคำฝอย, น้ำมันละหุ่ง, probiotic)",
+  requirement:"ในขั้นเตรียมผนังมดลูก ภายใต้เมนูเตรียมตั้งครรภ์ >> ผลิตภัณฑ์แนะนำ Colla tello, ดอกคำฝอย, น้ำมันละหุ่ง, probiotic",
+  flag:"⚠️ ดอกคำฝอยและน้ำมันละหุ่ง (castor oil) มี stop-rule เดิมอยู่แล้วใน Safety Matrix (product-catalog-master.md §4) — ห้ามใช้ช่วงตกไข่/หลังใส่ตัวอ่อน/ตั้งครรภ์ การแนะนำ 2 ตัวนี้ตอน \"เตรียมผนังมดลูก\" (ซึ่งมักใกล้ช่วงใส่ตัวอ่อน) ต้องคง caution ให้ครบ ไม่ใช่แนะนำเฉย ๆ โดยไม่มีคำเตือน — ควรให้ทีมครูก้อย/เภสัชกรยืนยันจังหวะที่ปลอดภัยจริงก่อน",
+  cases:[
+    {id:"TC-03-01", given:"เลือก \"เตรียมผนังมดลูก\" เป็น ART-plan", when:"ดูผลลัพธ์วิตามิน", then:"มี Colla Tello + ดอกคำฝอย + น้ำมันละหุ่ง + probiotic ปรากฏ"},
+    {id:"TC-03-02", given:"เลือก \"เตรียมผนังมดลูก\" และอยู่ในช่วงใกล้ใส่ตัวอ่อน (ตาม Safety Matrix)", when:"ดูคำเตือนความปลอดภัยของแต่ละสินค้า", then:"ยังคงมีข้อความ \"หยุดทาน\" ของดอกคำฝอย/น้ำมันละหุ่งแสดงชัดเจน ไม่หายไปเพราะกฎใหม่นี้", flag:true},
+  ]},
+
+{ id:"TS-04", area:"prep", page:"หน้า 1-2",
+  title:"ขั้น \"เล่าเรื่องสุขภาพอีกนิด\" — เพิ่มฟิลด์ น้ำหนัก/ส่วนสูง, การนอน, ออกกำลังกาย, แยกช่อง PCOS",
+  requirement:"จากเดิมถามแค่อายุ ขอเพิ่ม: (1) น้ำหนักส่วนสูง (2) ช่วงเวลานอน (เข้านอน–ตื่น เป็นนาฬิกา) (3) ออกกำลังกายกี่ครั้ง/สัปดาห์ เป็น dropdown 0 / 1-2 / 3-4 / ทุกวัน (4) แยกช่อง tick \"มีภาวะ PCOS\" ออกจาก \"ไม่แน่ใจ\" (ปัจจุบันรวมเป็นช่องเดียว \"มีภาวะ PCOS / ไม่แน่ใจ\")",
+  flag:"การแยกช่อง PCOS/ไม่แน่ใจ เพิ่ม state ที่ 3 ที่ยังไม่มี logic รองรับ (ปัจจุบัน has_pcos เป็น boolean เดียว) — ต้องยืนยันว่า \"ไม่แน่ใจ\" ให้ผลลัพธ์/คำแนะนำต่างจาก \"มี\" จริงไหม หรือแค่ต่างกันที่ข้อความในรายงาน (เช่น เตือนให้ปรึกษาแพทย์มากกว่า) ไม่ใช่ทั้งคู่เท่ากับ has_pcos=true เหมือนเดิม",
+  cases:[
+    {id:"TC-04-01", given:"เข้าสู่ขั้น \"เล่าเรื่องสุขภาพ\" (ทุก stage ที่ไม่ใช่มีบุตรยาก/ฝ่ายชาย)", when:"ดูฟอร์ม", then:"มีช่องกรอกน้ำหนัก(กก.)และส่วนสูง(ซม.) เพิ่มจากเดิม"},
+    {id:"TC-04-02", given:"อยู่ในฟอร์มเดียวกัน", when:"ดูช่องการนอน", then:"มี time picker 2 ช่อง (เวลาเข้านอน / เวลาตื่นนอน)"},
+    {id:"TC-04-03", given:"อยู่ในฟอร์มเดียวกัน", when:"ดูช่องออกกำลังกาย", then:"เป็น dropdown ตัวเลือก \"0 ครั้ง/สัปดาห์\" \"1-2 ครั้ง\" \"3-4 ครั้ง\" \"ทุกวัน\""},
+    {id:"TC-04-04", given:"อยู่ในฟอร์มเดียวกัน", when:"ดูช่อง PCOS", then:"เป็น 2 checkbox แยกกันชัดเจน (\"มีภาวะ PCOS\" กับ \"ไม่แน่ใจ\") ไม่ใช่ช่องเดียวรวมกันแบบเดิม", flag:true},
+    {id:"TC-04-05", given:"ติ๊ก \"ไม่แน่ใจ\" (ไม่ติ๊ก \"มี\")", when:"ดูรายงาน/คำแนะนำที่เกี่ยวกับ PCOS", then:"[รอยืนยัน] ข้อความ/สินค้าที่แนะนำต่างจากติ๊ก \"มี\" หรือเหมือนกันทุกอย่าง", flag:true},
+  ]},
+
+{ id:"TS-05", area:"prep", page:"หน้า 2",
+  title:"เตรียมตั้งครรภ์ — ตัดขั้นตอน \"เข้าสู่กระบวนการทางการแพทย์\" ออก",
+  requirement:"เตรียมตั้งครรภ์ไม่ต้องมี xxx 'เข้าสู่กระบวนการทางการแพทย์' xxx",
+  flag:"ปัจจุบันคำถามนี้แสดงทุก stage เหมือนกัน (ตัดสินใจไว้ก่อนหน้านี้ให้ถามทุกกลุ่มรวมถึง prep) — เปลี่ยนกฎนี้ต้องตัดสินใจด้วยว่าค่า art_plan ของกลุ่ม prep ที่ไม่ถูกถามแล้ว จะถูกบันทึกเป็นค่า default \"ยัง\" หรือไม่ เพื่อไม่ให้ logic อื่นที่พึ่ง artPlan (เช่น A.O.S ใน TS-02) พังไปด้วย",
+  cases:[
+    {id:"TC-05-01", given:"stage=\"prep\"", when:"เดินแบบสอบถามจนจบ", then:"ไม่มีหน้าจอถาม \"เข้าสู่กระบวนการทางการแพทย์ไหม\" เลย"},
+    {id:"TC-05-02", given:"stage=\"infertility\"/\"pregnant\"/\"male\"", when:"เดินแบบสอบถาม", then:"ยังคงเจอคำถามนี้เหมือนเดิม (เปลี่ยนเฉพาะ prep — เทียบกับ TS-11 สำหรับ lactating)"},
+    {id:"TC-05-03", given:"stage=\"prep\" ส่งข้อมูลจบ (ไม่ถูกถาม ART)", when:"เช็คค่า art_plan ที่บันทึกลงระบบ", then:"เป็นค่า default \"ยัง\" ไม่ใช่ null/undefined ที่ทำให้ logic อื่นพัง", flag:true},
+  ]},
+
+{ id:"TS-06", area:"male", page:"หน้า 3",
+  title:"ฝ่ายชาย — เพิ่มฟิลด์สุขภาพเดียวกับหญิง + พฤติกรรม (บุหรี่/แอลกอฮอล์/เครียด) + product rule",
+  requirement:"ฝ่ายชายเพิ่มฟิลด์เดียวกับหญิง (น้ำหนัก/ส่วนสูง, เวลานอน, ความถี่ออกกำลังกาย) + เพิ่มพฤติกรรม: สูบบุหรี่ / ดื่มแอลกอฮอล์ / เครียด — เมื่อติ๊ก \"เครียด\" ต้องมี A.O.S ในสินค้าสุดท้าย, ติ๊ก \"เหล้า\" หรือ \"บุหรี่\" ต้องมี Motila1, ติ๊กเกิน 2 อันขึ้นไป ต้องมี A.O.S + Motila1",
+  flag:"⚠️⚠️ สำคัญมาก — Motila1 ถูก exclude จากการแนะนำในแอปทั้งระบบตอนนี้ เพราะยังไม่มี dosage/วิธีทานที่แบรนด์ยืนยัน (ดู comment ใน lib/calc/vitamins.ts + Open Question #2 ใน PRD-UPDATE-R2) กฎใหม่นี้จะเปิดกลับมาแนะนำ Motila1 ทันที — ต้องได้ dosage ที่ยืนยันจากทีมก่อน ไม่งั้นจะแนะนำสินค้าที่ไม่มีวิธีทานกำกับ (ผิดหลัก compliance เดิม) · นอกจากนี้ \"ติ๊กเกิน 2 อันขึ้นไป\" กำกวม — หมายถึง \">2\" (3 ข้อครบ) หรือ \">=2\" (2 ข้อพอดีก็เข้าเงื่อนไข)? ผลลัพธ์ต่างกันจริงตอน 2 ข้อพอดี ต้องถามทีมให้ชัดก่อน implement",
+  cases:[
+    {id:"TC-06-01", given:"stage=\"male\"", when:"เข้าสู่ขั้นเล่าเรื่องสุขภาพ", then:"มีฟิลด์น้ำหนัก+ส่วนสูง+เวลานอน+ความถี่ออกกำลังกาย เหมือนฝ่ายหญิง"},
+    {id:"TC-06-02", given:"stage=\"male\"", when:"ดูฟอร์มพฤติกรรม", then:"มี checkbox \"สูบบุหรี่\" / \"ดื่มแอลกอฮอล์\" / \"เครียด\" (เลือกได้มากกว่า 1 ข้อ)"},
+    {id:"TC-06-03", given:"ติ๊กเฉพาะ \"เครียด\"", when:"ดูผลลัพธ์วิตามิน", then:"มี A.O.S ในรายการแนะนำ"},
+    {id:"TC-06-04", given:"ติ๊กเฉพาะ \"ดื่มแอลกอฮอล์\" (ไม่ติ๊กเครียด)", when:"ดูผลลัพธ์", then:"มี Motila1"},
+    {id:"TC-06-05", given:"ติ๊กเฉพาะ \"สูบบุหรี่\" (ไม่ติ๊กเครียด)", when:"ดูผลลัพธ์", then:"มี Motila1"},
+    {id:"TC-06-06", given:"ติ๊กครบ 3 ข้อ (บุหรี่+ดื่ม+เครียด)", when:"ดูผลลัพธ์", then:"มีทั้ง A.O.S และ Motila1"},
+    {id:"TC-06-07", given:"ติ๊ก 2 ข้อพอดี (เช่น บุหรี่+ดื่ม ไม่รวมเครียด)", when:"ดูผลลัพธ์", then:"[รอยืนยัน] \"เกิน 2 อันขึ้นไป\" = 2 ข้อพอดีเข้าเงื่อนไข A.O.S+Motila1 หรือไม่ (หรือต้อง 3 ข้อขึ้นไปถึงเข้า)", flag:true},
+    {id:"TC-06-08", given:"เงื่อนไขใดก็ตามที่ทำให้ระบบแนะนำ Motila1", when:"ดูรายละเอียดสินค้า", then:"[BLOCKED] ต้องมีวิธีรับประทาน (dosage) ที่แบรนด์ยืนยันแล้วกำกับอยู่ด้วย ไม่ใช่แสดงแบบไม่มี howto เหมือนที่ถูก exclude ไว้เดิม", flag:true},
+  ]},
+
+{ id:"TS-07", area:"male", page:"หน้า 3",
+  title:"ติ๊ก \"ปัญหาจากฝ่ายชาย\" (ในเช็คลิสต์มีบุตรยาก) → เมนูถัดไปต้องมีข้อมูลฝ่ายชายด้วย",
+  requirement:"ถ้ามีติ๊กเรื่องปัญหาผู้ชายด้วย เมนูหลังจากนั้นจะต้องมีข้อมูลผู้ชายด้วย (หน้าที่ขึ้นโค้ด)",
+  flag:"🚩 กำกวมมาก ต้องถามทีมให้ชัดว่า \"ข้อมูลผู้ชาย\" หมายถึง (ก) แค่โชว์สินค้าแนะนำสำหรับผู้ชาย (Ferta/MZ-All/Motila1) เพิ่มในรายงานเดียวกัน (มีอยู่แล้วบางส่วน) หรือ (ข) ต้องมีแบบสอบถามฝ่ายชายแยกอีกชุด (น้ำหนัก/ส่วนสูง/พฤติกรรม ตาม TS-06) แทรกเข้าไปในฟลว์ฝ่ายหญิง — ถ้าเป็นข้อ (ข) คือ requirement ใหญ่ที่กระทบโครงสร้างฟอร์มทั้งหมด ควรชัดเจนก่อนประเมิน effort",
+  cases:[
+    {id:"TC-07-01", given:"ติ๊ก \"ปัญหาจากฝ่ายชาย\" ในเช็คลิสต์มีบุตรยาก", when:"ดูผลลัพธ์วิตามิน", then:"มี MZ-All ปรากฏ (ของเดิมที่มีอยู่แล้ว)"},
+    {id:"TC-07-02", given:"ติ๊ก \"ปัญหาจากฝ่ายชาย\"", when:"เดินต่อในฟลว์หลังจากนั้น", then:"[BLOCKED รอทีมยืนยันความหมาย] ควรมีคำถาม/ข้อมูลฝ่ายชายเพิ่มเติมปรากฏหรือไม่ อย่างไร (ดู flag ด้านบน)", flag:true},
+  ]},
+
+{ id:"TS-08", area:"male", page:"หน้า 3",
+  title:"ป้ายกำกับ \"IVF-ICSI\" → เพิ่มวงเล็บ \"(เด็กหลอดแก้ว)\"",
+  requirement:"ICSI วงเล็บคำว่า เด็กหลอดแก้วด้วย",
+  flag:null,
+  cases:[
+    {id:"TC-08-01", given:"ดูตัวเลือก ART-plan ทุกจุดที่แสดง (/plan, /tools/vitamins)", when:"อ่านป้ายกำกับตัวเลือก IVF-ICSI", then:"เห็นข้อความ \"IVF-ICSI (เด็กหลอดแก้ว)\" ไม่ใช่ \"IVF-ICSI\" เฉย ๆ"},
+    {id:"TC-08-02", given:"ค่า enum เดิม \"IVF-ICSI\" ถูกเก็บเป็น value จริงใน DB/logic", when:"เปลี่ยนแค่ label ที่แสดง", then:"ค่าที่เก็บจริงไม่เปลี่ยน ไม่กระทบข้อมูลเดิม/analytics"},
+  ]},
+
+{ id:"TS-09", area:"pregnant", page:"หน้า 4",
+  title:"ตั้งครรภ์ — เพิ่มคำถามวิธีตั้งครรภ์ + สุขภาพเพิ่มเติม",
+  requirement:"ตั้งครรภ์เพิ่มสอบถามว่า ท้องด้วยวิธีไหน (tick เช่น ท้องธรรมชาติ ท้องด้วย ICSI ฯลฯ) >> เล่าเรื่องสุขภาพ >> เพิ่ม อายุครรภ์ + น้ำหนักปัจจุบันของแม่ + ติ๊กเลือกมีภาวะเบาหวานขณะตั้งครรภ์หรือไม่",
+  flag:"ตัวเลือก \"ท้องด้วยวิธีไหน\" เอกสารเขียนแค่ \"เช่น ท้องธรรมชาติ ท้องด้วย ICSI ฯลฯ\" — \"ฯลฯ\" ไม่ระบุตัวเลือกที่เหลือชัดเจน ต้องยืนยัน choice list ให้ครบ (รวม IUI/บำรุงไข่/เตรียมผนังมดลูกด้วยหรือไม่)",
+  cases:[
+    {id:"TC-09-01", given:"stage=\"pregnant\"", when:"เข้าสู่แบบสอบถาม", then:"มีคำถาม \"ท้องด้วยวิธีไหน\" ให้เลือก"},
+    {id:"TC-09-02", given:"stage=\"pregnant\"", when:"เข้าสู่ขั้นเล่าเรื่องสุขภาพ", then:"มีฟิลด์ อายุครรภ์ (สัปดาห์) + น้ำหนักปัจจุบัน + checkbox เบาหวานขณะตั้งครรภ์"},
+    {id:"TC-09-03", given:"ดูตัวเลือก \"ท้องด้วยวิธีไหน\"", when:"เทียบกับ choice list ที่ยืนยันจากทีม", then:"[รอยืนยัน] ครบตามที่ทีมต้องการจริง ไม่ใช่แค่ 2 ตัวอย่างที่เอกสารยกมา", flag:true},
+  ]},
+
+{ id:"TS-10", area:"pregnant", page:"หน้า 4",
+  title:"ตั้งครรภ์แล้ว — เนื้อหาความรู้พัฒนาการลูก + เมนูอาหาร (หลังส่ง code เข้า LINE)",
+  requirement:"สำหรับคนที่เลือกตั้งครรภ์แล้ว เมื่อดูรายงานฉบับเต็มหลังส่ง code เข้า LINE แล้ว มีปุ่มเข้าอ่านความรู้พัฒนาการลูก: กี่ไตรมาสไหน อะไรพัฒนาอยู่ / ไตรมาสไหนต้องได้สารอาหารแบบไหน / นับลูกดิ้น / สัญญาณอันตรายที่ต้องสังเกต >> product: นมแพะ + Ferty + Ferti9oil + probiotic (ไตรมาส 2-3 / 16 สัปดาห์+ เพิ่มน้ำหัวปลี) + ปุ่มเมนูอาหารลิงก์ไป Facebook",
+  flag:"\"นมแพะ\" มีอยู่ในแคตตาล็อกราคาเดิม (docs/product-catalog.md — Goats Milk ฿650) แต่ยังไม่ถูกเพิ่มเข้า lib/calc/vitamins.ts PRODUCTS — ต้องยืนยันชื่อ/ราคา/dosage ปัจจุบันกับทีมก่อนเพิ่มเข้าโค้ดจริง (ไม่ใช่สินค้าใหม่ที่ไม่รู้จัก แต่ยังไม่เคยผูกเข้า logic) · ลิงก์ Facebook ภายนอกที่แนบมา เป็น content ของเพจ/บุคคลอื่น ต้องเช็คสิทธิ์การใช้ก่อน embed ถาวรในแอป (legal-compliance.md §5)",
+  cases:[
+    {id:"TC-10-01", given:"stage=\"pregnant\" ส่ง code เข้า LINE แล้ว", when:"กดดูรายงานฉบับเต็ม", then:"มีปุ่มเข้าสู่เนื้อหา \"พัฒนาการลูก\""},
+    {id:"TC-10-02", given:"เข้าเนื้อหาพัฒนาการลูก", when:"เลือกไตรมาสปัจจุบัน (จากอายุครรภ์ที่กรอกใน TS-09)", then:"แสดง: พัฒนาการที่กำลังเกิดขึ้น + สารอาหารที่ต้องได้ + ตัวนับลูกดิ้น + สัญญาณอันตรายที่ต้องสังเกต"},
+    {id:"TC-10-03", given:"อายุครรภ์อยู่ไตรมาส 2-3 (16 สัปดาห์ขึ้นไป)", when:"ดูสินค้าที่แนะนำ", then:"มีน้ำหัวปลี เพิ่มเข้ามานอกเหนือชุดพื้นฐาน (นมแพะ/Ferty/Ferti9oil/probiotic)"},
+    {id:"TC-10-04", given:"\"นมแพะ\" ยังไม่มีใน PRODUCTS ของโค้ด", when:"ก่อนเพิ่มเข้าระบบจริง", then:"[BLOCKED] ต้องยืนยันชื่อ/ราคา/วิธีทานกับทีมก่อน", flag:true},
+    {id:"TC-10-05", given:"ดูตารางแนะนำอาหารของ stage=pregnant", when:"กดปุ่ม \"ดูเมนูเพิ่มเติม\"", then:"ลิงก์ไปที่ facebook.com/media/set (ตามที่ระบุ) เปิดแท็บใหม่ — [ยืนยันสิทธิ์การใช้ลิงก์ภายนอกนี้ก่อน]", flag:true},
+  ]},
+
+{ id:"TS-11", area:"lactating", page:"หน้า 4",
+  title:"ให้นมบุตร — ตัด ART-plan ออก + เนื้อหาความรู้ให้นมบุตร + product set",
+  requirement:"ให้นมบุตร >> เอา 'เข้าสู่กระบวนการทางการแพทย์' ออก >> ให้ความรู้ 3 เรื่อง: ตารางปั๊มนม + อาหารเพิ่มน้ำนม + เด็กกี่เดือนกินนมกี่ออนซ์ >> product: นมแพะ + Ferty 1 ซอง + Ferti9oil 1-2 + probiotic 1 + น้ำหัวปลี + ขิงทอง + ซุปไก่ดำ + ปุ่มเมนูอาหาร (ลิงก์ FB อีกอันหนึ่ง)",
+  flag:"\"ขิงทอง\" (Gold Ginger) มีอยู่แล้วใน PRODUCTS ปัจจุบัน (id: ginger) ใช้ได้เลย — แต่ \"ซุปไก่ดำ\" มีในแคตตาล็อกราคาเดิม (docs/product-catalog.md ฿1,800) เหมือน \"นมแพะ\" ใน TS-10 คือยังไม่ถูกผูกเข้า PRODUCTS ในโค้ด ต้องยืนยันก่อนเพิ่ม",
+  cases:[
+    {id:"TC-11-01", given:"stage=\"lactating\"", when:"เดินแบบสอบถามจนจบ", then:"ไม่มีคำถาม ART-plan (เหมือน TS-05 แต่สำหรับ lactating)"},
+    {id:"TC-11-02", given:"stage=\"lactating\" ดูรายงาน", when:"ดูเนื้อหาความรู้", then:"มีครบ 3 หัวข้อ: ตารางปั๊มนม + อาหารเพิ่มน้ำนม + เด็กอายุ(เดือน)→ปริมาณนม(ออนซ์)"},
+    {id:"TC-11-03", given:"stage=\"lactating\"", when:"ดูสินค้าที่แนะนำ", then:"มีนมแพะ, Ferty(1 ซอง), Ferti9oil(1-2), probiotic(1), น้ำหัวปลี, ขิงทอง, ซุปไก่ดำ"},
+    {id:"TC-11-04", given:"ดูตารางแนะนำอาหารของ lactating", when:"กดปุ่มเมนูอาหาร", then:"ลิงก์ไป facebook.com/share/p/1Bm3bDyo4X (คนละลิงก์กับ pregnant ใน TS-10)"},
+    {id:"TC-11-05", given:"\"นมแพะ\"/\"ซุปไก่ดำ\" ยังไม่มีใน PRODUCTS", when:"ก่อนเพิ่มเข้าระบบจริง", then:"[BLOCKED] ยืนยันชื่อ/ราคา/วิธีทานกับทีมก่อน (ร่วมกับ TC-10-04)", flag:true},
+  ]},
+
+{ id:"TS-12", area:"infertility", page:"หน้า 5-6",
+  title:"มีบุตรยาก — ตาราง product mapping ใหม่ต่อปัญหา (เขียนใหม่เกือบทั้งหมด)",
+  requirement:"PCOS >> Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT | รังไข่เสื่อมก่อนวัย >> Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Virginary | ฮอร์โมนเพศต่ำ >> Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Virginary | ผนังมดลูกบาง >> Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Collatero, Virginaree | ปัญหาจากฝ่ายชาย >> Ferta, MZ all, Motilla1, A.O.S(ถ้ามีความเครียด) | น้ำหนักเกิน >> Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT",
+  flag:"🚩🚩 นี่คือการเขียน logic แนะนำสินค้าใหม่เกือบทั้งหมด ต่างจากโค้ดปัจจุบันมาก (ตอนนี้ Ferty/OvaAll/Collatelo/Ferti9oil เป็น \"core\" แนะนำทุกคนเสมอ ไม่แยกตามปัญหาแบบตารางนี้) ต้องคุยกับทีมยืนยัน 3 เรื่องก่อนแก้โค้ดจริง: (1) รายการที่ซ้ำกันทุกปัญหา (Ferty/OvaAll/Ferti9 Oil/น้ำมะกรูด) ยังเป็น \"core\" แนะนำทุกคนเหมือนเดิม หรือเปลี่ยนเป็น \"เฉพาะคนที่ติ๊กปัญหานั้น\" (targeted) (2) Collatelo หายไปจากตาราง PCOS/รังไข่เสื่อม/ฮอร์โมนต่ำ ทั้งที่ปัจจุบันเป็น core ให้ทุกคน — ตั้งใจตัดออกจริงไหม (3) \"ไม่แน่ใจ\" ไม่มี mapping ระบุ — fallback เดิมยังใช้ได้ไหม",
+  cases:[
+    {id:"TC-12-01", given:"ติ๊กเฉพาะ \"PCOS\"", when:"ดูผลลัพธ์", then:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT — [ยืนยัน] ไม่มี Collatelo/Varginaree ถ้ายึดตารางนี้เป๊ะ", flag:true},
+    {id:"TC-12-02", given:"ติ๊กเฉพาะ \"รังไข่เสื่อมก่อนวัย\"", when:"ดูผลลัพธ์", then:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Varginaree"},
+    {id:"TC-12-03", given:"ติ๊กเฉพาะ \"ฮอร์โมนเพศต่ำ\"", when:"ดูผลลัพธ์", then:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Varginaree"},
+    {id:"TC-12-04", given:"ติ๊กเฉพาะ \"ผนังมดลูกบาง\"", when:"ดูผลลัพธ์", then:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, Collatelo, Varginaree"},
+    {id:"TC-12-05", given:"ติ๊ก 2 ปัญหาขึ้นไป (เช่น PCOS + ผนังมดลูกบาง)", when:"ดูผลลัพธ์", then:"สินค้าที่ปรากฏเป็น union ของทั้ง 2 ชุด ไม่ซ้ำกัน (dedupe)"},
+    {id:"TC-12-06", given:"ติ๊ก \"ไม่แน่ใจ\" อย่างเดียว (exclusive)", when:"ดูผลลัพธ์", then:"[รอยืนยัน] ใช้ default set อะไร — เอกสารไม่ได้ระบุ", flag:true},
+    {id:"TC-12-07", given:"ก่อนแก้ lib/calc/vitamins.ts จริง", when:"เทียบ mapping เดิมกับตารางใหม่นี้", then:"[BLOCKED] ต้องได้คำตอบ 3 ข้อใน flag ด้านบนจากทีมก่อน เพราะกระทบโครงสร้าง core/targeted ทั้งระบบ ไม่ใช่แค่ 1 ปัญหา", flag:true},
+  ]},
+
+{ id:"TS-13", area:"infertility", page:"หน้า 6",
+  title:"น้ำหนักเกิน — โชว์ BMI ตรง ๆ + โภชนาการ + ออกกำลังกาย",
+  requirement:"น้ำหนักเกิน >> set BMI แล้ว show BMI บอกเกณฑ์ปกติ แล้วแจ้งว่าเค้าเกินหรือไม่ + สินค้า (Ferty/OvaAll/น้ำมะกรูด/Ferti9 Oil/PCOVIT) + โภชนาการ (ลด Carb, คำนวณโปรตีน) + การออกกำลังกาย",
+  flag:"🚨 ขัดกับมติที่เคาะไว้แล้วใน docs/PRD-UPDATE-R2-2607.md (Non-Goals): \"แสดงตัวเลข BMI ตรง ๆ ให้ผู้ใช้เห็น — ตามที่ client เห็นด้วยเองว่า 'ทำให้งง' ใช้ภายในเป็นตัวช่วยแนะนำเท่านั้น\" ปัจจุบัน lib/calc/bmi.ts มี comment ย้ำไว้ชัดว่า \"App NEVER shows the number itself\" เอกสารฉบับ 31/7 นี้ขอให้กลับมาโชว์ BMI ตรง ๆ — เป็นการกลับมติเดิม ต้องคุยกับต้น/ทีมครูก้อยให้ชัดเจนก่อนแก้โค้ด ไม่ใช่ implement เงียบ ๆ ตามเอกสารล่าสุดโดยไม่ทวนกับของเดิม",
+  cases:[
+    {id:"TC-13-01", given:"ติ๊ก \"น้ำหนักเกิน\" และกรอกน้ำหนัก+ส่วนสูงแล้ว", when:"ดูผลลัพธ์", then:"[BLOCKED/รอยืนยัน] ต้องโชว์ตัวเลข BMI จริงหรือไม่ — ขัดกับมติเดิมที่ตัดสินใจไปแล้วว่าไม่โชว์ตรง ๆ (ต้องเคาะให้ชัดก่อน ไม่ใช่ทำตามเอกสารล่าสุดเงียบ ๆ)", flag:true},
+    {id:"TC-13-02", given:"ติ๊ก \"น้ำหนักเกิน\"", when:"ดูสินค้าที่แนะนำ", then:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT"},
+    {id:"TC-13-03", given:"ติ๊ก \"น้ำหนักเกิน\"", when:"ดูคำแนะนำเพิ่มเติม", then:"มีคำแนะนำโภชนาการ (ลด Carb) + ตัวเลขโปรตีนที่ควรได้ต่อวัน (ผูกกับเครื่องมือคำนวณโปรตีนที่มีอยู่แล้ว)"},
+    {id:"TC-13-04", given:"ติ๊ก \"น้ำหนักเกิน\"", when:"ดูคำแนะนำเพิ่มเติม", then:"มีลิงก์/คำแนะนำออกกำลังกาย (ผูกกับเครื่องมือแนะนำการออกกำลังกายที่มีอยู่แล้ว)"},
+  ]},
+
+{ id:"TS-14", area:"tools", page:"หน้า 7",
+  title:"เครื่องมือแยก — เปลี่ยนการ์ดตำแหน่งสุดท้ายเป็น \"ทดสอบความเครียด\"",
+  requirement:"ก้อนเครื่องมือแยก เปลี่ยนอันสุดท้ายเป็น ทดสอบความเครียด >> product: night shot + A.O.S",
+  flag:"🚩🚩 จาก screenshot ที่แนบมา วงกลมสีแดงล้อมรอบการ์ด \"รับแผนเฉพาะคุณ — คุยกับทีม Baby & Mom ผ่าน LINE OA\" (ตำแหน่งสุดท้ายในกริดปัจจุบัน 9 การ์ด) ซึ่งเป็น CTA หลักพาไปคุยแอดมิน ไม่ใช่เครื่องมือคำนวณ — ถ้าตีความตามภาพจริง ๆ คือแทนที่ปุ่มคุยกับแอดมินด้วยเครื่องมือทดสอบความเครียดไปเลย ทำให้กริดนี้ไม่มีทางลัดไปหน้า LINE OA อีก (กระทบ conversion path สำคัญ) ต้องยืนยันกับต้น/ทีมครูก้อยก่อนว่าตั้งใจแทนที่จริง หรือหมายถึงเครื่องมือคำนวณตัวสุดท้ายก่อนหน้า (เช่น \"ตรวจร่างกาย\") · นอกจากนี้เนื้อหา/คำถามจริงของแบบทดสอบความเครียดยังไม่ถูกระบุ (มีแค่ผลลัพธ์สินค้า) — เดิม PDF-16 เคย block เพราะไม่มี scale ที่มีสิทธิ์ใช้ (เช่น PSS) ยังต้องตอบคำถามนี้อยู่ดี",
+  cases:[
+    {id:"TC-14-01", given:"ดูกริดเครื่องมือแยกที่หน้าแรก", when:"นับตำแหน่งการ์ดสุดท้าย", then:"[BLOCKED/รอยืนยัน] เป็นการ์ด \"ทดสอบความเครียด\" แทนที่การ์ด \"รับแผนเฉพาะคุณ\" จริงหรือไม่ (มีความเสี่ยงเสียทางลัดไป LINE OA)", flag:true},
+    {id:"TC-14-02", given:"ต้องการสร้างเครื่องมือทดสอบความเครียดจริง", when:"เช็คว่าเนื้อหา/คำถามพร้อมหรือยัง", then:"[BLOCKED] ยังไม่ระบุในเอกสาร ต้องได้ scale ที่มีสิทธิ์ใช้งานถูกต้องจากทีมก่อน (เดิม PDF-16 block ด้วยเหตุผลเดียวกัน)", flag:true},
+    {id:"TC-14-03", given:"ทำแบบทดสอบความเครียดจนจบ (เมื่อมีเนื้อหาแล้ว)", when:"ดูผลลัพธ์สินค้าที่แนะนำ", then:"มี Night Shot + A.O.S"},
+  ]},
+
+{ id:"TS-15", area:"report", page:"หน้า 8-10",
+  title:"รายงานฉบับเต็ม — ออกแบบใหม่ (Part 1 สรุปตัวบุคคล / Part 2 โภชนาการ / ตารางวิตามิน+รูป / เมนู / ทักแอดมิน)",
+  requirement:"เปลี่ยนจากกรอบเลข 1,2,3,4 เป็น: Part 1 (BMI+เกณฑ์, เป้าน้ำ/วัน, ชม.นอน/วัน, ประเภทออกกำลังกาย) → Part 2 (เป้าโภชนาการ: โปรตีน/น้ำ/ไขมันดี + ตารางอาหารอ้างอิงโปรตีนต่อ 100 กรัม) → ตารางแนะนำวิตามิน (ผลิตภัณฑ์/วิธีทาน/ประโยชน์ + รูปสินค้า) → ปุ่มแนะนำเมนู(ภาพจานอาหารตัวอย่าง) → ปุ่มทักแอดมิน",
+  flag:"🚩🚩🚩 กระทบโครงสร้างใหญ่หลายจุด: (1) \"BMI + เกณฑ์\" ใน Part 1 ชนกับมติเดิมเรื่องไม่โชว์ BMI ตรง ๆ เหมือน TS-13 — ต้องตัดสินใจให้สอดคล้องกันทั้งแอป ไม่ใช่โชว์บางที่ไม่โชว์บางที่ (2) \"ไขมันดี\" เป็นเป้าโภชนาการใหม่ที่ไม่เคยมีเครื่องคำนวณมาก่อน (ระบบมีแค่โปรตีน/น้ำ) ต้องมีสูตร/มาตรฐานอ้างอิงก่อนใส่ตัวเลขจริง ห้ามแต่งเอง — ควรใช้ pipeline วิจัยแบบเดียวกับที่ใช้ปลดล็อกเครื่องมือออกกำลังกาย/ตรวจร่างกาย (3) รูปสินค้า (product photos) — ยังไม่มีรูปสินค้าจริงในระบบเลยสักตัวจาก 19 รายการ (gap เดิมที่เคยบันทึกไว้ตอน PDF-04) ต้องขอไฟล์จากแบรนด์ก่อน (4) โครงสร้าง Part1/Part2 นี้ทับซ้อนกับโครงรายงานปัจจุบัน (lib/report.ts มี pillars 5 ด้าน + แผน 3 เฟส 90 วันอยู่แล้ว) ต้องคุยกันว่าจะแทนที่โครงเดิมทั้งหมด หรือเสริมเป็นส่วนเพิ่ม",
+  cases:[
+    {id:"TC-15-01", given:"ดูรายงานฉบับเต็มหลังส่ง code", when:"ดูโครงสร้างหน้าใหม่", then:"[BLOCKED/รอยืนยัน] แทนที่โครงเดิม (pillars 5 ด้าน+แผน 3 เฟส) ทั้งหมด หรือเสริมเป็นส่วนใหม่ในหน้าเดียวกัน", flag:true},
+    {id:"TC-15-02", given:"ดู Part 1", when:"อ่านเนื้อหา", then:"เห็นครบ: หมวด BMI(พร้อมเกณฑ์), เป้าน้ำ/วัน, ชม.นอนที่แนะนำ, ประเภทออกกำลังกายที่เหมาะ"},
+    {id:"TC-15-03", given:"BMI ใน Part 1", when:"เทียบกับมติเดิม", then:"[BLOCKED] ต้องยืนยันเรื่องโชว์ตัวเลขตรง ๆ เหมือน TS-13 ให้สอดคล้องกันก่อน", flag:true},
+    {id:"TC-15-04", given:"ดู Part 2", when:"อ่านเนื้อหา", then:"เห็นตัวเลขเป้าหมาย โปรตีน / น้ำ / ไขมันดี ของคนคนนั้น"},
+    {id:"TC-15-05", given:"เป้า \"ไขมันดี\"", when:"เช็คแหล่งอ้างอิงสูตรคำนวณ", then:"[BLOCKED] ยังไม่มีสูตร/มาตรฐานอ้างอิงในระบบ ต้องได้มาก่อนใส่ตัวเลขจริง", flag:true},
+    {id:"TC-15-06", given:"ดู Part 2 ต่อ", when:"ดูตารางอาหาร", then:"มีตารางอ้างอิงโปรตีนต่อ 100 กรัมของอาหารทั่วไป (เนื้อ/ปลา/ไข่ ฯลฯ) ตามตัวอย่างที่แนบมา"},
+    {id:"TC-15-07", given:"ดูตารางแนะนำวิตามินในรายงาน", when:"ดูแต่ละแถวสินค้า", then:"[BLOCKED] ต้องมีรูปสินค้าจริงกำกับ — ต้องขอไฟล์จากแบรนด์ก่อน (ยังไม่มีในระบบ)", flag:true},
+    {id:"TC-15-08", given:"ดูต่อจากตารางวิตามิน", when:"กดปุ่ม \"แนะนำเมนู\"", then:"เห็นภาพตัวอย่างจานอาหาร (โปรตีน+คาร์บเชิงซ้อน+ผัก+ผลไม้น้ำตาลต่ำ) พร้อมคำอธิบายส่วนประกอบ"},
+    {id:"TC-15-09", given:"ดูส่วนท้ายรายงาน", when:"ต้องการสอบถามเพิ่มเติม", then:"มีปุ่ม \"ทักแอดมิน\" ให้กดคุยกับทีมได้ (ใช้กลไกเดียวกับ AdminHandoffCta ที่มีอยู่แล้วในระบบ)"},
+  ]},
+];
+
+var LS_KEY='mmj_testplan_3107';
+// คอมเมนต์ยืนยันจากต้น (31/7/2569) — baked เข้าไฟล์ตรงนี้เพื่อให้เห็นได้ทันทีแม้เปิดเบราว์เซอร์ใหม่/เครื่องอื่น
+// (ไม่ต้องพึ่ง localStorage อย่างเดียว) — ยังแก้/เพิ่มคอมเมนต์ต่อได้ตามปกติ ไม่ถูกเขียนทับ
+var DEFAULT_STATE = {
+  "TS-06": {status:"confirm", note:"ยืนยัน — แนะนำ Motila1 ได้เลย ไม่ต้องรอ dosage ยืนยันจากแบรนด์ (แสดงแบบไม่มีวิธีทานกำกับไปก่อน) · ⚠️ ส่วน \"ติ๊กเกิน 2 อันขึ้นไป\" ยังไม่ได้ตอบ (2 ข้อพอดี หรือ 3 ข้อขึ้นไป?)"},
+  "TS-12": {status:"confirm", note:"ยืนยัน — ใช้ตาราง mapping ตามเอกสารทุกตัวอักษร (Collatelo เหลือแค่ผนังมดลูกบาง, ปัญหาฝ่ายชายได้ชุดแยกต่างหาก)"},
+  "TS-13": {status:"confirm", note:"ยืนยัน — จะโชว์ตัวเลข BMI ตรง ๆ ตามคอมเมนต์ (กลับมติเดิมที่เคยตัดสินใจไม่โชว์)"},
+  "TS-14": {status:"confirm", note:"ยืนยัน — เปลี่ยนการ์ดสุดท้ายเป็น \"ทดสอบความเครียด\" (แทนที่การ์ด \"รับแผนเฉพาะคุณ\") · ⚠️ เนื้อหา/คำถามจริงของแบบทดสอบยังไม่ได้ตอบ — ยังต้องหาก่อนสร้าง"},
+  "TS-15": {status:"discuss", note:"ยืนยัน — ไขมันดีใช้ตอนแนะนำสัดส่วนอาหาร ไม่ใช่ตัวเลขเป้าเดี่ยว (ดู docs/GOOD-FAT-PREGNANCY-RESEARCH-BRIEF.md) · รูปสินค้าตัดจาก leaflet เดิมเสร็จแล้ว (19/19 ที่มี) · ⚠️ โครง Part1/Part2 แทนที่หรือเสริมโครงรายงานเดิม ยังไม่ได้ตอบ"},
+};
+function loadState(){
+  try{ window.__st = JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ window.__st = {}; }
+  Object.keys(DEFAULT_STATE).forEach(function(k){ if(!window.__st[k]) window.__st[k] = DEFAULT_STATE[k]; });
+}
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(window.__st)); }
+loadState();
+
+var state = { areas: {}, flagOnly:false, search:'' };
+Object.keys(AREAS).forEach(function(a){ state.areas[a] = true; });
+
+function selectAllAreas(){ Object.keys(AREAS).forEach(function(a){ state.areas[a]=true; }); render(); }
+function clearAreas(){ Object.keys(AREAS).forEach(function(a){ state.areas[a]=false; }); render(); }
+function toggleArea(a){ state.areas[a] = !state.areas[a]; render(); }
+function toggleFlagOnly(){ state.flagOnly = !state.flagOnly; render(); }
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function nl(s){ return esc(s).replace(/\n/g,'<br>'); }
+
+function renderAreaChips(){
+  var html = Object.keys(AREAS).map(function(a){
+    var on = state.areas[a] ? '1':'0';
+    return '<span class="chip" data-on="'+on+'" onclick="toggleArea(\''+a+'\')">'+AREAS[a]+'</span>';
+  }).join('');
+  document.getElementById('areaChips').innerHTML = html;
+  document.getElementById('flagOnlyBtn').setAttribute('data-on', state.flagOnly ? '1':'0');
+}
+
+function renderFlagList(){
+  var flagged = SCENARIOS.filter(function(s){ return !!s.flag; });
+  document.getElementById('flagList').innerHTML = flagged.map(function(s){
+    return '<li><a onclick="jumpTo(\''+s.id+'\')">'+s.id+' — '+esc(s.title)+'</a></li>';
+  }).join('');
+}
+function jumpTo(id){
+  Object.keys(AREAS).forEach(function(a){ state.areas[a]=true; });
+  state.flagOnly=false; state.search='';
+  document.getElementById('searchBox').value='';
+  render();
+  setTimeout(function(){
+    var el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 30);
+}
+
+function renderStats(){
+  var totalCases = SCENARIOS.reduce(function(n,s){ return n+s.cases.length; }, 0);
+  var flagCount = SCENARIOS.filter(function(s){ return !!s.flag; }).length;
+  var reviewed = Object.keys(window.__st).filter(function(k){
+    var v = window.__st[k];
+    return v && (v.status || (v.note && v.note.trim()));
+  }).length;
+  document.getElementById('statScenarios').textContent = SCENARIOS.length;
+  document.getElementById('statCases').textContent = totalCases;
+  document.getElementById('statFlags').textContent = flagCount;
+  document.getElementById('statReviewed').textContent = reviewed;
+}
+
+var STATUS_OPTIONS = [
+  ['', '— ยังไม่ได้ตรวจ —'],
+  ['confirm', '✅ ยืนยัน สร้างได้เลย'],
+  ['discuss', '💬 ต้องคุยเพิ่ม'],
+  ['skip', '⏸️ ไม่ทำตอนนี้'],
+  ['done', '👍 ทำแล้ว/มีอยู่แล้ว'],
+];
+
+function render(){
+  renderAreaChips();
+  renderFlagList();
+  renderStats();
+  var q = (document.getElementById('searchBox').value||'').toLowerCase();
+  var list = SCENARIOS.filter(function(s){
+    if(!state.areas[s.area]) return false;
+    if(state.flagOnly && !s.flag) return false;
+    if(q && (s.title.toLowerCase().indexOf(q)===-1 && s.requirement.toLowerCase().indexOf(q)===-1)) return false;
+    return true;
+  });
+  var el = document.getElementById('list');
+  if(list.length===0){ el.innerHTML = '<div class="empty">ไม่มี Scenario ตรงตามตัวกรอง</div>'; return; }
+  el.innerHTML = list.map(function(s){
+    var st = window.__st[s.id] || {};
+    var casesHtml = s.cases.map(function(c){
+      return '<div class="case'+(c.flag?' flagged':'')+'">'+
+        '<span class="caseid">'+c.id+'</span>'+(c.flag?'<span class="caseflag">🚩 ต้องยืนยัน</span>':'')+
+        '<div class="gwt"><b>Given:</b> '+esc(c.given)+'<br><b>When:</b> '+esc(c.when)+'<br><b>Then:</b> '+esc(c.then)+'</div>'+
+        '</div>';
+    }).join('');
+    var statusOpts = STATUS_OPTIONS.map(function(o){
+      return '<option value="'+o[0]+'"'+(st.status===o[0]?' selected':'')+'>'+o[1]+'</option>';
+    }).join('');
+    return '<div class="scenario'+(s.flag?' hasflag':'')+'" id="'+s.id+'">'+
+      '<div class="shead"><span class="tsid">'+s.id+'</span><span class="areachip">'+AREAS[s.area]+'</span><span class="pageref">'+esc(s.page)+'</span>'+(s.flag?'<span class="flagbadge">🚩 ต้องยืนยันก่อนสร้าง</span>':'')+'</div>'+
+      '<div class="stitle">'+esc(s.title)+'</div>'+
+      '<div class="req">'+nl(s.requirement)+'</div>'+
+      (s.flag ? '<div class="flagbox"><b>🚩 ประเด็นที่ต้องยืนยัน:</b><br>'+nl(s.flag)+'</div>' : '')+
+      '<div class="cases">'+casesHtml+'</div>'+
+      '<div class="reviewrow">'+
+        '<select onchange="setStatus(\''+s.id+'\', this.value)">'+statusOpts+'</select>'+
+        '<textarea placeholder="คอมเมนต์จากต้น/ทีมครูก้อย…" data-ts="'+s.id+'" oninput="setNote(\''+s.id+'\', this.value)">'+esc(st.note||'')+'</textarea>'+
+        '<span class="savedmark" id="saved-'+s.id+'">บันทึกแล้ว ✓</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function setStatus(id, val){
+  window.__st[id] = window.__st[id] || {};
+  window.__st[id].status = val;
+  saveState();
+  flashSaved(id);
+  renderStats();
+}
+var noteTimers = {};
+function setNote(id, val){
+  window.__st[id] = window.__st[id] || {};
+  window.__st[id].note = val;
+  clearTimeout(noteTimers[id]);
+  noteTimers[id] = setTimeout(function(){ saveState(); flashSaved(id); renderStats(); }, 400);
+}
+function flashSaved(id){
+  var m = document.getElementById('saved-'+id);
+  if(!m) return;
+  m.classList.add('show');
+  setTimeout(function(){ m.classList.remove('show'); }, 1200);
+}
+
+function exportMd(){
+  var lines = [];
+  lines.push('# Test Plan — App mommunjai แก้ไข 31.7.26 (Product Mapping)');
+  lines.push('');
+  lines.push('ที่มา: App mommunjai แก้ไข_31.7.26.pdf · ส่งออก: '+new Date().toLocaleString('th-TH'));
+  lines.push('');
+  var flagged = SCENARIOS.filter(function(s){return !!s.flag;});
+  lines.push('## 🚩 ประเด็นที่ต้องยืนยันก่อนสร้าง ('+flagged.length+' รายการ)');
+  flagged.forEach(function(s){ lines.push('- **'+s.id+'** — '+s.title); });
+  lines.push('');
+  SCENARIOS.forEach(function(s){
+    var st = window.__st[s.id] || {};
+    lines.push('---');
+    lines.push('');
+    lines.push('## '+s.id+' ['+AREAS[s.area]+' · '+s.page+'] '+s.title);
+    lines.push('');
+    lines.push('**Requirement (จาก PDF):** '+s.requirement);
+    lines.push('');
+    if(s.flag){
+      lines.push('**🚩 ต้องยืนยัน:** '+s.flag);
+      lines.push('');
+    }
+    lines.push('**Test Cases:**');
+    s.cases.forEach(function(c){
+      lines.push('- `'+c.id+'`'+(c.flag?' 🚩':'')+' — Given: '+c.given+' / When: '+c.when+' / Then: '+c.then);
+    });
+    lines.push('');
+    var statusLabel = STATUS_OPTIONS.filter(function(o){return o[0]===(st.status||'');})[0];
+    lines.push('**สถานะรีวิว:** '+(statusLabel?statusLabel[1]:'— ยังไม่ได้ตรวจ —'));
+    lines.push('');
+    lines.push('**คอมเมนต์:** '+(st.note && st.note.trim() ? st.note : '_(ยังไม่มีคอมเมนต์)_'));
+    lines.push('');
+  });
+  var blob = new Blob([lines.join('\n')], {type:'text/markdown;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'test-plan-3107-'+new Date().toISOString().slice(0,10)+'.md';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+render();
+</script>
+</body>
+</html>

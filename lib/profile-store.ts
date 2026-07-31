@@ -7,6 +7,7 @@
 // their tool results. Same device, same user, still client-only.
 "use client";
 import type { ArtPlan, InfertilityIssue } from "./calc/vitamins";
+import { CONSENT_POLICY_VERSION } from "./disclaimer";
 
 export interface Profile {
   stage?: "prep" | "infertility" | "pregnant" | "lactating" | "male";
@@ -21,6 +22,11 @@ export interface Profile {
   /** R7 — has this device answered the consent prompt at least once, and what did they say. */
   consent?: boolean;
   consentAsked?: boolean;
+  /** R3 (2026-07-31) — เวอร์ชันข้อความ consent ที่ผู้ใช้เห็นตอนกดยินยอม
+   *  🔒 จำเป็นเพราะข้อความถูกขยายให้ครอบคลุมพฤติกรรมสูบบุหรี่/ดื่ม/ความเครียด + ข้อมูลของคู่
+   *  ถ้าไม่เก็บเวอร์ชัน คนที่ยินยอมข้อความเก่าจะถูกบันทึกลง consent_log ว่ายินยอมข้อความใหม่
+   *  ที่เขาไม่เคยเห็น = บันทึกความยินยอมเป็นเท็จ (PDPA ม.26) — Lucifer red-team 31/7 */
+  consentVersion?: string;
 }
 
 const KEY = "mmj_profile";
@@ -61,13 +67,22 @@ export function recordTool(tool: string, input: unknown, output: unknown) {
 export function setConsentChoice(granted: boolean) {
   if (typeof window === "undefined") return;
   if (granted) {
-    const next = { ...readProfile(), consent: true, consentAsked: true };
+    const next = { ...readProfile(), consent: true, consentAsked: true, consentVersion: CONSENT_POLICY_VERSION };
     localStorage.setItem(KEY, JSON.stringify(next));
   } else {
-    localStorage.setItem(KEY, JSON.stringify({ consent: false, consentAsked: true } as Profile));
+    localStorage.setItem(KEY, JSON.stringify({ consent: false, consentAsked: true, consentVersion: CONSENT_POLICY_VERSION } as Profile));
   }
 }
 
 export function toolCount(): number {
   return Object.keys(readProfile().tools || {}).length;
+}
+
+/** R3 — ต้องถามความยินยอมใหม่ไหม
+ *  true เมื่อ (ก) ยังไม่เคยถาม หรือ (ข) เคยยินยอมภายใต้ข้อความเวอร์ชันเก่ากว่าปัจจุบัน
+ *  ⚠️ คนที่เคย "ปฏิเสธ" ไม่ต้องถามซ้ำทุกครั้งที่ขึ้นเวอร์ชัน — เคารพการปฏิเสธเดิม */
+export function needsConsentAgain(p: Profile = readProfile()): boolean {
+  if (!p.consentAsked) return true;
+  if (!p.consent) return false;
+  return p.consentVersion !== CONSENT_POLICY_VERSION;
 }

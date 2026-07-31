@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CONSENT_TEXT } from "@/lib/disclaimer";
-import { readProfile, setConsentChoice } from "@/lib/profile-store";
+import { readProfile, setConsentChoice, needsConsentAgain } from "@/lib/profile-store";
 
 // R7 — moves the consent ask to the very start of the interaction, on every
 // standalone tool (not just /plan). Declining never blocks the calculator
@@ -16,7 +16,10 @@ export function useConsentGate() {
   useEffect(() => {
     const p = readProfile();
     setConsent(!!p.consent);
-    setAnswered(!!p.consentAsked);
+    // 🔒 R3 — "ตอบแล้ว" ต้องหมายถึงตอบ **ข้อความเวอร์ชันปัจจุบัน** ไม่ใช่แค่เคยตอบอะไรก็ได้
+    // ไม่งั้นคนที่ยินยอมข้อความเก่า (ครอบแค่ภาวะการเจริญพันธุ์) จะไม่ถูกถามใหม่ แต่ระบบ
+    // บันทึกว่าเขายินยอมข้อความใหม่ที่ครอบพฤติกรรม/ความเครียด/ข้อมูลคู่ — Lucifer 31/7
+    setAnswered(!needsConsentAgain(p));
     setReady(true);
   }, []);
 

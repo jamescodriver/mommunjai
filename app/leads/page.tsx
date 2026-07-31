@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Wordmark } from "@/components/wordmark";
-import { ART_PLAN_VALUES, INFERTILITY_ISSUES } from "@/lib/calc/vitamins";
+import { ART_PLAN_VALUES, INFERTILITY_ISSUES, artPlanLabel } from "@/lib/calc/vitamins";
 
 // Leads Dashboard — all registrations (docs/PRD-PHASE2.md §3.5). Requires view_leads.
 const STAGE_TH: Record<string, string> = {
@@ -131,8 +131,8 @@ export default function LeadsPage() {
           </select>
           <select className="field !w-auto" value={f.art} onChange={(e) => set("art", e.target.value)}>
             <option value="">ART: ทั้งหมด</option>
-            <option value="ยัง">ยัง</option><option value="IUI">IUI</option><option value="IVF-ICSI">IVF-ICSI</option>
-            <option value="บำรุงไข่">บำรุงไข่</option><option value="เตรียมผนังมดลูก">เตรียมผนังมดลูก</option>
+            {/* R8 · TC-08-01/02 — label ที่แสดงเปลี่ยน แต่ value ที่ยิงเข้า query ยังเป็นค่าเดิมใน DB */}
+            {ART_PLAN_VALUES.map((v) => <option key={v} value={v}>{artPlanLabel(v)}</option>)}
           </select>
           <select className="field !w-auto" value={f.pcos} onChange={(e) => set("pcos", e.target.value)}>
             <option value="">PCOS: ทั้งหมด</option><option value="true">PCOS เท่านั้น</option>
@@ -174,7 +174,7 @@ export default function LeadsPage() {
                 <td className="p-3 whitespace-nowrap">{r.contact_channel} · {r.contact_value}</td>
                 <td className="p-3 whitespace-nowrap">{STAGE_TH[r.stage] || r.stage || "—"}</td>
                 <td className="p-3">{r.has_pcos ? "✓" : ""}</td>
-                <td className="p-3">{r.art_plan && r.art_plan !== "ยัง" && r.art_plan !== "none" ? r.art_plan : ""}</td>
+                <td className="p-3">{r.art_plan && r.art_plan !== "ยัง" && r.art_plan !== "none" ? artPlanLabel(r.art_plan) : ""}</td>
                 <td className="p-3">{r.score ?? "—"}</td>
                 <td className="p-3">{r.tag_count || ""}</td>
                 <td className="p-3">{r.line_bound ? <span className="chip !bg-[#06C755]/15 !text-[#06843c] !border-[#06C755]/30">🟢</span> : ""}</td>
@@ -238,7 +238,7 @@ export default function LeadsPage() {
                 </div>
               )}
               <select className="field" value={editing.art_plan || "ยัง"} onChange={(e) => setEditing({ ...editing, art_plan: e.target.value })}>
-                {ART_PLAN_VALUES.map((v) => <option key={v} value={v}>{v}</option>)}
+                {ART_PLAN_VALUES.map((v) => <option key={v} value={v}>{artPlanLabel(v)}</option>)}
               </select>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-1 text-sm">

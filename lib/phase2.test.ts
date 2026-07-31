@@ -9,10 +9,14 @@ describe("report engine", () => {
              sleep: { output: { beforeTen: false, goodDuration: true, status: "ควรปรับ" } },
              ovulation: { output: { ovulationDate: "2026-08-01", fertileStart: "2026-07-27", fertileEnd: "2026-08-02", nextPeriod: "2026-08-15" } } } };
 
-  it("leads with strengths, never a raw failure", () => {
+  // R15 — เดิมเทสต์นี้ชื่อ "leads with strengths" และเช็ค r.strengths
+  // โครง "จุดแข็ง/จุดที่เสริมได้" ถูกตัดออกตาม TC-15-01 → เหลือเช็คว่ารายงานยังพาดหัว
+  // ด้วยกรอบ 90 วันของแบรนด์ และเปิดด้วยข้อมูลของผู้ใช้เอง (Part 1) ไม่ใช่คะแนน
+  it("opens with the user's own data (Part 1), not a score", () => {
     const r = generateReport(base);
-    expect(r.strengths.length).toBeGreaterThan(0);
     expect(r.title).toContain("90 วัน");
+    expect(r.part1).toBeTruthy();
+    expect(r.part2).toBeTruthy();
   });
   it("has a quick win today", () => { expect(generateReport(base).quickWinToday).toBeTruthy(); });
   it("PCOS + ICSI → safety caution about not changing treatment", () => {
@@ -27,7 +31,8 @@ describe("report engine", () => {
     expect(generateReport(base).partnerNudge).toBeTruthy();
     expect(generateReport({ ...base, stage: "male" as any }).partnerNudge).toBeNull();
   });
-  it("90-day plan has 3 phases", () => { expect(generateReport(base).plan90).toHaveLength(3); });
+  // ลบเทสต์ "90-day plan has 3 phases" ทิ้ง — R15/TC-15-01 ตัดโครงแผน 3 เฟสออกทั้งหมด
+  // (เก็บไว้เท่ากับ assert บนโครงสร้างที่ไม่มีอยู่จริงแล้ว)
   it("carries fertile window + vitamins", () => {
     const r = generateReport(base);
     expect(r.fertileWindow?.start).toBe("2026-07-27");
@@ -36,14 +41,19 @@ describe("report engine", () => {
 });
 
 describe("report safety (Lucifer red-team fixes)", () => {
-  it("H1: never recommends castor oil (uterus-stimulant, unsafe in pregnancy/ART)", () => {
+  // H1 (red-team รอบแรก) เดิมคือ "ห้ามแนะนำน้ำมันละหุ่งเด็ดขาด" — R3 ผ่อนให้เฉพาะ
+  // artPlan "เตรียมผนังมดลูก" ตามที่ client เคาะ 31/7 (ดู PRD R3 §R3) พร้อม stop-rule ครบ
+  // เทสต์นี้จึงล็อกว่า "เส้นทางอื่นห้ามมี" ไม่ใช่ "ห้ามมีทุกที่" — ดูคู่กับเทสต์ TC-03-02
+  it("H1: castor oil ห้ามโผล่ในเส้นทางอื่นนอกจาก artPlan='เตรียมผนังมดลูก'", () => {
     const j = JSON.stringify(generateReport({ nickname: "A", stage: "prep", artPlan: "IVF-ICSI" }));
     expect(j.toLowerCase()).not.toContain("castor");
     expect(j).not.toContain("กระตุ้นมดลูก) "); // only appears inside the safe warning
   });
-  it("H3: ART patient — month-1 gates supplements behind consulting the doctor", () => {
+  // R15 — การ์ดใบนี้เคยเป็น "ข้อแรกของแผน 90 วันเดือนที่ 1" แผนถูกตัดออกแล้ว
+  // แต่กติกาความปลอดภัยห้ามหาย → ย้ายไปอยู่ใน cautions (ยังต้อง assert ต่อ)
+  it("H3: ART patient — supplements are gated behind consulting the doctor", () => {
     const r = generateReport({ nickname: "A", stage: "infertility", artPlan: "IVF-ICSI" });
-    expect(r.plan90[0].items[0]).toMatch(/ปรึกษาแพทย์.*ก่อนเริ่มวิตามิน/);
+    expect(r.cautions.join(" ")).toMatch(/ปรึกษาแพทย์.*ก่อนเริ่มวิตามิน/);
   });
   it("H2: referral timing adapts to age (40+ = see doctor now)", () => {
     const r40 = generateReport({ nickname: "A", stage: "prep", ageRange: "40+" });
@@ -259,5 +269,59 @@ describe("buildTeaser (R6) — server-side gate, never leaks full report fields"
     const t = buildTeaser(fullReport);
     const json = JSON.stringify(t);
     expect(json).not.toMatch(/"plan90"|"protein"|"fertileWindow"|"weeklyActions"/);
+  });
+});
+
+// ── PRD-UPDATE-R3-3107 batch 1+2 — เส้นทาง "รายงาน" (ไม่ใช่แค่ชั้น calc) ──────
+describe("report — R3 batch (R2/R3/R12/R13)", () => {
+  it("R12 — stage 'infertility' ต้องถูกส่งเข้า recommendVitamins จริง (เคยถูกแปลงเป็น prep ทำให้ mapping ไม่ทำงาน)", () => {
+    const r = generateReport({ nickname: "A", stage: "infertility", infertilityIssues: ["thin_lining"] });
+    const ids = r.vitamins.map((v) => v.id);
+    expect(ids).toEqual(["ferty", "ovaall", "kaffirshot", "ferti9oil", "collatelo", "varginaree"]);
+  });
+  it("R2 — อายุ 40+ ได้ A.O.S ผ่านเส้นทางรายงาน · ต่ำกว่า 35 ไม่ได้", () => {
+    expect(generateReport({ nickname: "A", stage: "prep", ageRange: "40+" }).vitamins.map((v) => v.id)).toContain("aos");
+    expect(generateReport({ nickname: "A", stage: "prep", ageRange: "30–34" }).vitamins.map((v) => v.id)).not.toContain("aos");
+  });
+  it("🔒 R2 — แม่ตั้งครรภ์อายุ 40+ ต้องไม่ได้ A.O.S ในรายงาน", () => {
+    const r = generateReport({ nickname: "A", stage: "pregnant", ageRange: "40+" });
+    expect(r.vitamins.map((v) => v.id)).not.toContain("aos");
+  });
+  it("R13 — รายงานมีตัวเลข BMI + ระดับ + สี เมื่อกรอกน้ำหนัก/ส่วนสูง", () => {
+    const r = generateReport({ nickname: "A", stage: "prep", weightKg: 68, heightCm: 160 });
+    expect(r.bmi?.bmi).toBe(26.6);
+    expect(r.bmi?.tier).toBe("obese");
+    expect(r.bmi?.color).toMatch(/^#/);
+  });
+  it("R13 — ไม่กรอกส่วนสูง → ไม่มีบล็อก BMI (ไม่เดาตัวเลขให้)", () => {
+    expect(generateReport({ nickname: "A", stage: "prep", weightKg: 68 }).bmi).toBeNull();
+  });
+  it("R4 — pcos_status 'unsure' ไม่ทำให้รายงานพูดเหมือนวินิจฉัยแล้ว และไม่ได้ PCO-VIT", () => {
+    const r = generateReport({ nickname: "A", stage: "prep", pcosStatus: "unsure" });
+    expect(r.vitamins.map((v) => v.id)).not.toContain("pcovit");
+    expect(r.cautions.join(" ")).toMatch(/ยังไม่แน่ใจ/);
+    expect(r.generatedFor.hasPcos).toBe(false);
+  });
+  it("🔒 R3/TC-03-02 — คำเตือน stop-rule ของชุดเตรียมผนังมดลูกไปถึงรายงาน (เดิมตกหล่น)", () => {
+    const r = generateReport({ nickname: "A", stage: "infertility", artPlan: "เตรียมผนังมดลูก" });
+    const text = r.cautions.join(" ");
+    expect(text).toMatch(/ดอกคำฝอย/);
+    expect(text).toMatch(/ห้ามรับประทาน/);
+    expect(r.vitamins.map((v) => v.id)).toContain("castoroil");
+    // และตัวสินค้ายังพก stop-rule ไปให้หน้าจอ render ได้
+    expect(r.vitamins.find((v) => v.id === "castoroil")?.stop?.pregnant).toBe(true);
+  });
+  it("R9 — เบาหวานขณะตั้งครรภ์ → คำเตือนให้อยู่ในการดูแลของแพทย์อยู่ในรายงาน", () => {
+    const r = generateReport({ nickname: "A", stage: "pregnant", hasGdm: true });
+    expect(r.cautions.join(" ")).toMatch(/เบาหวานขณะตั้งครรภ์.*การดูแลของแพทย์|การดูแลของแพทย์/);
+  });
+  it("R6/R7 — พฤติกรรมของคู่ (เครียด+สูบ) ทำให้รายงานของผู้หญิงมี A.O.S + Motila1", () => {
+    const r = generateReport({
+      nickname: "A", stage: "infertility", infertilityIssues: ["male_factor"],
+      partnerBehaviors: ["stress", "smoke"],
+    });
+    const ids = r.vitamins.map((v) => v.id);
+    expect(ids).toContain("aos");
+    expect(ids).toContain("motila1");
   });
 });

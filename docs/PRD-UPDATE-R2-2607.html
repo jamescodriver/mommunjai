@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRD Update — คอมเมนต์รอบที่ 2 (2607)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.65;background:var(--bg)}
+.wrap{max-width:920px;margin:0 auto;padding:24px 18px 70px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins;font-size:20px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.85;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 12px}
+
+nav.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+nav.toc a{font-size:11.5px;color:var(--teal-deep);text-decoration:none;background:var(--teal-soft);padding:5px 11px;border-radius:999px;font-weight:500}
+nav.toc a:hover{background:var(--teal);color:#fff}
+
+section{margin-bottom:26px}
+h2{font-family:Poppins;font-size:17px;font-weight:600;color:var(--teal-deep);border-bottom:2px solid var(--teal-soft);padding-bottom:8px;margin:0 0 12px;scroll-margin-top:16px}
+h3{font-family:Poppins;font-size:14px;font-weight:600;margin:16px 0 6px}
+p{font-size:13.5px}
+ul{font-size:13.5px;padding-left:20px}
+li{margin-bottom:4px}
+
+.callout{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;font-size:13px}
+.callout.warn{background:var(--rose-soft);border-color:var(--rose);color:#7A1E4B}
+.callout b{color:var(--teal-deep)}
+
+.persona-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.persona{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.persona h4{margin:0 0 6px;font-size:12.5px;font-family:Poppins;color:var(--teal-deep)}
+.persona ul{margin:0;padding-left:18px;font-size:12.5px}
+
+details.req{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+details.req summary{cursor:pointer;list-none;padding:13px 16px;font-family:Poppins;font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:10px}
+details.req summary::-webkit-details-marker{display:none}
+details.req summary::before{content:"▸";color:var(--teal);transition:.15s}
+details.req[open] summary::before{content:"▾"}
+.req-body{padding:0 16px 16px}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:600;color:#fff}
+.badge.p0{background:var(--rose-deep)}
+.badge.p1{background:var(--gold-deep)}
+.badge.p2{background:#9CA3AF}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--teal-soft);color:var(--teal-deep);font-family:Poppins;font-weight:600}
+.accept{background:var(--teal-soft);border-radius:10px;padding:10px 14px;margin-top:8px}
+.accept p{margin:0 0 4px;font-weight:600;color:var(--teal-deep);font-size:12px}
+.accept ul{margin:0;padding-left:18px;font-size:12.5px}
+.warnline{color:var(--rose-deep);font-weight:500}
+
+.oq{background:#fff;border-left:4px solid var(--rose);border-radius:0 12px 12px 0;padding:10px 14px;margin-bottom:8px;font-size:12.5px}
+.oq .tag{display:inline-block;font-size:10px;font-weight:600;background:var(--rose-soft);color:var(--rose-deep);padding:2px 8px;border-radius:999px;margin-right:6px}
+
+ol.timeline{font-size:13px;padding-left:20px}
+ol.timeline li{margin-bottom:6px}
+footer.note{margin-top:24px;font-size:11.5px;color:#8B95A1;text-align:center}
+code{background:var(--teal-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+@media(max-width:640px){.persona-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>📐 PRD Update — คอมเมนต์รอบที่ 2 (2026-07-30)</h1>
+  <p>สถานะ: ร่างสเปกรอบใหม่ รอ ต้น/ทีมครูก้อยรีวิว + ตอบ Open Questions ก่อนเริ่ม dev</p>
+  <div class="src">ต่อยอดจากงานที่ dev เสร็จแล้ว (PDF-03/05/06/07/08/10/14/17/19) — ดูสถานะเต็มที่ <code style="background:rgba(255,255,255,.25);color:#fff">public/rtm-2607.html</code> · ไม่ใช่งานเริ่มใหม่จากศูนย์</div>
+</header>
+
+<nav class="toc">
+  <a href="#context">บริบท</a><a href="#problem">Problem</a><a href="#goals">Goals</a><a href="#nongoals">Non-Goals</a>
+  <a href="#stories">User Stories</a><a href="#p0">P0</a><a href="#p1">P1</a><a href="#p2">P2</a>
+  <a href="#metrics">Success Metrics</a><a href="#oq">Open Questions</a><a href="#timeline">Timeline</a>
+</nav>
+
+<section id="context">
+  <h2>บริบท</h2>
+  <div class="callout">
+    <p>หลัง dev ทำ Bucket 1–2 ของรอบรีวิว PDF เสร็จ ทีมครูก้อยส่งคอมเมนต์เพิ่มอีกก้อน ซึ่งเนื้อหาจริงคือ <b>การปรับรายละเอียดของที่เพิ่งสร้างเสร็จ</b> ไม่ใช่ฟีเจอร์ใหม่ล้วนๆ:</p>
+    <ul>
+      <li>ปรับ "มีบุตรยาก" จาก sub-split ฝ่ายชาย/หญิง → checkbox หลายปัญหา — <b>คือคำตอบของ PDF-14</b> ("ขอ Confirm Mapping") ที่ค้างมาจากรอบก่อน</li>
+      <li>ให้ทิศทางอายุ/ส่วนสูง — <b>ตอบ PDF-10 บางส่วน</b> (ยังไม่ได้ตัวเลขสูตรชัด ดู Open Question)</li>
+      <li>ยืนยันสูตรวันไข่ตกถูกแล้ว — <b>ปิด PDF-09 บางส่วน</b></li>
+      <li>เพิ่มทิศทางใหม่ที่ไม่เคยมีในรอบแรก: <b>เว็บ = teaser, แผนเต็มต้องผ่าน LINE OA</b></li>
+    </ul>
+  </div>
+</section>
+
+<section id="problem">
+  <h2>Problem Statement</h2>
+  <p>ระบบที่เพิ่ง ship (มีบุตรยาก = เลือกฝ่ายชาย/หญิงอย่างเดียว) หยาบเกินไปเทียบกับปัญหาจริงของลูกค้ากลุ่มนี้ — สาเหตุต่างกันมาก (PCOS, รังไข่เสื่อม, ฮอร์โมนต่ำ, ผนังมดลูกบาง, ปัญหาฝ่ายชาย, น้ำหนักเกิน) และแต่ละสาเหตุต้องการสินค้าคนละชุด การถามแค่เพศไม่ช่วยให้คำแนะนำตรงจุด ในอีกด้านหนึ่ง ธุรกิจต้องการให้ LINE OA เป็นช่องทางปิดการขาย ไม่ใช่ให้เว็บให้ข้อมูลจนจบแล้วลูกค้าไม่มีเหตุผลต้องคุยต่อ</p>
+</section>
+
+<section id="goals">
+  <h2>Goals</h2>
+  <ul>
+    <li>คำแนะนำ personalize ลึกขึ้น 2 ชั้น: category + ปัญหาเฉพาะ (เฉพาะกลุ่มมีบุตรยาก)</li>
+    <li>เว็บทำหน้าที่ lead-gen ไม่ใช่จบเซอร์วิส — เพิ่มอัตราคนกดไปคุยต่อใน LINE</li>
+    <li>ลดการกรอกซ้ำ + เก็บ consent ตั้งแต่ต้นทาง</li>
+    <li>เครื่องมือนับวันไข่ตกอ่านง่ายขึ้น ระดับแอปมาตรฐาน</li>
+    <li>ปลดบล็อก mapping สินค้าที่ทีมเคยขอ confirm (PDF-14)</li>
+  </ul>
+</section>
+
+<section id="nongoals">
+  <h2>Non-Goals (รอบนี้ยังไม่ทำ)</h2>
+  <ul>
+    <li><b>เครื่องมือออกกำลังกาย</b> (PDF-15) — ยังไม่มีสูตร/ผู้เชี่ยวชาญ sign-off</li>
+    <li><b>แบบทดสอบความเครียด</b> (PDF-16) — ยังไม่มี scale ที่มีสิทธิ์ใช้งานถูกต้อง</li>
+    <li><b>จองตรวจแล็บ/ผูก GFC เชิง commerce</b> (PDF-18 ส่วนที่เหลือ) — รอ partnership</li>
+    <li><b>LIFF เต็มรูป</b> — ยังใช้กลไก resume-token ผ่านปุ่ม Rich Menu เดิม</li>
+    <li><b>แสดงตัวเลข BMI ตรงๆ</b> — client เห็นด้วยเองว่า "ทำให้งง"</li>
+    <li><b>ส่วนสูง/อายุตัวเลขเป็น field บังคับทุกหน้า</b> — เก็บเฉพาะจุดที่ใช้จริง</li>
+  </ul>
+</section>
+
+<section id="stories">
+  <h2>User Stories</h2>
+  <div class="persona-grid">
+    <div class="persona"><h4>ผู้หญิงเตรียมตั้งครรภ์ (ธรรมชาติ)</h4>
+      <ul><li>อยากตอบคำถามน้อย ได้คำแนะนำทั่วไปทันที ไม่ต้องเจอแบบสอบถามยาวเหมือนคนมีปัญหาเฉพาะ</li></ul></div>
+    <div class="persona"><h4>ผู้หญิงมีบุตรยาก</h4>
+      <ul><li>อยากติ๊กปัญหาที่ตรงกับตัวเอง เพื่อได้สินค้าตรงปัญหาจริง</li><li>อยากบอกว่าอยู่ขั้นการรักษาไหน เพื่อได้แผนที่ไม่ขัดกับสิ่งที่หมอสั่ง</li></ul></div>
+    <div class="persona"><h4>ฝ่ายชาย</h4>
+      <ul><li>อยากมีทางเข้าชัดเจนทั้งใน "เตรียมตั้งครรภ์" และ "มีบุตรยาก" ไม่ใช่ category แยกที่รู้สึกโดดเดี่ยว</li></ul></div>
+    <div class="persona"><h4>ลูกค้าทั่วไป — หลังกรอกเสร็จ</h4>
+      <ul><li>อยากเห็นคำแนะนำเบื้องต้นทันที เพื่อรู้สึกว่ากรอกมีค่า จนอยากคุยต่อใน LINE</li><li>กลับมาทำใหม่ อยากให้จำข้อมูลเดิม แก้ได้โดยไม่กรอกซ้ำ</li></ul></div>
+    <div class="persona" style="grid-column:1/-1"><h4>ทีมงาน (staff ฝั่ง LINE OA)</h4>
+      <ul><li>อยากเห็นว่าลูกค้าติ๊กปัญหาอะไร + อยู่ขั้นการรักษาไหน เพื่อให้คำปรึกษาแผนเต็มตรงจุดโดยไม่ถามซ้ำ</li></ul></div>
+  </div>
+</section>
+
+<section id="p0">
+  <h2>Requirements — P0 (Must-have)</h2>
+
+  <details class="req" open><summary><span class="badge p0">P0</span> R1 — ปรับโครงสร้าง Category เป็น 4 หมวดจริง</summary>
+    <div class="req-body">
+      <ul>
+        <li>เตรียมตั้งครรภ์ / ตั้งครรภ์แล้ว / ให้นมบุตร → เข้าแบบสอบถามตรงๆ ไม่มีหน้าจอเลือกปัญหาเพิ่ม (พฤติกรรมเดิมไม่เปลี่ยน)</li>
+        <li>"เตรียมตั้งครรภ์" ต้องมีทางเลือก <b>ฝ่ายชายอยู่ภายในหมวดนี้</b> ไม่ใช่การ์ดแยกระดับบนสุด (<code>stage=male</code> เดิมผูกกับ "มีบุตรยาก" อย่างเดียว — รอบนี้ต้อง reachable จาก "เตรียมตั้งครรภ์" ด้วย)</li>
+      </ul>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>กดเข้า 3 หมวด → ข้าม stage-picker ตรงเข้า step "name" ทันที</li>
+        <li>การ์ด "เตรียมตั้งครรภ์" มีทางเลือกย่อย "ฝ่ายชาย" แยกจากเส้นทางหลัก</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R2 — "มีบุตรยาก" จาก gender-split → checkbox ปัญหาหลายข้อ</summary>
+    <div class="req-body">
+      <p>แทนที่การ์ด "ฝ่ายหญิง/ฝ่ายชาย" ด้วย checkbox 7 ข้อ (เลือกได้หลายข้อ ยกเว้น "ไม่แน่ใจ" ที่ exclusive):</p>
+      <table>
+        <tr><th>Issue</th><th>สินค้า (ชื่อทางการ)</th><th>หมายเหตุ</th></tr>
+        <tr><td>PCOS</td><td><b>PCO-VIT</b></td><td>✅ มีอยู่แล้วใน <code>lib/calc/vitamins.ts</code> — เปลี่ยนจากผูก <code>hasPcos</code> เดี่ยว มาผูกกับ checkbox นี้</td></tr>
+        <tr><td>รังไข่เสื่อมก่อนวัย</td><td><b>Varginaree</b></td><td>client พิมพ์ "Varginary" (สะกดคลาดเคลื่อน) · <span class="warnline">Safety Matrix: ห้ามช่วงใส่ตัวอ่อน/ตั้งครรภ์/ให้นม</span></td></tr>
+        <tr><td>Hormone เพศต่ำ</td><td><b>Ferti 9 Oil</b></td><td>✅ มีอยู่แล้ว (<code>PRODUCTS.ferti9oil</code>)</td></tr>
+        <tr><td>ผนังมดลูกบาง</td><td><b>Ferty (โปรตีน) + Colla Telo</b></td><td>client พิมพ์ "Collatello" (สะกดคลาดเคลื่อนจาก Colla Telo)</td></tr>
+        <tr><td>ปัญหาจากฝ่ายชาย</td><td><b>M-Z All + Motila1</b></td><td class="warnline">⚠️ Motila1 ยังไม่มี dosage ยืนยัน — ดู Open Q #2</td></tr>
+        <tr><td>น้ำหนักเกิน</td><td><b>Ferty + สัดส่วน Nutrient</b></td><td>ใช้ weight+height คำนวณ BMI ภายใน (ดู R3) ไม่โชว์ตัวเลข</td></tr>
+        <tr><td>ไม่แน่ใจ</td><td>Route ปกติ</td><td>เทียบเท่า flow เดิมก่อนมี checkbox</td></tr>
+      </table>
+      <p>Schema ใหม่: <code>infertilityIssues: string[]</code> — ไม่แทนที่ <code>stage</code> (ยังเป็น <code>"infertility"</code> เหมือนเดิม)</p>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>เลือก 2+ ปัญหาพร้อมกัน → รวมสินค้าจากทุกปัญหา ไม่ซ้ำกัน</li>
+        <li>เลือก "ไม่แน่ใจ" → ล้าง selection อื่นทั้งหมด</li>
+        <li>Motila1 ไม่ปรากฏจนกว่าจะได้ dosage ยืนยัน (M-Z All แนะนำได้ตามปกติ)</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R3 — อายุ/ส่วนสูงเป็น context ชั้น 2 ไม่ใช่ field บังคับ</summary>
+    <div class="req-body">
+      <ul>
+        <li><b>อายุ:</b> ใช้ <code>age_range</code> เดิมเป็น modifier เชิงคุณภาพ (35+ → "ควรได้โปรตีนช่วงบนของเกณฑ์") — ยังไม่ล็อกเป็นสูตรตัวเลขจนกว่า confirm (Open Q #4)</li>
+        <li><b>ส่วนสูง:</b> ไม่เพิ่มเป็น field ทั่วไป — ถามเฉพาะเมื่อติ๊ก "น้ำหนักเกิน" ใน R2 แล้วคำนวณ BMI ภายใน แสดงผลเป็นคำอธิบายเชิงคุณภาพ ไม่โชว์ตัวเลข</li>
+      </ul>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>ไม่ติ๊ก "น้ำหนักเกิน" → ไม่เจอคำถามส่วนสูงเลย</li>
+        <li>ติ๊ก "น้ำหนักเกิน" → เจอคำถามส่วนสูงเพิ่ม 1 ข้อ ได้คำแนะนำเจาะจงระดับ</li>
+        <li>ไม่มีตัวเลข "BMI: 27.3" ปรากฏที่ไหนเลย</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R4 — เปลี่ยนคำถาม ART เป็น "เข้าสู่กระบวนการทางการแพทย์ไหม?"</summary>
+    <div class="req-body">
+      <p>ค่าใหม่ 5 ตัวเลือก: <b>ยัง / IUI / IVF-ICSI (เด็กหลอดแก้ว) / บำรุงไข่ / เตรียมผนังมดลูก</b></p>
+      <p class="warnline">⚠️ client เว้น "-" ลอยว่างหลัง "เตรียมผนังมดลูก" — อาจตั้งใจใส่ตัวเลือกที่ 6 (Open Q #1) — ทำ 5 ตัวเลือกตามข้อความจริงไปก่อน</p>
+      <p><b>Breaking schema change:</b> <code>artPlan</code> เดิม (none/iui/ivf/icsi) → ค่าใหม่ 5 ค่า กระทบ <code>lib/calc/vitamins.ts</code>, <code>lib/report.ts</code>, <code>app/plan/page.tsx</code>, <code>app/api/lead/route.ts</code>, <code>app/api/customer/resume/route.ts</code>, <code>lib/tagging.ts</code>, tests — ต้องมี migration mapping สำหรับ lead เก่า (none→ยัง, iui→IUI, ivf/icsi→IVF-ICSI)</p>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>ปุ่มเลือก 5 ตัวเลือกใหม่แสดงถูกต้อง</li>
+        <li>lead เก่าที่มีค่า artPlan แบบเดิมยังอ่าน/แสดงผลได้ไม่ error</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R5 — Depth-tiering: teaser ทั่วไป vs แผน 90 วันเต็ม</summary>
+    <div class="req-body">
+      <ul>
+        <li>กลุ่ม "ยัง" + "ไม่แน่ใจ" → คำแนะนำวิตามินทั่วไป ไม่ใช่แผน 90 วันเต็ม</li>
+        <li>กลุ่ม "เตรียมผนังมดลูก" → แผนบำรุงเต็ม + ราคา</li>
+        <li>🟡 ข้อเสนอ (Open Q #3): กลุ่ม IUI/บำรุงไข่ → ระดับกลาง (แผนย่อ ไม่โชว์ราคาเต็ม)</li>
+      </ul>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>"ยัง"+ไม่ติ๊กปัญหา → เห็นการ์ดสั้น ไม่มี 8-ส่วนของ 90-day report</li>
+        <li>"เตรียมผนังมดลูก" → เห็นแผนเต็ม+ราคา (เหมือนวันนี้)</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R6 — Gate แผนเต็มไว้หลังส่ง ticket เข้า LINE OA</summary>
+    <div class="req-body">
+      <ul>
+        <li>หลัง <code>/api/lead</code> สำเร็จ → โชว์สรุปสั้น (pillar อ่อนสุด 1-2 ข้อ + สินค้า 2-3 ตัว ไม่มีราคา/dosage เต็ม) + ปุ่ม "รับแผนบำรุง 90 วันฉบับเต็ม ผ่าน LINE OA" พร้อม ticket</li>
+        <li>แผนเต็ม (<code>reports</code>+<code>/r/[code]</code>) <b>ยัง generate+เก็บเหมือนเดิม</b> — แค่ไม่ auto-render ทันที ต้องผ่าน LINE</li>
+        <li><code>/r/[code]</code> เดิมยังเปิดตรงได้ไม่ต้อง login (กัน backward-compat ลิงก์ที่แชร์ไปแล้ว)</li>
+      </ul>
+      <p>Effort ต่ำ — โครง ticket+webhook+resume-token (PDF-05/06) มีครบแล้ว แค่เปลี่ยนจุด "เปิดเผยลิงก์"</p>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>submit /plan → ไม่เห็น ReportView เต็มทันที เห็นแค่ teaser+ticket+ปุ่มไป LINE</li>
+        <li>พิมพ์ ticket ใน LINE OA → ยังได้ Flex พร้อมลิงก์ /r/[code] เต็มเหมือนเดิม</li>
+        <li>/r/[code] ยังเปิดตรงได้ไม่ต้อง auth</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R7 — ย้าย consent มาอยู่ต้นทาง flow</summary>
+    <div class="req-body">
+      <ul>
+        <li>ย้ายจาก step "contact" (ท้ายสุด) → step "intro" (แรกสุด) ทั้ง /plan และทุก tool เดี่ยว</li>
+        <li>เหตุผล: วันนี้คำตอบก่อนถึง "contact" ยังไม่ผ่าน consent เลย — ย้ายต้นทางให้ถูกต้อง PDPA ตั้งแต่ต้น</li>
+        <li>ต่อยอด PDF-06: consent+LINE ID ผ่านเร็วขึ้น → ผูก customer_id เร็วขึ้น แม้ทำแค่ tool เดี่ยว</li>
+      </ul>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>เข้า /plan หรือ /tools/* ครั้งแรก เจอ consent gate ก่อนเห็นคำถามใดๆ</li>
+        <li>ปฏิเสธ consent → ใช้เครื่องมือได้ปกติแบบ anonymous — ไม่บังคับ consent ถึงจะใช้แอปได้</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R8 — Identity key: ยึด LINE ID เป็นหลัก เบอร์โทรเป็น secondary</summary>
+    <div class="req-body">
+      <p>🎯 <b>คำแนะนำจาก PM</b>: ใช้ LINE user ID เป็น key หลักต่อไป (ตามที่ dev แล้วใน PDF-06) ไม่เปลี่ยนไปใช้เบอร์โทรเป็น key หลัก เพราะ:</p>
+      <ul>
+        <li>เบอร์โทรเปลี่ยนมือได้บ่อยในไทย ไม่มี OTP verify → เสี่ยง merge ข้อมูลผิดคน</li>
+        <li>LINE ID มาจาก webhook ที่ verify signature แล้ว ส่วนเบอร์โทรกรอกเองพิมพ์ผิดได้</li>
+        <li>โครงที่มีอยู่แล้ว (resume-token, menuFlex) ผูกกับ LINE ID ทั้งหมด — เปลี่ยนตอนนี้ = rewrite ของที่เพิ่งเสร็จ</li>
+      </ul>
+      <p>เบอร์โทรใช้เป็น secondary/soft-match เท่านั้น — โชว์ให้ staff เห็นเป็น hint ไม่ auto-merge</p>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li><code>customers.line_user_id</code> ยังเป็น unique key หลัก ไม่เพิ่ม constraint บนเบอร์โทร</li>
+        <li>หน้า staff แสดงเบอร์โทรตรงกันเป็น hint "อาจเป็นคนเดิม?" ไม่ auto-link</li>
+      </ul></div>
+    </div>
+  </details>
+
+  <details class="req"><summary><span class="badge p0">P0</span> R9 — Ovulation tool redesign: วันไข่ตกใหญ่สุด ตัวหนังสือน้อย</summary>
+    <div class="req-body">
+      <ul>
+        <li>วันไข่ตกเป็น hero element ตัวใหญ่สุด (แทนที่ "ช่วงมีโอกาสสูง" ที่เด่นสุดตอนนี้)</li>
+        <li>ตัด intro/disclaimer ให้สั้นลง (ย้าย disclaimer เต็มไปไว้ใน collapsed/tooltip)</li>
+        <li>สูตร 14-day luteal phase <b>ไม่ต้องแก้</b> (client ยืนยันถูกแล้ว) — ปิด PDF-09 บางส่วน</li>
+      </ul>
+      <div class="accept"><p>Acceptance</p><ul>
+        <li>วันไข่ตกใช้ font-size ใหญ่กว่าทุก element อื่นในผลลัพธ์</li>
+        <li>จำนวนคำในหน้าก่อนกดคำนวณลดลงอย่างมีนัย</li>
+      </ul></div>
+    </div>
+  </details>
+</section>
+
+<section id="p1">
+  <h2>Requirements — P1 (Nice-to-have)</h2>
+  <details class="req"><summary><span class="badge p1">P1</span> R10 — เครื่องมือความรู้ "ตรวจร่างกาย" (การศึกษาอย่างเดียว)</summary>
+    <div class="req-body">
+      <ul>
+        <li>แยกจาก PDF-18 (ยัง block รอ GFC partnership) — ทำเฉพาะความรู้: ฮอร์โมน 6 ตัว (ฝ่ายหญิง) + ค่าตรวจน้ำเชื้อ (ฝ่ายชาย) + "อ่านค่ายังไง" เบื้องต้น</li>
+        <li>ไม่มีปุ่มจองตรวจ/โค้ดส่วนลด/lead-to-GFC ในเวอร์ชันนี้</li>
+        <li class="warnline">⚠️ ต้องได้รายชื่อฮอร์โมน+ค่าปกติจากทีมก่อนเขียนเนื้อหา (Open Q #5 — ห้ามแต่งเอง)</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<section id="p2">
+  <h2>Requirements — P2 (Future, คงสถานะเดิม)</h2>
+  <p>เครื่องมือออกกำลังกาย (PDF-15) · แบบทดสอบความเครียด (PDF-16) · Lab-booking + GFC commerce (PDF-18 ส่วนที่เหลือ) — ไม่เปลี่ยนจาก RTM เดิม</p>
+</section>
+
+<section id="metrics">
+  <h2>Success Metrics</h2>
+  <p>เนื่องจากเป็น client project ภายใน วัดแบบเบาๆ พอให้เห็นทิศทาง:</p>
+  <ul>
+    <li><b>Leading:</b> % ผู้กรอก /plan จบแล้วกดไป LINE OA (ก่อน/หลัง R6) · % ที่ติ๊กปัญหาใน checkbox ใหม่ (R2)</li>
+    <li><b>Lagging:</b> อัตราปิด ticket เป็นลูกค้าจริงใน LINE OA (ต้องให้ทีม LINE OA รายงานเอง)</li>
+    <li><b>วิธีวัด:</b> query จาก <code>events</code>/<code>tag_assignments</code> ที่มีอยู่แล้ว + staff รายงานรายเดือน</li>
+  </ul>
+</section>
+
+<section id="oq">
+  <h2>Open Questions</h2>
+  <div class="oq"><span class="tag">ทีมครูก้อย · blocking R4</span>ตัวเลือก "เข้าสู่กระบวนการทางการแพทย์" มี "-" ลอยว่างหลัง "เตรียมผนังมดลูก" — ตั้งใจใส่ตัวเลือกที่ 6 หรือพิมพ์ไม่ทัน? ถ้ามี คืออะไร?</div>
+  <div class="oq"><span class="tag">ทีมครูก้อย · blocking R2</span>Motila1 ยังไม่มีวิธีรับประทานที่ยืนยัน (ค้างจากรอบก่อน) — ขอ dosage เพื่อเปิดกลับมาแนะนำ</div>
+  <div class="oq"><span class="tag">ทีมครูก้อย · blocking R5</span>กลุ่ม IUI/บำรุงไข่ ควรได้แผนระดับไหน? เสนอ "ระดับกลาง" ไว้ ขอ confirm</div>
+  <div class="oq"><span class="tag">ทีมครูก้อย · blocking R3</span>อายุ 35+ ปรับโปรตีนแค่ข้อความเชิงคุณภาพ หรือมีสูตรตัวเลขจริง? (ต่อเนื่อง PDF-10)</div>
+  <div class="oq"><span class="tag">ทีมครูก้อย · non-blocking</span>ขอรายชื่อฮอร์โมน 6 ตัว + ค่าตรวจน้ำเชื้อ พร้อมค่าปกติ+วิธีอ่านผล (R10)</div>
+  <div class="oq"><span class="tag">dev · non-blocking</span><code>product-catalog-master.md</code> ไม่มี PCO-VIT ในตาราง §2 ทั้งที่โค้ดใช้จริง — ควรอัปเดตเอกสาร</div>
+  <div class="oq"><span class="tag">legal/PDPA · blocking R7</span>ย้าย consent มาต้นทาง — ข้อความ consent เดิมต้องปรับถ้อยคำให้ครอบคลุมหรือไม่ ควรให้ผู้ดูแล privacy policy ตรวจก่อน</div>
+</section>
+
+<section id="timeline">
+  <h2>Timeline / Phasing</h2>
+  <p>ต่อยอดจากงานที่ dev เสร็จแล้ว ไม่ใช่งานเริ่มใหม่ แนะนำลำดับ build (หลัง Open Q #1/3/4/7 ตอบแล้ว):</p>
+  <ol class="timeline">
+    <li><b>R4</b> (artPlan schema) ก่อน — breaking change ที่ R2/R5 ต้องพึ่งพา</li>
+    <li><b>R2</b> (checkbox ปัญหา) + <b>R3</b> (อายุ/ส่วนสูง)</li>
+    <li><b>R1</b> (category IA) — ใช้โครงเดิมจาก PDF-03 effort ต่ำ</li>
+    <li><b>R5 + R6</b> (depth-tiering + gate แผนเต็ม) — คู่กัน</li>
+    <li><b>R7</b> (ย้าย consent) — ทำแยกได้</li>
+    <li><b>R9</b> (ovulation UI) — independent</li>
+    <li><b>R8</b> (identity key) — แค่ policy ไม่ต้องแก้โค้ดเพิ่ม</li>
+    <li><b>R10</b> (P1) — รอ Open Q #5 ก่อน</li>
+  </ol>
+  <p>หลังตอบ Open Questions แนะนำเข้า Plan Mode ทำ R2+R4 พร้อมกันก่อน แล้วอัปเดต <code>public/rtm-2607.html</code> ให้สะท้อนการ revise ของ PDF-03/05/06/10/14</p>
+</section>
+
+<footer class="note">Mommunjai · docs/PRD-UPDATE-R2-2607.md (เวอร์ชันเต็ม) · สร้าง 2026-07-30</footer>
+</div>
+</body>
+</html>

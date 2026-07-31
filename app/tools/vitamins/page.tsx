@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useEmbed } from "@/components/use-embed";
 import {
   recommendVitamins, VitaminProfile, VitaminStage, Product, StopRules, InfertilityIssue,
-  INFERTILITY_ISSUES, ART_PLAN_VALUES, mapLegacyArtPlan,
+  INFERTILITY_ISSUES, ART_PLAN_VALUES, artPlanLabel, mapLegacyArtPlan,
 } from "@/lib/calc/vitamins";
 import { readProfile, recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, PlanCta, EmbedAutoResize } from "@/components/ui";
@@ -32,6 +32,13 @@ export default function VitaminsPage() {
     // mapLegacyArtPlan also covers a browser with a pre-R4 cached value.
     if (p.artPlan) setArtPlan(mapLegacyArtPlan(p.artPlan));
   }, []);
+
+  // 🔒 เปลี่ยน input ใด ๆ = ผลเดิมใช้ไม่ได้แล้ว ต้องกดใหม่
+  // เคสจริงที่อันตราย: เลือก "มีบุตรยาก" → กดดู → เห็น Varginaree/A.O.S/น้ำมะกรูด → เปลี่ยนเป็น
+  // "ตั้งครรภ์" → รายการเดิมค้างบนจอทั้งชุด รวมของที่มี stop.pregnant ที่ห้ามทานตอนท้อง
+  // unit test จับไม่ได้เพราะ recommendVitamins ทำงานถูก — พังที่ UI state ล้วน ๆ
+  // (บั๊กพันธุ์เดียวกับที่เคยเจอในเครื่องมือออกกำลังกาย — Lucifer red-team 31/7)
+  useEffect(() => { setRes(null); }, [stage, issues, artPlan]);
 
   const toggleIssue = (v: InfertilityIssue) => {
     setIssues((cur) => {
@@ -86,7 +93,7 @@ export default function VitaminsPage() {
             <p className="text-sm font-medium">{stage === "infertility" ? "3." : "2."} เข้าสู่กระบวนการทางการแพทย์ไหม</p>
             <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
               {ART_PLAN_VALUES.map((v) => (
-                <button key={v} onClick={() => setArtPlan(v)} className={`rounded-xl border px-2 py-2 ${artPlan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{v}</button>
+                <button key={v} onClick={() => setArtPlan(v)} className={`rounded-xl border px-2 py-2 ${artPlan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{artPlanLabel(v)}</button>
               ))}
             </div>
           </div>

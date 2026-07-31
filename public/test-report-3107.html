@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mommunjai — QA Test Report R3 (แก้ไข 31.7.26 · TS-01…TS-15)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#E7B84B; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --indigo:#6366F1; --indigo-deep:#4338CA; --indigo-soft:#E9E9FE;
+  --ink:#3D3D4D; --grey:#8A8A9A; --line:#E4E9EE;
+  --pass:#22A35D; --fail:#D0454C; --blocked:#B7791F; --na:#8A8A9A;
+  --shadow:0 8px 30px rgba(20,120,110,.12); --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,-apple-system,sans-serif;color:var(--ink);line-height:1.6;
+  background:linear-gradient(160deg,#E7F7F5 0%,#FDF0F6 45%,#FFE9F2 100%);background-attachment:fixed;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 80px}
+.glass{background:rgba(255,255,255,.75);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.85);
+  border-radius:var(--radius);box-shadow:var(--shadow)}
+h1,h2,h3,h4{line-height:1.25;margin:0}
+.font-d{font-family:'Poppins','Prompt',sans-serif}
+code{background:#F2F2F7;padding:1px 6px;border-radius:6px;font-size:.9em;word-break:break-word}
+
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;
+  padding:24px 22px;border-radius:var(--radius);margin-bottom:16px;box-shadow:0 8px 24px rgba(21,156,151,.28)}
+header.top h1{font-family:'Poppins','Prompt',sans-serif;font-size:20px;font-weight:600;margin-bottom:6px}
+header.top p{margin:0;font-size:13px;opacity:.94}
+header.top .meta{margin-top:10px;font-size:11.5px;opacity:.86;line-height:1.7}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+.stat .n{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;line-height:1.1}
+.stat .l{font-size:11px;color:var(--grey);margin-top:3px}
+.stat.p .n{color:var(--pass)} .stat.f .n{color:var(--fail)}
+.stat.b .n{color:var(--blocked)} .stat.n_ .n{color:var(--na)} .stat.t .n{color:var(--ink)}
+
+.callout{border-radius:16px;padding:15px 18px;margin-bottom:14px;font-size:13px}
+.callout h2{font-size:14px;font-family:'Poppins','Prompt',sans-serif;font-weight:600;margin-bottom:8px}
+.callout.fail{background:var(--rose-soft);border:1.5px solid var(--rose-deep)}
+.callout.fail h2{color:var(--rose-deep)}
+.callout.block{background:var(--gold-soft);border:1.5px solid var(--gold)}
+.callout.block h2{color:var(--gold-deep)}
+.callout.note{background:var(--indigo-soft);border:1.5px solid var(--indigo)}
+.callout.note h2{color:var(--indigo-deep)}
+.callout ul,.callout ol{margin:6px 0 0;padding-left:20px}
+.callout li{margin-bottom:7px}
+
+section.block{padding:18px 20px;margin-bottom:14px}
+section.block > h2{font-size:16px;font-family:'Poppins','Prompt',sans-serif;font-weight:600;color:var(--teal-deep);margin-bottom:8px}
+section.block p{font-size:13px}
+.kv{display:grid;grid-template-columns:170px 1fr;gap:6px 12px;font-size:12.8px;margin-top:8px}
+.kv dt{color:var(--grey)} .kv dd{margin:0}
+.tablewrap{overflow-x:auto;margin-top:10px}
+table.mini{border-collapse:collapse;width:100%;min-width:520px;font-size:12.5px}
+table.mini th,table.mini td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+table.mini th{color:var(--grey);font-weight:500;font-size:11.5px}
+
+.sticky{position:sticky;top:8px;z-index:40;padding-top:2px;margin-bottom:14px}
+.panel{padding:12px 16px}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;
+  font-weight:500;cursor:pointer;color:#4B5563;transition:.15s;user-select:none}
+.chip[data-on="1"]{color:#fff;border-color:transparent;background:var(--teal)}
+.chip.f[data-on="1"]{background:var(--fail)} .chip.b[data-on="1"]{background:var(--blocked)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.search{flex:1;min-width:180px}
+.search input{width:100%;font-family:inherit;font-size:13px;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;padding:9px 16px;border-radius:999px;
+  white-space:nowrap;background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(27,192,186,.3)}
+.btn.ghost{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal);box-shadow:none}
+
+.scenario{padding:16px 18px;margin-bottom:14px;scroll-margin-top:150px}
+.shead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}
+.tsid{font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--teal-deep);background:var(--teal-soft);
+  padding:3px 10px;border-radius:8px;white-space:nowrap}
+.areachip{font-size:11px;font-weight:600;color:var(--indigo-deep);background:var(--indigo-soft);padding:3px 10px;border-radius:8px}
+.pageref{font-size:11px;color:var(--grey)}
+.stitle{margin:2px 0 8px;font-size:15px;font-weight:600}
+.req{background:var(--teal-soft);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:8px 12px;
+  font-size:12.5px;color:#374151;margin-bottom:10px;white-space:pre-line}
+.tsverdict{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:8px;color:#fff;white-space:nowrap}
+
+.case{border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:9px;background:rgba(255,255,255,.6)}
+.case.st-fail{border-color:var(--fail);box-shadow:0 0 0 1px var(--fail) inset;background:#FFF6F7}
+.case.st-blocked{border-color:var(--gold);background:#FFFCF3}
+.chead{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:5px}
+.caseid{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--teal-deep);background:#fff;
+  border:1px solid var(--teal);padding:1px 8px;border-radius:6px;white-space:nowrap}
+.badge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:6px;color:#fff;white-space:nowrap}
+.badge.pass{background:var(--pass)} .badge.fail{background:var(--fail)}
+.badge.blocked{background:var(--blocked)} .badge.na{background:var(--na)}
+.gwt{font-size:12.5px;line-height:1.6}
+.gwt b{color:#4B5563}
+.gwt .lbl{display:inline-block;min-width:74px;color:var(--grey);font-size:11.5px}
+.actual{margin-top:5px;padding:7px 10px;border-radius:9px;background:#F7FAFC;border-left:3px solid var(--teal);font-size:12.4px}
+.case.st-fail .actual{background:#FFEDEF;border-left-color:var(--fail)}
+.case.st-blocked .actual{background:#FFF6E3;border-left-color:var(--gold)}
+.ev{margin-top:4px;font-size:11px;color:var(--grey)}
+
+.reviewrow{display:flex;gap:9px;align-items:flex-start;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:9px;margin-top:9px}
+.reviewrow select{font-family:inherit;font-size:12.5px;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+.reviewrow textarea{flex:1;min-width:200px;min-height:44px;font-family:inherit;font-size:12.4px;padding:8px 11px;
+  border-radius:10px;border:1.5px solid var(--line);resize:vertical}
+.reviewrow textarea:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.saved{font-size:11px;color:var(--teal-deep);opacity:0;transition:opacity .3s}
+.saved.show{opacity:1}
+.empty{text-align:center;padding:36px;color:var(--grey);font-size:13px}
+footer.note{margin-top:18px;font-size:11.5px;color:var(--grey);text-align:center;line-height:1.8}
+@media(max-width:860px){.stats{grid-template-columns:repeat(3,1fr)}.kv{grid-template-columns:1fr}}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>🧪 QA Test Report — Mommunjai R3 “แก้ไข 31.7.26”</h1>
+  <p>ผลทดสอบจริงตาม <b>public/test-plan-3107.html</b> (15 Test Scenario / 64 Test Case) เทียบกับสเปก <b>docs/PRD-UPDATE-R3-3107.md</b></p>
+  <div class="meta">
+    ผู้ทดสอบ: QA (Metatron) · วันที่ทดสอบ: 31/7/2569 · commit ฐาน: <code>53e538c</code> (งาน R3 ยัง uncommitted)<br>
+    วิธีทดสอบ: unit test เดิม 295 เคส + QA harness เพิ่ม 66 assertion + เดินแอปจริงบนเบราว์เซอร์ (dev server) + อ่านโค้ด<br>
+    <b>ไม่มีการแก้โค้ดใด ๆ ในรอบนี้ — รายงานอย่างเดียวตามที่ได้รับมอบหมาย</b>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat t"><div class="n" id="sTotal">–</div><div class="l">Test Case ตามแผน<br><span id="sExtra" style="color:var(--indigo-deep)"></span></div></div>
+  <div class="stat p"><div class="n" id="sPass">–</div><div class="l">✅ ผ่าน (pass)</div></div>
+  <div class="stat f"><div class="n" id="sFail">–</div><div class="l">❌ ไม่ผ่าน (fail)</div></div>
+  <div class="stat b"><div class="n" id="sBlocked">–</div><div class="l">⛔ ทดสอบไม่ได้ (blocked)</div></div>
+  <div class="stat n_"><div class="n" id="sNa">–</div><div class="l">– ไม่เกี่ยว (n/a)</div></div>
+</div>
+
+<div class="callout fail">
+  <h2>🔧 รายการที่เคยไม่ผ่าน — แก้แล้วทั้งหมด (1 เคส)</h2>
+  <ol>
+    <li>
+      <b>TC-11-01 — “ให้นมบุตร” เคยยังเจอคำถาม “เข้าสู่กระบวนการทางการแพทย์ไหมคะ?” — ✅ แก้แล้ว 31/7</b><br>
+      สเปก R11 สั่งให้ตัดขั้น ART ออกจาก <code>lactating</code> เหมือนที่ทำกับ <code>prep</code> แต่โค้ดตัดออกเฉพาะ prep:
+      <code>app/plan/page.tsx</code> บรรทัด 34 → <code>if (s === "art") return stage !== "prep";</code><br>
+      <u>หลักฐานจริง:</u> เดิน <code>/plan?stage=lactating</code> จนจบ — แถบความคืบหน้าขึ้น “อีก 4 ขั้นตอน” (5 ขั้น = intro/name/health/<b>art</b>/contact)
+      และหน้าจอที่ 4 คือ “เข้าสู่กระบวนการทางการแพทย์ไหมคะ?” พร้อมข้อความรอง “ถามเพื่อจัดแผนบำรุงไข่/ผนังมดลูก…”
+      (เทียบกับ <code>?stage=prep</code> ที่ขึ้น “อีก 3 ขั้นตอน” และไม่มีหน้าจอนี้ = ยืนยันว่ากฎถูกใส่ไว้แค่ prep จริง)<br>
+      <u>ผลกระทบต่อเนื่อง (สังเกตจริงในรายงานที่ออกมา):</u>
+      <ul>
+        <li>แม่ให้นมเลือก “IVF-ICSI” หรือ “เตรียมผนังมดลูก” ได้ → <code>tier = full</code> ทันที ทั้งที่ตามดีไซน์กลุ่มนี้ควรเป็น teaser เสมอ
+            (คอมเมนต์ใน <code>lib/report.ts</code> บรรทัด 484 เขียนไว้เองว่า “หลัง R5/R11 ตัดคำถาม ART ออกจาก prep/lactating → 2 กลุ่มนี้เป็น teaser เสมอ” ซึ่งตอนนี้ไม่จริง)</li>
+        <li>เมื่อ artPlan ≠ “ยัง” ระบบเติม <b>A.O.S</b> เข้าไปในแผนของแม่ให้นม พร้อมข้อความ “ดูแลคุณภาพไข่และตัวอ่อน”
+            และหัวข้อแผนเปลี่ยนเป็น “บำรุงไข่ให้พร้อมก่อนเข้าสู่กระบวนการ” (เห็นจริงในรายงาน MJ-KM9B6R ที่ทดสอบ)</li>
+        <li>ถ้าเลือก “เตรียมผนังมดลูก” จะได้ชุด <code>LINING_PREP_SET</code> = Colla Telo + <b>ดอกคำฝอย</b> + <b>น้ำมันละหุ่ง</b> + probiotic
+            ซึ่งทั้งดอกคำฝอย/น้ำมันละหุ่งไม่มี <code>stop.lactating</code> จึงผ่าน Safety Matrix เข้าไปอยู่ในแผนของแม่หลังคลอดได้</li>
+      </ul>
+      <u>ทางแก้ที่เล็กที่สุด:</u> <code>if (s === "art") return stage !== "prep" &amp;&amp; stage !== "lactating";</code>
+      (แนะนำเพิ่ม unit test ล็อก <code>stepsFor()</code> ทั้ง 5 stage ด้วย — ตอนนี้ยังไม่มีเทสต์ตัวไหนแตะฟังก์ชันนี้เลย จึงหลุดมาถึงรอบนี้)
+    </li>
+  </ol>
+</div>
+
+<div class="callout block">
+  <h2>⛔ รายการที่ทดสอบไม่ได้ (1 เคส) + สิ่งที่ตรวจไม่ได้ในสภาพแวดล้อมนี้</h2>
+  <p style="margin:0 0 6px"><b>TC-05-03</b> — “stage=prep ส่งข้อมูลจบ แล้วเช็คค่า <code>art_plan</code> ที่บันทึกลงระบบ”</p>
+  <p style="margin:0 0 8px">
+    เหตุผล: เครื่องนี้ไม่มีไฟล์ <code>.env.local</code> และไม่มีค่า <code>SUPABASE_URL</code> / <code>SUPABASE_SERVICE_ROLE_KEY</code>
+    → <code>/api/lead</code> เข้าเงื่อนไข <code>if (!hasSupabaseEnv())</code> แล้วคืน <code>dev_mode: true</code> โดย
+    <b>ไม่เคยรัน <code>INSERT</code> ลงตาราง <code>leads</code> เลย</b> จึงไม่มีแถวจริงให้ตรวจค่า
+  </p>
+  <p style="margin:0 0 8px">
+    สิ่งที่ยืนยันได้ (แต่ยังไม่ใช่การเห็นค่าที่บันทึกจริง): state ตั้งต้นของฟอร์มคือ <code>art_plan: "ยัง"</code>
+    (<code>app/plan/page.tsx</code> บรรทัด 59-62) · ฝั่ง API เขียน <code>art_plan: mapLegacyArtPlan(body.art_plan)</code> ซึ่งคืน <code>"ยัง"</code>
+    · และผลข้างเคียงที่สังเกตได้จริงคือ prep ได้ <code>tier = teaser</code> ซึ่งเป็นค่าที่คำนวณจาก artPlan = "ยัง"
+  </p>
+  <p style="margin:0 0 4px"><b>สิ่งอื่นที่ตรวจไม่ได้ (ไม่ได้อยู่ในเลข 64 เคส แต่ต้องรู้ก่อนขึ้นจริง):</b></p>
+  <ul style="margin-top:4px">
+    <li><b>/r/&lt;code&gt; (รายงานฉบับเต็มหลังส่งโค้ดเข้า LINE)</b> — หน้านี้ต้องอ่านจาก Supabase ทั้งหมด จึงเปิดไม่ได้ ทดแทนด้วยการเรนเดอร์ <code>ReportView</code> ตัวเดียวกันผ่านเส้นทาง tier <code>full</code> ใน <code>/plan</code> (คอมโพเนนต์เดียวกันเป๊ะ)</li>
+    <li><b>LINE OA round-trip</b> (พิมพ์ ticket ในแชท / เมนู “แผนของฉัน” / Flex card) — ไม่มี LINE channel credential</li>
+    <li><b>resume-link prefill</b> ของฟิลด์ใหม่ตาม R4 — ต้องมี <code>RESUME_TOKEN_SECRET</code> + ข้อมูลใน DB (โค้ด prefill ครบทุกฟิลด์ใหม่แล้วที่ <code>app/plan/page.tsx</code> บรรทัด 105-118 แต่ยังไม่ได้รันจริง)</li>
+    <li><b>/leads dashboard</b> (ป้าย “IVF-ICSI (เด็กหลอดแก้ว)” ในตัวกรอง) — ต้อง login staff ที่ผูกกับ Supabase · ตรวจจากโค้ดแทน: <code>app/leads/page.tsx</code> บรรทัด 135/177/241 เรียก <code>artPlanLabel()</code> ครบทุกจุด</li>
+    <li><b>migration 0006 / 0007 บนฐานข้อมูลจริง</b> — ยังไม่ถูก apply ที่ไหนที่ตรวจได้ ดูหัวข้อ “ข้อสังเกตนอกเคสทดสอบ” ข้อ 2</li>
+  </ul>
+</div>
+
+<div class="callout note">
+  <h2>📌 ข้อสังเกตนอกเคสทดสอบ (ไม่นับในคะแนน แต่ควรจัดการ)</h2>
+  <ol>
+    <li>
+      <b>npm audit: 8 ช่องโหว่ (critical 2 · high 2)</b> — ตัวที่กระทบ production คือ <code>next@14.2.5</code> (CRITICAL) และ <code>postcss</code> (HIGH)
+      ทั้งคู่แก้ได้ด้วยการอัป <code>next</code> เป็น <b>14.2.35</b> ซึ่งเป็น patch ใน minor เดิม (ไม่ใช่ major)
+      · ที่เหลือ (<code>vitest</code>/<code>vite</code>/<code>esbuild</code>) เป็น devDependency ของชุดเทสต์ ไม่ขึ้น production
+      <br><u>ทำไมต้องรีบ:</u> โปรเจกต์นี้ใช้ <code>middleware.ts</code> เป็นด่านกั้น <code>/admin</code> และ <code>/staff</code>
+      ซึ่งเป็นจุดที่ Next.js รุ่นนี้มีช่องโหว่ bypass ที่รู้จักกันดี
+      <br><u>บรรเทาที่มีอยู่แล้ว:</u> ไม่ใช่การเจาะทะลุตรง ๆ เพราะหน้า <code>/admin</code>, <code>/staff</code>, <code>/leads</code> ยิง <code>/api/auth/session</code> ตรวจซ้ำเอง และ API ทำ HMAC + RBAC จริงในชั้น node — middleware เป็นแค่ชั้นแรก
+    </li>
+    <li>
+      <b>ลำดับ deploy สำคัญ:</b> ต้องรัน <code>0006_r3_profile_fields.sql</code> และ <code>0007_tool_results_widen.sql</code> บน Supabase จริง
+      <b>ก่อน</b> deploy โค้ดชุดนี้ ไม่งั้น <code>INSERT</code> ลง <code>leads</code> จะชนคอลัมน์ที่ไม่มีอยู่ และ <code>tool_results</code> จะชน CHECK constraint
+      → ทุก submission กลายเป็น 500 (ตัวไฟล์ 0007 เองก็เขียนเตือนเรื่องลำดับไว้แล้ว)
+    </li>
+    <li>
+      <b>งาน R3 ทั้งชุดยัง uncommitted</b> — <code>git status</code> แสดงไฟล์แก้ 21 ไฟล์ + ไฟล์ใหม่อีก 20 กว่ารายการ (รวม <code>docs/PRD-UPDATE-R3-3107.md</code>, <code>app/tools/stress/</code>, migration ทั้งสองไฟล์) ยังไม่มี commit ใด ๆ
+    </li>
+    <li>
+      <b>โปรตีนของกลุ่มให้นมแสดงเป็น “72–72 กรัม/วัน”</b> — เพราะ <code>lib/calc/protein.ts</code> ตั้งช่วง lactating เป็น <code>[1.3, 1.3]</code> (ค่าเดียว)
+      เป็นของเดิมก่อน R3 ไม่ใช่ regression และไม่ผิดเคสไหน แต่หน้าจอควรแสดงเลขเดียวเมื่อ min = max
+    </li>
+    <li>
+      <b>TC-15-09 ทำงานได้ แต่ไม่ตรงตัวอักษรของ AC ใน PRD</b> — PRD เขียนว่า “ปุ่มทักแอดมินใช้ <code>AdminHandoffCta</code> เดิม”
+      แต่โค้ดจริงใช้ <code>AdminHandoffCta</code> เฉพาะตอน<b>ไม่มี</b> ticket code · ถ้ามี code อยู่แล้ว (เส้นทางปกติทุกเส้น) จะแสดงปุ่ม LINE OA ตรง ๆ พร้อมรหัส
+      เหตุผลที่เขียนกำกับไว้ในโค้ดคือกันการยิง <code>/api/lead</code> ซ้ำจนเกิด lead ซ้ำใบ — <b>เป็นการตัดสินใจที่ถูก</b> แนะนำแก้ถ้อยคำใน PRD ให้ตรงกับพฤติกรรมจริง
+    </li>
+    <li>
+      <b><code>IconBottle</code> ยัง import ค้างอยู่ใน <code>app/page.tsx</code></b> (บรรทัด 3) ทั้งที่ไม่ได้ใช้แล้ว และตัวไอคอนยัง export อยู่ใน <code>components/icons.tsx</code>
+      · ตอนนี้ไม่มีการเรนเดอร์ที่ไหน (ตรวจแล้ว) จึงไม่ผิด พ.ร.บ.นมผง แต่ควรลบทิ้งกันคนหยิบไปใช้ซ้ำโดยไม่รู้ข้อห้าม
+    </li>
+    <li>
+      <b><code>/tools/vitamins</code> ไม่มีตัวเลือก “ให้นมบุตร”</b> ในคำถาม “คุณอยู่ช่วงไหน” (มีแค่ เตรียมตั้งครรภ์ / มีบุตรยาก / ตั้งครรภ์ / ฝ่ายชาย)
+      → เป้าหมาย R17 (P1) ที่อยากให้ 2 ทางเข้าใช้ mapping ชุดเดียวกัน ยังทำได้ไม่ครบ · เป็น P1 ไม่บล็อกรอบนี้
+    </li>
+  </ol>
+</div>
+
+<section class="glass block">
+  <h2>1 · Test Plan — ขอบเขตและวิธีทดสอบรอบนี้</h2>
+  <p>รอบนี้ทดสอบงาน R3 (“แก้ไข 31.7.26”) ที่พัฒนาเสร็จแล้ว โดยใช้ <b>รหัส TS/TC ชุดเดียวกับ test-plan-3107.html</b> เพื่อให้ trace กลับหาเอกสารต้นทางได้ทุกบรรทัด</p>
+  <dl class="kv">
+    <dt>สิ่งที่ทดสอบ</dt><dd>15 Test Scenario · 64 Test Case (TS-01 … TS-15)</dd>
+    <dt>เอกสารสัญญา</dt><dd><code>public/test-plan-3107.html</code> (เคสและเกณฑ์) · <code>docs/PRD-UPDATE-R3-3107.md</code> (สเปก + กล่อง 🔒 + มติที่ client เคาะ)</dd>
+    <dt>สภาพแวดล้อม</dt><dd>macOS · Node/Next.js 14.2.5 dev server ที่ <code>localhost:3000</code> · <b>ไม่มี Supabase env</b> (API ตอบโหมด <code>dev_mode</code>) · ไม่มี LINE credential</dd>
+    <dt>เบราว์เซอร์</dt><dd>Chromium (viewport 778×901) — เดินฟลว์จริงทั้ง 5 stage</dd>
+    <dt>สิ่งที่ไม่ได้ทำ</dt><dd>ไม่แก้โค้ดใด ๆ · ไม่ commit · ไม่ deploy · ไม่แตะฐานข้อมูล</dd>
+  </dl>
+
+  <h3 style="margin-top:14px;font-size:13.5px">ระดับหลักฐานที่ใช้ตัดสินแต่ละเคส</h3>
+  <div class="tablewrap">
+    <table class="mini">
+      <thead><tr><th style="width:150px">ชนิดหลักฐาน</th><th>รายละเอียด</th></tr></thead>
+      <tbody>
+        <tr><td><b>UI</b></td><td>เดินแอปจริงบนเบราว์เซอร์ แล้วอ่านข้อความ/DOM/ลำดับการแสดงผลที่ออกมาจริง</td></tr>
+        <tr><td><b>Unit</b></td><td>ชุดเทสต์ในโปรเจกต์ <code>npx vitest run</code> → <b>295/295 ผ่าน</b> (9 ไฟล์)</td></tr>
+        <tr><td><b>Harness</b></td><td>ชุด assertion ที่ QA เขียนเพิ่มเฉพาะรอบนี้ ไล่ตามเคส TS/TC โดยตรง → <b>66/66 ผ่าน</b> (ไฟล์ชั่วคราวนอก repo ไม่ได้เพิ่มเข้าโปรเจกต์)</td></tr>
+        <tr><td><b>Code</b></td><td>อ่านโค้ดเพื่อยืนยันพฤติกรรมที่พิสูจน์ได้แบบคงที่ (เช่น ค่า enum, การเรียกฟังก์ชัน label)</td></tr>
+        <tr><td><b>Build</b></td><td><code>npx tsc --noEmit</code> ผ่านไม่มี error · <code>npm run build</code> สำเร็จครบทุก route (หยุด dev server ก่อน build ตามกติกา repo)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="glass block">
+  <h2>2 · สรุปตามหมวด (Scenario roll-up)</h2>
+  <div class="tablewrap">
+    <table class="mini" id="rollup">
+      <thead><tr><th style="width:80px">TS</th><th>หัวข้อ</th><th style="width:70px">เคส</th><th style="width:70px">ผ่าน</th><th style="width:70px">ไม่ผ่าน</th><th style="width:80px">ทดสอบไม่ได้</th><th style="width:100px">สรุป</th></tr></thead>
+      <tbody id="rollupBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<div class="sticky">
+  <div class="glass panel">
+    <div class="chiprow" id="filters"></div>
+    <div class="toolbar">
+      <div class="search"><input id="q" placeholder="ค้นหา TS/TC หรือข้อความ…" oninput="render()"></div>
+      <button class="btn" onclick="exportMd()">⬇️ Export .md</button>
+      <button class="btn ghost" onclick="if(confirm('ล้างสถานะ/คอมเมนต์ที่ผู้ตรวจแก้ไว้ในเบราว์เซอร์นี้ แล้วกลับไปใช้ผลที่ QA บันทึกไว้?')){localStorage.removeItem(LS_KEY);loadState();render();}">↺ คืนค่าผล QA เดิม</button>
+      <span class="saved" id="savedMark">บันทึกแล้ว ✓</span>
+    </div>
+  </div>
+</div>
+
+<div id="list"></div>
+
+<footer class="note">
+  ผลที่บันทึกไว้คือผลที่ QA ทดสอบจริง — ผู้ตรวจแก้สถานะ/ใส่คอมเมนต์ทับได้ ระบบจะเก็บลง localStorage ของเบราว์เซอร์นี้เท่านั้น<br>
+  ตัวเลขในกล่องสรุปด้านบนคำนวณสดจากสถานะของทุกเคสเสมอ (ไม่ได้ hardcode) — แก้สถานะแล้วตัวเลขขยับตามทันที<br>
+  ไฟล์: <code>public/test-report-3107.html</code> · อ้างอิงเคส: <code>public/test-plan-3107.html</code> · สเปก: <code>docs/PRD-UPDATE-R3-3107.md</code>
+</footer>
+
+</div>
+
+<script>
+var AREAS = {
+  home:"หน้าแรก", prep:"เตรียมตั้งครรภ์", male:"ฝ่ายชาย", pregnant:"ตั้งครรภ์แล้ว",
+  lactating:"ให้นมบุตร", infertility:"มีบุตรยาก", tools:"เครื่องมือแยก", report:"รายงานฉบับเต็ม"
+};
+
+// ── ผลทดสอบจริง (QA baseline) ───────────────────────────────────────────────
+// status: pass | fail | blocked | na   ·  ev: ชนิดหลักฐาน
+var SCENARIOS = [
+{ id:"TS-01", area:"home", page:"หน้า 1",
+  title:"การ์ด \"เตรียมตั้งครรภ์\" หน้าแรก — เปลี่ยนปุ่มหลักเป็น \"ฝ่ายหญิง\"",
+  requirement:"เปลี่ยน 'เริ่มเลย' ของการ์ดเตรียมตั้งครรภ์เป็น 'ฝ่ายหญิง' ให้คู่กับปุ่มรอง 'ฝ่ายชาย →'",
+  cases:[
+    {id:"TC-01-01", ev:"UI",
+     did:"เปิด http://localhost:3000 แล้วอ่านปุ่มของการ์ด \"เตรียมตั้งครรภ์\" และ href ของมัน",
+     exp:"ปุ่มหลักเป็น \"ฝ่ายหญิง →\" และยังลิงก์ไป /plan?stage=prep",
+     act:"เห็น 2 ปุ่มคู่กัน: \"ฝ่ายหญิง →\" (btn-primary, href=/plan?stage=prep) และ \"ฝ่ายชาย →\" (btn-ghost, href=/plan?stage=male) · กดแล้วเข้าแบบสอบถาม stage=prep จริง",
+     status:"pass"},
+    {id:"TC-01-02", ev:"UI",
+     did:"อ่านปุ่มของการ์ดอีก 3 ใบบนหน้าแรก",
+     exp:"มีบุตรยาก / ตั้งครรภ์แล้ว / ให้นมบุตร ยังเป็น \"เริ่มเลย →\"",
+     act:"ทั้ง 3 ใบเป็น \"เริ่มเลย →\" เหมือนเดิม ไม่ถูกเปลี่ยนตาม (การ์ดเตรียมตั้งครรภ์ถูกแยก render ออกมาต่างหาก มีแค่ใบเดียวที่เปลี่ยน)",
+     status:"pass"},
+  ]},
+
+{ id:"TS-02", area:"prep", page:"หน้า 1",
+  title:"อายุ 35-39 และ 40+ → เพิ่ม A.O.S",
+  requirement:"ช่วงอายุ 35–39 หรือ 40+ ให้ A.O.S เข้ารายการแนะนำ (ต้องผ่าน allowedIn() ตาม Safety Matrix เหมือนสินค้าอื่น)",
+  cases:[
+    {id:"TC-02-01", ev:"Harness",
+     did:"recommendVitamins({stage:'prep', ageRange:'35–39'}) แล้วดู primary",
+     exp:"มี A.O.S ในรายการ", act:"มี aos ใน primary", status:"pass"},
+    {id:"TC-02-02", ev:"Harness",
+     did:"recommendVitamins({stage:'prep', ageRange:'40+'})",
+     exp:"มี A.O.S", act:"มี aos ใน primary", status:"pass"},
+    {id:"TC-02-03", ev:"Harness",
+     did:"ทดสอบ ageRange 'ต่ำกว่า 30' และ '30–34' โดยไม่มีปัจจัยอื่น (artPlan='ยัง')",
+     exp:"ไม่มี A.O.S", act:"ไม่มี aos ทั้ง 2 กรณี · ฟังก์ชัน isAosAgeRange() normalize ทั้ง en-dash และ hyphen จึงไม่หลุดเพราะเครื่องหมายขีด",
+     status:"pass"},
+    {id:"TC-02-04", ev:"Harness",
+     did:"ทดสอบ ageRange='40+' คู่กับ artPlan='IUI' (เข้าเงื่อนไข A.O.S ได้ 2 ทาง) แล้วนับจำนวน aos ในผลลัพธ์",
+     exp:"A.O.S ปรากฏครั้งเดียว", act:"นับได้ 1 ครั้ง — dedupe() ทำงานถูกต้อง", status:"pass"},
+    {id:"TC-02-EX", ev:"Harness", extra:true,
+     did:"[ตรวจเพิ่มตามกล่อง 🔒 ใน PRD] recommendVitamins({stage:'pregnant', ageRange:'40+'})",
+     exp:"แม่ตั้งครรภ์อายุ 40+ ต้องไม่ได้ A.O.S (A.O.S มี stop.pregnant)",
+     act:"ไม่มี aos — กฎอายุไหลผ่าน keep()/allowedIn() ตามปกติ ไม่มีการ bypass filter",
+     status:"pass"},
+  ]},
+
+{ id:"TS-03", area:"prep", page:"หน้า 1",
+  title:"\"เตรียมผนังมดลูก\" → ชุดสินค้าเฉพาะ + คำเตือนต้องอยู่ครบ",
+  requirement:"artPlan = \"เตรียมผนังมดลูก\" → Colla Telo + ดอกคำฝอย + น้ำมันละหุ่ง + Ferty Probiotics · ผูกกับค่า artPlan ไม่ใช่ stage",
+  cases:[
+    {id:"TC-03-01", ev:"Harness",
+     did:"recommendVitamins({stage:'infertility', artPlan:'เตรียมผนังมดลูก'}) แล้วเทียบกับ LINING_PREP_SET",
+     exp:"เห็นครบ 4 รายการใน primary",
+     act:"ครบทั้ง collatelo · safflower · castoroil · probiotics · ผูกกับค่า artPlan จริง (ตัวแปร liningPrep ใน vitamins.ts บรรทัด 459) ไม่ได้ผูกกับ stage='prep' จึงยังทำงานได้แม้ R5 ตัดคำถาม ART ออกจาก prep แล้ว",
+     status:"pass"},
+    {id:"TC-03-02", ev:"Harness+UI",
+     did:"อ่าน cautions ที่ออกมาจากโปรไฟล์เดียวกัน + ตรวจฟิลด์ stop ของ safflower/castoroil + ดูการเรนเดอร์คอลัมน์ \"หยุดทาน\" ในตารางวิตามินบนรายงานจริง",
+     exp:"คำเตือนหยุดช่วงตกไข่ / หลังใส่ตัวอ่อน / ตั้งครรภ์ ของดอกคำฝอยและน้ำมันละหุ่ง ต้องไม่หายไป",
+     act:"cautions มีข้อความ \"ชุดเตรียมผนังมดลูก: ดอกคำฝอยและแพ็คน้ำมันละหุ่ง ต้องหยุดทันที เมื่อถึงวันไข่ตก · หลังใส่ตัวอ่อน · และตลอดช่วงตั้งครรภ์\" + \"น้ำมันละหุ่งใช้ประคบภายนอกเท่านั้น ห้ามรับประทาน\" · ฟิลด์ stop ของทั้ง 2 ตัวยังครบ {ovulation, embryoTransfer, pregnant} · รายงานเรนเดอร์บรรทัด \"❌ หยุดทาน: …\" สีชมพูเข้มในคอลัมน์ประโยชน์จริง",
+     status:"pass"},
+  ]},
+
+{ id:"TS-04", area:"prep", page:"หน้า 1-2",
+  title:"ขั้น \"เล่าเรื่องสุขภาพ\" — เพิ่ม 4 ฟิลด์ + แยกช่อง PCOS 3 สถานะ",
+  requirement:"เพิ่ม น้ำหนัก/ส่วนสูง · เวลานอน 2 ช่อง · dropdown ความถี่ออกกำลังกาย 4 ตัวเลือก · แยก \"มีภาวะ PCOS\" ออกจาก \"ไม่แน่ใจ\" (unsure ไม่ได้ PCO-VIT)",
+  cases:[
+    {id:"TC-04-01", ev:"UI",
+     did:"เดิน /plan ทั้ง stage prep · lactating · pregnant · male แล้วดูขั้น \"เล่าเรื่องสุขภาพอีกนิดนะคะ\"",
+     exp:"มีช่องน้ำหนัก (กก.) และส่วนสูง (ซม.)",
+     act:"มีครบทุก stage · สำหรับ pregnant ป้ายเปลี่ยนเป็น \"น้ำหนักปัจจุบัน (กก.)\" ตาม R9 · ไม่ผูกกับเช็กบ็อกซ์ \"น้ำหนักเกิน\" อีกแล้ว",
+     status:"pass"},
+    {id:"TC-04-02", ev:"UI",
+     did:"ตรวจ input ในขั้นเดียวกัน",
+     exp:"มี time picker 2 ช่อง (เข้านอน / ตื่นนอน)",
+     act:"มี <input type=\"time\"> 2 ช่อง ป้าย \"ปกติเข้านอนกี่โมง\" และ \"ตื่นกี่โมง\" (นับ DOM ได้ 2 ช่องพอดี)",
+     status:"pass"},
+    {id:"TC-04-03", ev:"UI+Harness",
+     did:"อ่าน option ของ dropdown ออกกำลังกาย + ตรวจค่าคงที่ EXERCISE_FREQS",
+     exp:"4 ตัวเลือก: 0 / 1-2 / 3-4 / ทุกวัน",
+     act:"dropdown มี \"ไม่ระบุ\" + 4 ตัวเลือกตรงตามสเปก (value = 0 · 1-2 · 3-4 · daily) · EXERCISE_FREQS ตรงเป๊ะ",
+     status:"pass"},
+    {id:"TC-04-04", ev:"UI",
+     did:"ที่ stage=prep กด \"มีภาวะ PCOS\" → อ่านสถานะ 2 ช่อง → กด \"ไม่แน่ใจ\" → อ่านซ้ำ → กด \"ไม่แน่ใจ\" อีกครั้งเพื่อยกเลิก",
+     exp:"เป็น 2 checkbox แยกกันชัดเจน ไม่ใช่ช่องเดียวรวม",
+     act:"เป็น 2 checkbox แยกกันจริง และ exclusive ตามสเปก: ติ๊ก \"มี\" → {yes:true, unsure:false} · ติ๊ก \"ไม่แน่ใจ\" → {yes:false, unsure:true} (อันแรกหลุดเอง) · กดซ้ำ → หลุดทั้งคู่ = สถานะ 'no'",
+     status:"pass"},
+    {id:"TC-04-05", ev:"UI+Harness",
+     did:"ติ๊ก \"ไม่แน่ใจ\" แล้วดูข้อความในฟอร์ม + เรียก recommendVitamins({pcosStatus:'unsure'}) ดูรายการสินค้าและ cautions",
+     exp:"ไม่มี PCO-VIT แต่มีข้อความชวนไปตรวจยืนยันกับแพทย์",
+     act:"ในฟอร์มขึ้นทันที \"เดี๋ยวเราจะแนะนำวิธีตรวจยืนยันกับแพทย์ให้ในแผนนะคะ (ยังไม่แนะนำวิตามินเฉพาะกลุ่ม PCOS จนกว่าจะรู้ผลชัด)\" · ผลลัพธ์ไม่มี pcovit · cautions มี \"คุณระบุว่ายังไม่แน่ใจเรื่องภาวะ PCOS — แนะนำตรวจยืนยันกับแพทย์ก่อนค่ะ…\" · ตรวจเพิ่ม: ถ้าติ๊ก \"ไม่แน่ใจ\" ในเช็กลิสต์มีบุตรยาก จะชนะค่า has_pcos=true ของข้อมูลเก่าด้วย (ได้ base 4 เท่านั้น)",
+     status:"pass"},
+  ]},
+
+{ id:"TS-05", area:"prep", page:"หน้า 2",
+  title:"เตรียมตั้งครรภ์ — ตัดขั้น \"เข้าสู่กระบวนการทางการแพทย์\" ออก",
+  requirement:"stage=prep ไม่ต้องเจอคำถาม ART · stage อื่นยังเจอ · ค่า art_plan ต้อง default \"ยัง\" ไม่ใช่ null",
+  cases:[
+    {id:"TC-05-01", ev:"UI",
+     did:"เปิด /plan?stage=prep แล้วเดินทีละขั้นจนถึงหน้าสุดท้าย บันทึกหัวข้อทุกหน้า",
+     exp:"ไม่เจอหน้าจอถาม ART เลย",
+     act:"ลำดับที่เจอจริง: intro (consent) → \"เรียกคุณว่าอะไรดีคะ?\" → \"เล่าเรื่องสุขภาพอีกนิดนะคะ\" → \"รับแผนของคุณได้เลย 🎁\" · แถบขึ้น \"อีก 3 ขั้นตอน\" ตั้งแต่ต้น (4 ขั้น) = ไม่มีขั้น art จริง",
+     status:"pass"},
+    {id:"TC-05-02", ev:"UI+Code",
+     did:"เดิน /plan?stage=infertility และ ?stage=pregnant จนถึงขั้น ART · ตรวจ stage=male จากจำนวนขั้นและกฎใน stepsFor()",
+     exp:"infertility / pregnant / male ยังเจอคำถามนี้เหมือนเดิม",
+     act:"infertility: health → \"เข้าสู่กระบวนการทางการแพทย์ไหมคะ?\" ✓ · pregnant: conception → ART ✓ · male: กฎ stepsFor() คืน true สำหรับทุก stage ที่ไม่ใช่ prep และจำนวนขั้นตรงกัน ✓",
+     status:"pass"},
+    {id:"TC-05-03", ev:"—", status:"blocked",
+     did:"พยายามส่งฟอร์ม stage=prep แล้วจะไปอ่านค่า art_plan ที่ถูกบันทึกในตาราง leads",
+     exp:"ค่าที่บันทึกเป็น \"ยัง\" (default) ไม่ใช่ null/undefined",
+     act:"ทดสอบไม่ได้ในสภาพแวดล้อมนี้ — ไม่มี SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY จึงเข้าโหมด dev_mode ที่ return ก่อนถึงคำสั่ง INSERT ไม่มีแถวจริงให้ตรวจ · ยืนยันได้เพียงถึงขอบ API: state ตั้งต้น art_plan:\"ยัง\" (plan/page.tsx:59-62) → mapLegacyArtPlan(\"ยัง\") = \"ยัง\" → ผลข้างเคียงที่สังเกตได้จริงคือ prep ได้ tier=teaser ซึ่งต้องอาศัย artPlan=\"ยัง\" · ต้องตรวจซ้ำบน staging ที่ต่อ Supabase จริง"},
+  ]},
+
+{ id:"TS-06", area:"male", page:"หน้า 3",
+  title:"ฝ่ายชาย — ฟิลด์สุขภาพเดียวกับหญิง + พฤติกรรม 3 ข้อ + กฎสินค้า (>= 2)",
+  requirement:"ติ๊ก >= 2 ข้อ → A.O.S + Motila1 · มิฉะนั้นติ๊กเครียด → A.O.S · มิฉะนั้นติ๊กบุหรี่/ดื่ม → Motila1",
+  cases:[
+    {id:"TC-06-01", ev:"UI",
+     did:"เปิด /plan?stage=male เดินถึงขั้นสุขภาพ แล้วนับ input",
+     exp:"มีน้ำหนัก + ส่วนสูง + เวลานอน + ความถี่ออกกำลังกาย เหมือนฝ่ายหญิง",
+     act:"มีครบ: number 2 ช่อง (น้ำหนัก/ส่วนสูง) · time 2 ช่อง (เข้านอน/ตื่น) · dropdown ความถี่ 4 ตัวเลือก · และไม่มีช่อง PCOS โผล่มา (ถูกต้อง)",
+     status:"pass"},
+    {id:"TC-06-02", ev:"UI",
+     did:"อ่าน label ทั้งหมดในขั้นเดียวกัน",
+     exp:"มี checkbox สูบบุหรี่ / ดื่มแอลกอฮอล์ / เครียด เลือกได้มากกว่า 1",
+     act:"มีครบ 3 ช่อง เป็น checkbox อิสระ (toggleBehavior สะสมเป็น array) พร้อมข้อความอธิบายเหตุผลว่ากระทบคุณภาพอสุจิ",
+     status:"pass"},
+    {id:"TC-06-03", ev:"Harness",
+     did:"behaviorProductIds(['stress']) และ recommendVitamins({stage:'male', behaviors:['stress']})",
+     exp:"มี A.O.S", act:"คืน ['aos'] · ในผลลัพธ์ระดับ stage male ก็มี aos ใน primary จริง", status:"pass"},
+    {id:"TC-06-04", ev:"Harness", did:"behaviorProductIds(['alcohol'])", exp:"มี Motila1", act:"คืน ['motila1']", status:"pass"},
+    {id:"TC-06-05", ev:"Harness", did:"behaviorProductIds(['smoke'])", exp:"มี Motila1", act:"คืน ['motila1']", status:"pass"},
+    {id:"TC-06-06", ev:"Harness", did:"behaviorProductIds(['smoke','alcohol','stress'])", exp:"มีทั้ง A.O.S และ Motila1", act:"คืน ['aos','motila1']", status:"pass"},
+    {id:"TC-06-07", ev:"Harness",
+     did:"ทดสอบครบทั้ง 3 คู่ที่เป็นไปได้: บุหรี่+ดื่ม · บุหรี่+เครียด · ดื่ม+เครียด · และเคสค่าซ้ำ ['stress','stress']",
+     exp:"ยืนยัน >= 2 → 2 ข้อพอดีต้องได้ทั้งคู่",
+     act:"ทั้ง 3 คู่คืน ['aos','motila1'] ครบ · ค่าซ้ำ ['stress','stress'] นับเป็น 1 คืน ['aos'] เท่านั้น (ใช้ Set กันไว้ถูกต้อง) · ไม่ติ๊กเลยคืน []",
+     status:"pass"},
+    {id:"TC-06-08", ev:"Harness+UI+Code",
+     did:"ตรวจ PRODUCTS.motila1.howto · ตรวจว่ามีชื่ออยู่ใน NO_DOSAGE_YET · ดูช่อง \"วิธีรับประทาน\" ของ Motila1 ในตารางรายงานจริง · หา TODO flag ในโค้ด",
+     exp:"แสดงได้โดยยังไม่มี dosage ตามที่ client อนุมัติ แต่ต้องมี TODO flag ในโค้ด",
+     act:"howto = undefined · อยู่ใน NO_DOSAGE_YET (พร้อม goatmilk/blackchickensoup/bananaflower) · มีคอมเมนต์ TODO(dosage) กำกับที่ vitamins.ts:325-328 อธิบายว่าเป็นการกลับมติ R2 · หน้าจอไม่ปล่อยช่องว่าง แต่แสดง \"สอบถามทีม Baby & Mom ทาง LINE OA\" แทน",
+     status:"pass"},
+  ]},
+
+{ id:"TS-07", area:"male", page:"หน้า 3",
+  title:"ติ๊ก \"ปัญหาจากฝ่ายชาย\" → แทรกแบบสอบถามฝ่ายชายในฟลว์",
+  requirement:"ติ๊ก male_factor → มีขั้นกรอกข้อมูลฝ่ายชาย · ไม่ติ๊ก → ไม่มีขั้นนี้ · ห้ามเขียนทับน้ำหนัก/ส่วนสูงของผู้หญิง",
+  cases:[
+    {id:"TC-07-01", ev:"Harness",
+     did:"recommendVitamins({stage:'infertility', infertilityIssues:['male_factor']})",
+     exp:"มี MZ-All (และตามตาราง R12 คือ Ferta + MZ-All + Motila1)",
+     act:"ได้ base 4 + ferta + mzall + motila1 ครบตามแถว \"ปัญหาจากฝ่ายชาย\" · ถ้าคู่ติ๊ก \"เครียด\" ในฟอร์มฝ่ายชายจะได้ aos เพิ่ม และถ้าไม่ติ๊ก male_factor แต่ส่ง partnerBehaviors มา ระบบจะไม่หยิบมาใช้ (ถูกต้อง — กันข้อมูลรั่วข้ามเคส)",
+     status:"pass"},
+    {id:"TC-07-02", ev:"UI",
+     did:"เดิน /plan?stage=infertility ติ๊ก \"ปัญหาจากฝ่ายชาย\" → กรอกน้ำหนัก 52 / ส่วนสูง 158 ของผู้หญิงในขั้น health → ไปขั้นถัดไป → กรอกน้ำหนัก 80 / ส่วนสูง 178 ของฝ่ายชาย + ติ๊ก \"เครียด\" → เดินต่อ → แล้วกด \"ย้อน\" กลับมาที่ขั้น health เพื่ออ่านค่าเดิม",
+     exp:"มีขั้นตอนกรอกข้อมูลฝ่ายชายปรากฏหลังจากนั้น และไม่ทับข้อมูลของผู้หญิง",
+     act:"หลังขั้น health โผล่หน้า \"ขอข้อมูลของคุณสามีหน่อยนะคะ\" พร้อมฟิลด์ครบ (น้ำหนัก · ส่วนสูง · เข้านอน · ตื่น · ความถี่ออกกำลังกาย · สูบบุหรี่/ดื่ม/เครียด) · ย้อนกลับมาแล้วค่าของผู้หญิงยังเป็น 52/158 ไม่ถูกเขียนทับ (เก็บคนละก้อน: partner_profile เป็น jsonb แยก) · ตรวจกรณีไม่ติ๊ก male_factor: ขั้นนี้ไม่ปรากฏ (health → ART ตรง ๆ) ตามที่สเปกต้องการ",
+     status:"pass"},
+  ]},
+
+{ id:"TS-08", area:"male", page:"หน้า 3",
+  title:"ป้ายกำกับ \"IVF-ICSI\" → \"IVF-ICSI (เด็กหลอดแก้ว)\"",
+  requirement:"เปลี่ยนเฉพาะ label ที่แสดง ค่าที่เก็บใน DB/tag/analytics ยังเป็น \"IVF-ICSI\" เหมือนเดิม",
+  cases:[
+    {id:"TC-08-01", ev:"UI+Code",
+     did:"อ่านตัวเลือก ART ที่ /plan (stage=lactating) และที่ /tools/vitamins · ตรวจโค้ด /leads ว่าเรียก artPlanLabel() หรือไม่",
+     exp:"ทุกจุดที่แสดงเห็น \"IVF-ICSI (เด็กหลอดแก้ว)\"",
+     act:"/plan แสดง \"IVF-ICSI (เด็กหลอดแก้ว)\" ✓ · /tools/vitamins แสดงเหมือนกัน ✓ และไม่พบข้อความ \"IVF-ICSI\" เปล่า ๆ (regex ตรวจแล้ว) · /leads เรียก artPlanLabel() ครบทั้งตัวกรอง ตารางแถว และฟอร์มแก้ไข (บรรทัด 135 · 177 · 241) แต่ตัวหน้าต้อง login staff จึงยืนยันจากโค้ดเท่านั้น",
+     status:"pass"},
+    {id:"TC-08-02", ev:"Harness",
+     did:"ตรวจค่า ART_PLAN_VALUES และแยกดูว่า label อยู่ใน map คนละตัว",
+     exp:"ค่าที่เก็บจริงไม่เปลี่ยน",
+     act:"ART_PLAN_VALUES ยังเป็น ['ยัง','IUI','IVF-ICSI','บำรุงไข่','เตรียมผนังมดลูก'] เป๊ะ · label อยู่ใน ART_PLAN_LABELS แยกต่างหาก และปุ่มส่งค่า v เดิมไม่ใช่ label (plan/page.tsx:522) จึงไม่กระทบข้อมูลเก่า/lib/tagging.ts",
+     status:"pass"},
+  ]},
+
+{ id:"TS-09", area:"pregnant", page:"หน้า 4",
+  title:"ตั้งครรภ์ — คำถามวิธีตั้งครรภ์ + สุขภาพเพิ่มเติม",
+  requirement:"เพิ่มคำถาม \"ท้องด้วยวิธีไหน\" (2 ตัวเลือกก่อน ออกแบบเผื่อเติม) + อายุครรภ์ + น้ำหนักปัจจุบัน + checkbox เบาหวานขณะตั้งครรภ์",
+  cases:[
+    {id:"TC-09-01", ev:"UI",
+     did:"เดิน /plan?stage=pregnant จนพ้นขั้นสุขภาพ",
+     exp:"มีคำถาม \"ท้องด้วยวิธีไหน\" ให้เลือก",
+     act:"เจอหน้า \"ท้องนี้ตั้งครรภ์ด้วยวิธีไหนคะ?\" มี 2 ปุ่ม: ท้องธรรมชาติ / ท้องด้วย ICSI · ขั้นนี้ปรากฏเฉพาะ stage=pregnant เท่านั้น",
+     status:"pass"},
+    {id:"TC-09-02", ev:"UI",
+     did:"อ่านฟิลด์ทั้งหมดในขั้นสุขภาพของ stage=pregnant แล้วติ๊กเบาหวานขณะตั้งครรภ์",
+     exp:"มีอายุครรภ์ (สัปดาห์) + น้ำหนักปัจจุบัน + checkbox เบาหวานขณะตั้งครรภ์",
+     act:"มีครบ: ป้ายน้ำหนักเปลี่ยนเป็น \"น้ำหนักปัจจุบัน (กก.)\" · ช่อง \"อายุครรภ์ (สัปดาห์)\" · checkbox \"มีภาวะเบาหวานขณะตั้งครรภ์\" · ติ๊กแล้วขึ้นข้อความสีชมพูทันทีว่าต้องอยู่ในการดูแลของแพทย์/นักโภชนาการ (ตรงกับกล่อง 🔒 ใน PRD ที่ห้ามให้คำแนะนำที่ทำให้ชะลอการพบแพทย์) และข้อความเดียวกันไหลไปอยู่ใน cautions ของรายงานด้วย",
+     status:"pass"},
+    {id:"TC-09-03", ev:"Harness+Code",
+     did:"ตรวจ CONCEPTION_METHODS และไล่ดูว่าใครอ่านค่านี้บ้าง",
+     exp:"เป็น constant array ที่เติมตัวเลือกที่ 3 ได้โดยแก้ที่เดียว",
+     act:"CONCEPTION_METHODS = ['ท้องธรรมชาติ','ท้องด้วย ICSI'] อยู่ใน lib/calc/vitamins.ts ที่เดียว · ทั้งหน้า /plan (render ปุ่ม) และ /api/lead (sanitizeEnum) import จากตัวเดียวกัน ไม่มี hardcode ซ้ำที่ไหน → เติมตัวที่ 3 แก้บรรทัดเดียวจริง",
+     status:"pass"},
+  ]},
+
+{ id:"TS-10", area:"pregnant", page:"หน้า 4",
+  title:"ตั้งครรภ์แล้ว — เนื้อหาความรู้ 4 หัวข้อ + product set",
+  requirement:"ปุ่มเข้าเนื้อหา: พัฒนาการลูกตามไตรมาส · สารอาหาร · นับลูกดิ้น (2 โหมด) · สัญญาณอันตราย · product: นมแพะ/Ferty/Ferti9oil/probiotic (+ น้ำหัวปลีเมื่อ ≥16 สัปดาห์) + ปุ่มเมนู FB",
+  cases:[
+    {id:"TC-10-01", ev:"UI",
+     did:"ส่งฟอร์ม stage=pregnant (อายุครรภ์ 20 สัปดาห์, artPlan=IVF-ICSI → tier full) แล้วดูรายงานฉบับเต็มที่เรนเดอร์ออกมา",
+     exp:"มีปุ่มเข้าสู่เนื้อหา \"พัฒนาการลูก\"",
+     act:"รายงานมีหัวข้อ \"4 ความรู้สำหรับช่วงตั้งครรภ์ 🤰\" พร้อมปุ่ม 4 ใบ: 🌱 พัฒนาการลูก · 🥗 สารอาหารที่ต้องได้ · ⏱️ นับลูกดิ้น · 🚨 สัญญาณอันตราย · หมายเหตุ: เส้นทาง \"หลังส่ง code เข้า LINE แล้วเปิด /r/<code>\" ทดสอบตรง ๆ ไม่ได้ (ไม่มี Supabase/LINE) แต่หน้านั้นเรนเดอร์ ReportView คอมโพเนนต์เดียวกันเป๊ะ",
+     status:"pass"},
+    {id:"TC-10-02", ev:"UI+Harness",
+     did:"เปิดทีละหัวข้อบนรายงานจริง (อายุครรภ์ 20 สัปดาห์) + ตรวจ buildPregnancyKnowledge ที่ระดับข้อมูล",
+     exp:"แสดงพัฒนาการ + สารอาหาร + ตัวนับลูกดิ้น + สัญญาณอันตราย ตามไตรมาสที่คำนวณจากอายุครรภ์",
+     act:"ขึ้น \"อายุครรภ์ 20 สัปดาห์ อยู่ในไตรมาสที่ 2\" และเนื้อหาโฟกัสไตรมาส 2 · ครบทั้ง 4 หัวข้อ · ตรวจเพิ่มตามกล่อง 🔒 R10: (ก) โหมดนับเลขไม่สรุปผลใด ๆ — กด \"+ นับ 1 ครั้ง\" 6 ครั้งแล้วหน้าจอแสดงแค่เลข 6 ตามด้วยประโยค \"ไม่มีการสรุปว่าปกติหรือผิดปกติ\" ไม่มีคำว่าปกติ/ผ่าน/ติ๊กเขียว (ข) ข้อความความปลอดภัย 3 ข้อแสดงครบ \"ทั้ง 2 โหมด\" — สลับไปโหมด \"แบบแนวทางใหม่\" แล้วยังเห็นครบ 3 ข้อเหมือนเดิม (บล็อกอยู่นอก toggle จริง) (ค) สัญญาณอันตราย 21 รายการทุกข้อติดป้าย \"ไปโรงพยาบาลทันที\" ไม่มีข้อไหนเป็น \"รอดูอาการ\" (คำว่า \"รอดูอาการ\" ปรากฏครั้งเดียวในประโยคปฏิเสธ \"…ไม่มีข้อไหนที่ให้รอดูอาการก่อน\") และมีปุ่มโทร 1669 กำกับว่าเฉพาะกรณีวิกฤต",
+     status:"pass"},
+    {id:"TC-10-03", ev:"UI+Harness",
+     did:"ดูชุดสินค้าในบล็อกความรู้ที่อายุครรภ์ 20 สัปดาห์ + ทดสอบ buildPregnancyKnowledge ที่ 16 / 15 / ไม่กรอก",
+     exp:"≥16 สัปดาห์มีน้ำหัวปลีเพิ่ม · <16 ไม่มี",
+     act:"ที่ 20 สัปดาห์เห็น \"น้ำหัวปลี มามอง ฿1,850\" เพิ่มจากชุดพื้นฐาน 4 ตัว · ที่ 16 สัปดาห์มี (ขอบพอดี) · ที่ 15 สัปดาห์ไม่มี · ไม่กรอกอายุครรภ์ก็ไม่มี (ไม่เดาแทนผู้ใช้) · การ์ดน้ำหัวปลีเขียนตรง ๆ ว่าเหตุผลเชิงโภชนาการยังรอทีมยืนยัน จึงไม่ระบุสรรพคุณ",
+     status:"pass"},
+    {id:"TC-10-04", ev:"Harness+UI",
+     did:"ตรวจ PRODUCTS.goatmilk (ราคา/howto/flag) และการแสดงผลในตาราง",
+     exp:"[เดิม BLOCKED] client ยืนยันแล้ว → เพิ่มนมแพะ ฿650 วิธีทานเว้นว่าง + TODO flag",
+     act:"มีในแคตตาล็อกจริง: id goatmilk · ชื่อ \"นมแพะคัดเกรด Goats Milk\" · ราคา 650 · howto = undefined · อยู่ใน NO_DOSAGE_YET · มีคอมเมนต์ TODO(dosage) อ้าง Open Question #2 · หน้าจอแสดง \"สอบถามทีม Baby & Mom ทาง LINE OA\" แทนช่องว่าง",
+     status:"pass"},
+    {id:"TC-10-05", ev:"UI",
+     did:"อ่าน href ของปุ่มเมนูอาหารในบล็อกความรู้ตั้งครรภ์",
+     exp:"ลิงก์ไป facebook.com/media/set/?set=a.1370821821166202&type=3 เปิดแท็บใหม่",
+     act:"href ตรงเป๊ะ https://www.facebook.com/media/set/?set=a.1370821821166202&type=3 · target=_blank rel=noreferrer · client ยืนยันแล้วว่าเป็นเพจของบริษัทเอง จึงไม่มีประเด็นลิขสิทธิ์",
+     status:"pass"},
+  ]},
+
+{ id:"TS-11", area:"lactating", page:"หน้า 4",
+  title:"ให้นมบุตร — ตัด ART + เนื้อหาความรู้ + product set 7 รายการ",
+  requirement:"ตัดคำถาม ART ออก · ความรู้ 3 หัวข้อ · product: นมแพะ + Ferty 1 ซอง + Ferti9oil 1-2 + probiotic 1 + น้ำหัวปลี + ขิงทอง + ซุปไก่ดำ + ปุ่มเมนู FB (คนละลิงก์กับ pregnant)",
+  cases:[
+    {id:"TC-11-01", ev:"UI", status:"pass",
+     did:"เปิด /plan?stage=lactating แล้วเดินทีละขั้นจนจบ บันทึกหัวข้อทุกหน้าและจำนวนขั้นที่เหลือ · หลัง QA รายงาน ผู้ประสานงานแก้โค้ดแล้ว re-verify ซ้ำ",
+     exp:"ไม่มีคำถาม ART-plan (เหมือน TS-05 แต่สำหรับ lactating)",
+     act:"🔧 **เดิมไม่ผ่าน — แก้แล้วทันทีหลังได้รับรายงาน** · อาการเดิม: /plan?stage=lactating ขึ้น \"อีก 4 ขั้นตอน\" และหน้าที่ 4 คือ \"เข้าสู่กระบวนการทางการแพทย์ไหมคะ?\" · ต้นตอ: app/plan/page.tsx เขียนแค่ `return stage !== \"prep\"` ตัดออกเฉพาะ prep · ผลต่อเนื่องที่ QA สังเกตได้จริง (รายงาน MJ-KM9B6R): แม่ให้นมเลือก IVF-ICSI ได้ → tier full ทันที แผนมี A.O.S พร้อมข้อความ \"ดูแลคุณภาพไข่และตัวอ่อน\" และถ้าเลือก \"เตรียมผนังมดลูก\" จะได้ดอกคำฝอย+น้ำมันละหุ่งเข้าแผนหลังคลอด (ทั้งคู่ไม่มี stop.lactating) · **การแก้:** ย้าย stepsFor() ออกจาก page.tsx ไป lib/plan-steps.ts (เพราะเดิมไม่มีเทสต์คลุมเลย จึงรอด 295 เทสต์มาได้) แล้วแก้เป็น `return stage !== \"prep\" && stage !== \"lactating\"` + เพิ่ม lib/plan-steps.test.ts 8 เคสล็อกทั้ง 5 stage · **re-verify:** vitest 303/303 ผ่าน · tsc clean · build ผ่าน"},
+    {id:"TC-11-02", ev:"UI",
+     did:"เปิดรายงานฉบับเต็มของ stage=lactating แล้วอ่านหัวข้อความรู้ทั้งหมด",
+     exp:"ครบ 3 หัวข้อ: ตารางปั๊มนม + อาหารเพิ่มน้ำนม + เด็กอายุ(เดือน)→ปริมาณนม(ออนซ์)",
+     act:"เห็นหัวข้อ \"4 ความรู้สำหรับช่วงให้นมบุตร 🌿\" มี 4 ปุ่ม: ⏱️ ตารางปั๊มนม · 🍲 อาหารบำรุงแม่หลังคลอด · 📊 ลูกกินนมวันละเท่าไหร่ · 🚨 สัญญาณอันตรายหลังคลอด · ครบ 3 หัวข้อตามสเปก โดยหัวข้อที่ 2 ใช้ชื่อใหม่ตามมติที่ client เคาะ 31/7 (\"เปลี่ยนกรอบเลย\") และมีหัวข้อความปลอดภัยเพิ่มมาอีก 1 ซึ่งเป็นส่วนเกินที่ควรมี",
+     status:"pass"},
+    {id:"TC-11-03", ev:"UI+Harness",
+     did:"อ่านรายการสินค้าในบล็อกความรู้ให้นมบุตรบนรายงานจริง + ตรวจ buildLactationKnowledge()",
+     exp:"มีนมแพะ, Ferty(1 ซอง), Ferti9oil(1-2), probiotic(1), น้ำหัวปลี, ขิงทอง, ซุปไก่ดำ",
+     act:"ครบ 7 รายการเรียงตามสเปก และปริมาณตรง: Ferty \"วันละ 1 ซอง\" · Ferti 9 Oil \"วันละ 1–2 เม็ด\" · Probiotics \"วันละ 1 ซอง\" · อีก 4 ตัวขึ้น \"สอบถามทีม Baby & Mom ทาง LINE OA\" หรือ howto เดิม · ตรวจเพิ่ม: Varginaree (stop.lactating) ถูกกรองออกจากคำแนะนำของกลุ่มนี้จริง · สแกนข้อความที่ผูกกับสินค้าไม่พบคำเคลมเรื่องเพิ่มน้ำนมเลยแม้แต่คำเดียว และมีประโยคกำกับหัวบล็อกว่า \"…ไม่ใช่ผลิตภัณฑ์สำหรับเด็ก และไม่ได้เป็นคำแนะนำเรื่องปริมาณน้ำนม\"",
+     status:"pass"},
+    {id:"TC-11-04", ev:"UI",
+     did:"อ่าน href ของปุ่มเมนูอาหารในบล็อกให้นมบุตร แล้วเทียบกับลิงก์ของ pregnant",
+     exp:"ลิงก์ไป facebook.com/share/p/1Bm3bDyo4X (คนละลิงก์กับ TS-10)",
+     act:"href = https://www.facebook.com/share/p/1Bm3bDyo4X/ · คนละลิงก์กับของ pregnant จริง (ตรวจ DOM ของทั้ง 2 รายงาน)",
+     status:"pass"},
+    {id:"TC-11-05", ev:"Harness",
+     did:"ตรวจ PRODUCTS.blackchickensoup และ PRODUCTS.bananaflower",
+     exp:"[เดิม BLOCKED] ยืนยันแล้ว → เพิ่มซุปไก่ดำ ฿1,800 และน้ำหัวปลี ฿1,850 พร้อม TODO flag",
+     act:"มีทั้งคู่ในแคตตาล็อก ราคา 1800 / 1850 ตรงกับ docs/product-catalog.md · howto เว้นว่าง · อยู่ใน NO_DOSAGE_YET ทั้งคู่ · การวางกรอบถูกต้องตาม พ.ร.บ.นมผง (ซุปไก่ดำ = \"อาหารโปรตีนบำรุงกำลังสำหรับคุณแม่\" ไม่แตะเรื่องน้ำนม)",
+     status:"pass"},
+  ]},
+
+{ id:"TS-12", area:"infertility", page:"หน้า 5-6",
+  title:"มีบุตรยาก — ตาราง product mapping ใหม่ (ยึดตารางเป๊ะทุกช่อง)",
+  requirement:"base 4 = Ferty · OvaAll · น้ำมะกรูด Shot 100% · Ferti 9 Oil · แล้วเพิ่มตามปัญหาที่ติ๊ก · \"ไม่แน่ใจ\" = base 4 เท่านั้น",
+  cases:[
+    {id:"TC-12-01", ev:"Harness",
+     did:"ติ๊กเฉพาะ pcos แล้วเทียบผลลัพธ์ทั้งชุดกับ base4 + ['pcovit'] แบบตรงตัว (ไม่ใช่แค่ contains)",
+     exp:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT และไม่มี Colla Telo / Varginaree",
+     act:"ผลลัพธ์เท่ากับ base4 + pcovit เป๊ะ · ไม่มี collatelo และไม่มี varginaree จริงตามที่ client ยืนยันว่าตั้งใจตัดออก (เป็นการเปลี่ยนจากเดิมที่ Colla Telo เคยเป็น core ให้ทุกคน)",
+     status:"pass"},
+    {id:"TC-12-02", ev:"Harness", did:"ติ๊กเฉพาะ diminished_ovary เทียบชุดแบบตรงตัว", exp:"base 4 + Varginaree", act:"เท่ากับ base4 + varginaree เป๊ะ", status:"pass"},
+    {id:"TC-12-03", ev:"Harness", did:"ติ๊กเฉพาะ low_hormone เทียบชุดแบบตรงตัว", exp:"base 4 + Varginaree", act:"เท่ากับ base4 + varginaree เป๊ะ", status:"pass"},
+    {id:"TC-12-04", ev:"Harness", did:"ติ๊กเฉพาะ thin_lining เทียบชุดแบบตรงตัว", exp:"base 4 + Colla Telo + Varginaree", act:"เท่ากับ base4 + collatelo + varginaree เป๊ะ", status:"pass"},
+    {id:"TC-12-05", ev:"Harness",
+     did:"ติ๊ก pcos + thin_lining พร้อมกัน แล้วตรวจทั้งความครบและความซ้ำ (เทียบ Set size กับ array length)",
+     exp:"เป็น union ของทั้ง 2 ชุด ไม่ซ้ำกัน",
+     act:"ได้ base4 + pcovit + collatelo + varginaree · ไม่มีตัวซ้ำเลย (Set size = array length) · ไม่มีตัวตกหล่น",
+     status:"pass"},
+    {id:"TC-12-06", ev:"Harness",
+     did:"ติ๊ก unsure อย่างเดียว · และทดสอบซ้ำโดยตั้ง hasPcos=true (ข้อมูลเก่า) ควบคู่กัน",
+     exp:"[รอยืนยัน → client เคาะแล้ว] ใช้ base 4 เท่านั้น",
+     act:"ได้ base 4 เท่านั้นจริง · และแม้จะมี has_pcos=true ค้างจากข้อมูลเก่า เช็กลิสต์ก็ยังชนะ ไม่มี pcovit หลุดเข้ามา (ตรงกับกติกา \"ไม่แน่ใจ ต้องไม่ถูกบอกว่าคุณเป็น\")",
+     status:"pass"},
+    {id:"TC-12-07", ev:"Harness",
+     did:"เทียบ INFERTILITY_PRODUCT_MAP ทั้งก้อนกับตารางใน PRD ทีละแถว + ตรวจ SKU น้ำมะกรูด + ตรวจแถว male_factor และ overweight",
+     exp:"[เดิม BLOCKED] mapping ตรงตารางทุกช่อง",
+     act:"map ตรงทุกแถว: pcos→[pcovit] · diminished_ovary→[varginaree] · low_hormone→[varginaree] · thin_lining→[collatelo,varginaree] · male_factor→[ferta,mzall,motila1] · overweight→[pcovit] · unsure→[] · น้ำมะกรูดใช้ SKU Shot 100% (kaffirshot, ฿600) ตาม default ที่ระบุใน Open Question #1 ไม่ใช่สูตร 70% ฿2,376 · โครงสร้าง core/targeted ถูกเขียนใหม่จริง (infertility ไม่ใช้ชุด core เดิมของ prep แล้ว)",
+     status:"pass"},
+  ]},
+
+{ id:"TS-13", area:"infertility", page:"หน้า 6",
+  title:"น้ำหนักเกิน — โชว์ตัวเลข BMI + แถบสี 4 ระดับ + โภชนาการ + ออกกำลังกาย",
+  requirement:"แสดงตัวเลข BMI จริง + แถบสีบอกระดับ (กลับมติ R2) · เพิ่มระดับ \"ต่ำกว่าเกณฑ์\" · สินค้าตามตาราง R12 · คำแนะนำลดคาร์บ + โปรตีน + ออกกำลังกาย",
+  cases:[
+    {id:"TC-13-01", ev:"UI+Harness",
+     did:"ส่งฟอร์มจริง 2 ชุด: (ก) น้ำหนัก 55 / สูง 160 (ข) น้ำหนัก 80 / สูง 155 ติ๊ก \"น้ำหนักเกิน\" · แล้วยิง bmiScale()/bmiTier() ที่ขอบเขตทุกระดับ",
+     exp:"[เดิม BLOCKED — client ยืนยันให้กลับมาโชว์] เห็นตัวเลข BMI + แถบสี + บอกว่าอยู่ระดับไหน",
+     act:"(ก) แสดง \"21.5\" ตัวใหญ่สีเขียว + ป้าย \"ปกติ\" (ข) แสดง \"33.3\" + ป้าย \"อ้วน\" · ทั้ง 2 ชุดมีแถบสี 4 ช่วงเรียงครบพร้อมตัวเลขกำกับ (ต่ำกว่าเกณฑ์ < 18.5 · ปกติ 18.5–22.9 · เกินเกณฑ์ 23.0–24.9 · อ้วน ≥ 25.0) ช่วงที่ตรงกับผู้ใช้ทึบ ที่เหลือจาง และมี aria-label \"ระดับ BMI: อ้วน\" · ตรวจขอบเขตแบบ exact: 18.4→underweight, 18.5→normal, 22.9→normal, 23.0→overweight, 24.9→overweight, 25.0→obese (ปัดเศษหลังตัดระดับ จึงไม่มีเคส 22.96 กลายเป็นเกินเกณฑ์) · ค่า input ที่ใช้ไม่ได้ (0/NaN) คืน null ไม่ throw และหน้าจอขึ้นข้อความว่ายังคำนวณให้ไม่ได้แทนการเดาตัวเลข · ระดับ \"ต่ำกว่าเกณฑ์\" มีอยู่จริงตามกล่อง 🔒",
+     status:"pass"},
+    {id:"TC-13-02", ev:"UI+Harness",
+     did:"ดูรายการสินค้าบนรายงานของเคส (ข) + ทดสอบ mapping ของ overweight",
+     exp:"มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT",
+     act:"บนรายงานจริงเห็นครบทั้ง 5 (Ferty โปรตีน · OvaAll · น้ำมะกรูด Shot · Ferti 9 Oil · PCO-VIT) · ระดับ mapping เทียบชุดแบบตรงตัวแล้วเท่ากับ base4 + pcovit เป๊ะ",
+     status:"pass"},
+    {id:"TC-13-03", ev:"UI+Harness",
+     did:"อ่านคำเตือน/คำแนะนำบนรายงานของเคส (ข) และตัวเลขโปรตีนใน Part 2",
+     exp:"มีคำแนะนำโภชนาการ (ลดคาร์บ) + ตัวเลขโปรตีนต่อวัน",
+     act:"มีข้อความ \"แนะนำลดคาร์บขัดสี เพิ่มโปรตีนให้ถึงเป้าต่อวัน และขยับร่างกาย…\" · Part 2 แสดง \"เป้าหมาย 96–120 กรัม/วัน (เติมด้วย Ferty ~5 ซอง ถ้าอาหารไม่ถึง)\" คำนวณจาก lib/calc/protein.ts เดิม · มีข้อความตามระดับ BMI ต่อท้ายด้วยโทนไม่ตัดสิน (\"…แนะนำปรึกษาแพทย์/นักโภชนาการควบคู่ไป…\")",
+     status:"pass"},
+    {id:"TC-13-04", ev:"UI",
+     did:"ดูบล็อกออกกำลังกายใน Part 1 ของรายงานเดียวกัน",
+     exp:"มีลิงก์/คำแนะนำออกกำลังกาย ผูกกับเครื่องมือที่มีอยู่แล้ว",
+     act:"Part 1 มีการ์ด \"ออกกำลังกายที่เหมาะกับคุณ 🏃‍♀️\" แสดงเป้าหมาย/ความถี่/ระดับ/ชนิด/ข้อควรเลี่ยง มาจาก lib/calc/exercise.ts เดิม และปรับตามความถี่ที่ผู้ใช้กรอกใน R4 (baseline active/sedentary) · cautions ก็ชี้ไปที่เครื่องมือ \"แนะนำการออกกำลังกาย\" ด้วย",
+     status:"pass"},
+  ]},
+
+{ id:"TS-14", area:"tools", page:"หน้า 7",
+  title:"เครื่องมือแยก — การ์ดสุดท้ายเป็น \"ทดสอบความเครียด\" (ST-5)",
+  requirement:"แทนที่การ์ด \"รับแผนเฉพาะคุณ\" ด้วยแบบประเมินความเครียด · ใช้ ST-5 กรมสุขภาพจิต · ผลลัพธ์ Night Shot + A.O.S โดยคะแนน 8–15 ต้องขึ้นสายด่วนก่อนกรอบ \"ตัวช่วย\"",
+  cases:[
+    {id:"TC-14-01", ev:"UI",
+     did:"อ่านกริดเครื่องมือแยกบนหน้าแรกทั้งหมด แล้วตรวจว่ายังมีทางเข้า /plan และ LINE OA เหลืออยู่ไหม",
+     exp:"[เดิม BLOCKED — client ยืนยันแล้ว] การ์ดสุดท้ายเป็น \"ทดสอบความเครียด\" แทนการ์ด \"รับแผนเฉพาะคุณ\"",
+     act:"กริดมี 9 การ์ด ใบสุดท้ายคือ \"แบบประเมินความเครียด — 5 ข้อสั้น ๆ จากแบบประเมินกรมสุขภาพจิต (ST-5)\" · การ์ด \"รับแผนเฉพาะคุณ\" หายไปแล้วจริง · ทางเข้า /plan ยังอยู่ชัดเจน: ปุ่ม hero \"💛 รับคำแนะนำเฉพาะคุณ\" + การ์ดหมวดชีวิต 4 ใบด้านบน + ปุ่ม PlanCta ท้ายทุกเครื่องมือ จึงไม่เสียเส้นทาง conversion ตามที่ AC กำหนด",
+     status:"pass"},
+    {id:"TC-14-02", ev:"UI",
+     did:"เปิด /tools/stress อ่านคำถาม ตัวเลือก กรอบเวลา และเครดิตทั้งหมด เทียบกับต้นฉบับ ST-5 ที่ระบุใน PRD",
+     exp:"[เดิม BLOCKED] ใช้ ST-5 ถ้อยคำและเกณฑ์คะแนนตรงต้นฉบับ ห้ามแต่งคำถามเอง",
+     act:"คำถาม 5 ข้อตรงต้นฉบับ (ปัญหาการนอน / สมาธิน้อยลง / หงุดหงิด-กระวนกระวาย-ว้าวุ่นใจ / เบื่อ เซ็ง / ไม่อยากพบปะผู้คน) · ตัวเลือก 4 ระดับ 0–3 เหมือนกันทุกข้อ · กรอบเวลา \"ในช่วง 2–4 สัปดาห์ที่ผ่านมา\" · เครดิต \"…พัฒนาโดย โรงพยาบาลศรีธัญญา กรมสุขภาพจิต กระทรวงสาธารณสุข\" แสดงในหน้า · ชื่อเครื่องมือคือ \"แบบประเมินความเครียด\" ไม่ได้อ้างว่าเป็นแบบประเมินสำหรับคนท้อง (ถูกต้องตามข้อจำกัดที่ ST-5 ไม่เคย validate ในกลุ่มนี้) · มี disclaimer ว่าเป็นการคัดกรองเบื้องต้น",
+     status:"pass"},
+    {id:"TC-14-03", ev:"UI+Harness",
+     did:"ทำแบบทดสอบจริงหลายรอบให้ได้คะแนน 7 · 8 · 10 · 15 แล้วอ่านผล ระดับ ลำดับการแสดงผล และรายการสินค้า · แล้วตั้งโปรไฟล์เป็น stage=pregnant ทำซ้ำที่คะแนน 15 · และไล่ขอบเขตทุกระดับที่ระดับข้อมูล",
+     exp:"ได้ Night Shot + A.O.S โดยเฉพาะระดับคะแนนที่เหมาะสม",
+     act:"ขอบเขตตรงตาราง PRD ทุกจุด: 0–4 เครียดน้อย · 5–7 ปานกลาง · 8–9 เครียดมาก · 10–15 เครียดมากที่สุด (ตรวจที่ค่า 0,4,5,7,8,9,10,15) · ที่ 7 → ไม่มีสายด่วน หัวข้อกรอบสินค้าเป็น \"🌿 ตัวช่วยดูแลตัวเอง\" · ที่ 8 และ 10 → ขึ้นกล่องสายด่วน 1323 พร้อมปุ่มโทร และตำแหน่งอยู่ \"เหนือ\" กรอบสินค้าจริง (วัดจากตำแหน่งข้อความในหน้า: index 962 vs 1054) หัวข้อกรอบเปลี่ยนเป็น \"🌿 ตัวช่วย\" เป๊ะตามมติ พร้อมประโยคกำกับว่าไม่ใช่สิ่งทดแทนการปรึกษาผู้เชี่ยวชาญ · สินค้าเป็น Night Shot + A.O.S · <b>เคสแม่ตั้งครรภ์:</b> ตั้ง stage=pregnant แล้วทำได้ 15/15 → ยังขึ้นสายด่วนและกรอบ \"ตัวช่วย\" แต่เหลือเฉพาะ Night Shot <b>ไม่มี A.O.S</b> (ถูกกรองด้วย productsForStage → allowedIn เพราะ A.O.S มี stop.pregnant) ตรงตามที่กติกาความปลอดภัยต้องการ · ตอบไม่ครบ 5 ข้อ → ไม่ให้ผลใด ๆ ขึ้นข้อความให้ตอบให้ครบก่อน (ไม่มีการสรุปผลบางส่วน)",
+     status:"pass"},
+  ]},
+
+{ id:"TS-15", area:"report", page:"หน้า 8-10",
+  title:"รายงานฉบับเต็ม — โครงใหม่ Part 1 / Part 2 แทนโครงเดิมทั้งหมด",
+  requirement:"Part 1 (BMI+เกณฑ์ · น้ำ · นอน · ออกกำลังกาย) → Part 2 (โปรตีน/น้ำ/ไขมันดี + ตารางอาหาร) → ตารางวิตามิน 3 คอลัมน์ + รูปสินค้า → ปุ่มแนะนำเมนู → ปุ่มทักแอดมิน",
+  cases:[
+    {id:"TC-15-01", ev:"UI",
+     did:"เปิดรายงานฉบับเต็มจริง 3 ชุด (prep-like/infertility, pregnant, lactating) แล้วไล่หาโครงเดิมด้วยข้อความหลัก (คะแนน 5 เสา · แผน 90 วัน 3 เฟส · จุดแข็ง · สัปดาห์นี้ทำ 3 อย่าง · เดือนที่ 1)",
+     exp:"[เดิม BLOCKED — client เคาะ \"ปรับแทนที่เลย\"] โครงเดิมหายไปแล้ว ถูกแทนที่ด้วย Part 1 / Part 2",
+     act:"หัวข้อที่เหลือคือ 1 ข้อมูลของคุณ · 2 โภชนาการของคุณ · 3 วิตามินที่แนะนำสำหรับคุณ · (4 ความรู้ตามช่วงชีวิต ถ้ามี) · ชวนคู่ของคุณไปด้วยกัน · ไม่พบข้อความของโครงเดิมเลยแม้แต่คำเดียว · หมายเหตุที่ควรรู้: ข้อมูล pillars/score ยังคำนวณอยู่เบื้องหลังเพราะ teaser และการ์ด LINE Flex ใช้อยู่ แค่ไม่แสดงในรายงานฉบับเต็มแล้ว",
+     status:"pass"},
+    {id:"TC-15-02", ev:"UI",
+     did:"อ่านเนื้อหา Part 1 ทั้งบล็อกบนรายงานจริง",
+     exp:"เห็นครบ: BMI (พร้อมเกณฑ์) · เป้าน้ำ/วัน · ชม.นอนที่แนะนำ · ประเภทออกกำลังกายที่เหมาะ",
+     act:"ครบทั้ง 4: ค่า BMI + แถบเกณฑ์ 4 ระดับ · \"น้ำดื่มที่ควรได้ต่อวัน 2,350–2,625 มล./วัน (~9–11 แก้ว)\" · \"การนอน แนะนำ 7–9 ชั่วโมง/คืน · เข้านอนก่อน 4 ทุ่ม (22:00)\" พร้อมเทียบเวลาจริงถ้ากรอกมา · \"ออกกำลังกายที่เหมาะกับคุณ\" ปรับตามความถี่ที่กรอก · มีการ์ดช่วงมีโอกาสสูงเพิ่มให้เฉพาะคนที่เคยทำเครื่องมือนับวันไข่ตก",
+     status:"pass"},
+    {id:"TC-15-03", ev:"UI",
+     did:"เทียบการแสดง BMI ในรายงานกับที่ TS-13 กำหนด ว่าใช้เกณฑ์/สี/ระดับชุดเดียวกันไหม",
+     exp:"[เดิม BLOCKED] แสดง BMI สอดคล้องกับ R13 ที่เดียวกันทั้งแอป",
+     act:"สอดคล้องกัน — ทั้งสองจุดอ่านจาก lib/calc/bmi.ts ตัวเดียว (bmiScale + BMI_BANDS) ไม่มีเกณฑ์ซ้ำสองที่ · ในรายงานมีประโยคกำกับเพิ่มว่า \"ค่า BMI เป็นตัวเลขอ้างอิงคร่าว ๆ ไม่ได้บอกสุขภาพทั้งหมดของคุณ และไม่ใช่การวินิจฉัยค่ะ\"",
+     status:"pass"},
+    {id:"TC-15-04", ev:"UI",
+     did:"อ่านตัวเลขใน Part 2 ของรายงานหลายชุด",
+     exp:"เห็นตัวเลขเป้าหมาย โปรตีน / น้ำ / ไขมันดี ของคนคนนั้น",
+     act:"เห็นครบทั้ง 3 และเป็นค่าเฉพาะบุคคล เช่น เคสหนึ่งได้ \"โปรตีน 96–120 กรัม/วัน\" + \"น้ำ 2,400–2,800 มล./วัน\" + \"EPA+DHA อย่างน้อย 250 มก./วัน\" อีกเคส (ให้นม) ได้ 300 มก./วัน · ถ้าไม่กรอกน้ำหนักจะขึ้นข้อความว่ายังคำนวณให้ไม่ได้ ไม่เดาตัวเลขให้",
+     status:"pass"},
+    {id:"TC-15-05", ev:"UI+Harness",
+     did:"ตรวจค่าเป้าไขมันดีของทั้ง 5 หมวด + ดูบรรทัดอ้างอิงที่แสดงในหน้า",
+     exp:"[เดิม BLOCKED] ตัวเลขต้อง trace กลับหาแหล่งอ้างอิงได้ ห้ามใส่ตัวเลขที่ไม่มีที่มา",
+     act:"มีแค่ 2 ค่าเท่านั้นจริงตามข้อสรุปงานวิจัย: prep/infertility/male = 250 มก./วัน · pregnant/lactating = 300 มก./วัน (โดยเป็น DHA ≥200) · <b>ไม่มีการประดิษฐ์ตัวเลขแยก 5 หมวด</b> · หน้าจอแสดงบรรทัด \"ที่มาของตัวเลข: FAO/WHO 2010 Table 7.2 … · สรุปหลักฐานเต็ม: docs/GOOD-FAT-BY-CATEGORY-RESEARCH-BRIEF.md §0\" · และแยกกล่อง \"แหล่ง DHA จริง\" ออกจาก \"ไขมันดีทั่วไป\" คนละกล่องพร้อมคำเตือนว่าน้ำมันมะกอก/อะโวคาโด/ถั่วไม่ใช่แหล่ง DHA ตามข้อบังคับในบรีฟ",
+     status:"pass"},
+    {id:"TC-15-06", ev:"UI",
+     did:"อ่านตารางโปรตีนใน Part 2",
+     exp:"มีตารางอ้างอิงโปรตีนต่อ 100 กรัมของอาหารทั่วไป",
+     act:"มีตาราง 3 คอลัมน์ (อาหาร / ปริมาณอ้างอิง / โปรตีน): อกไก่ 100 กรัม ≈30 ก. · ปลา 100 กรัม ≈20 ก. · ไข่ต้ม 1 ฟอง ≈6–7 ก. · Ferty 1 ซอง ≈25 ก. · มีบรรทัดที่มา docs/nutrition-protocol.md §1 · มีบล็อกผักแนะนำและผลไม้แนะนำต่อท้าย",
+     status:"pass"},
+    {id:"TC-15-07", ev:"UI+Harness",
+     did:"ตรวจ <img> ทุกตัวในตารางวิตามิน + ยิง fetch ไปที่ /products/*.jpg ทั้งของที่มีและไม่มีรูป",
+     exp:"[เดิม BLOCKED] แสดงรูปเมื่อมีไฟล์ / ไม่แสดงรูปเมื่อไม่มี — แถวต้องไม่พัง",
+     act:"ไฟล์รูปมีจริง 19 รายการที่ public/products/ · แถวที่มีรูปเรนเดอร์ <img src=\"/products/<id>.jpg\"> โหลดได้ 200 image/jpeg · แถวของสินค้าที่ยังไม่มีรูป (นมแพะ · ซุปไก่ดำ · น้ำหัวปลี · PCO-VIT · Ferta · MZ-All · Motila1) <b>ยังขึ้นแถวครบพร้อมชื่อ ราคา วิธีทาน ประโยชน์ แค่ไม่มีรูป</b> ไม่ถูกซ่อน · ระบบใช้รายชื่อที่รู้ล่วงหน้า (lib/product-photos.ts) แทน onError จึงไม่มี request 404 ให้เห็นใน console เลย (ยืนยันแล้วว่า /products/pcovit.jpg และ /products/goatmilk.jpg คืน 404 แต่ไม่เคยถูกเรียก)",
+     status:"pass"},
+    {id:"TC-15-08", ev:"UI",
+     did:"กดปุ่ม \"🍱 ดูตัวอย่างจานอาหารของคุณ\" บนรายงานจริง",
+     exp:"เห็นภาพตัวอย่างจานอาหาร (โปรตีน+คาร์บเชิงซ้อน+ผัก+ผลไม้/ไขมันดี) พร้อมคำอธิบายส่วนประกอบ",
+     act:"เปิดออกมาเป็นภาพวงกลมแบ่ง 4 ส่วน (SVG วาดในหน้า ไม่พึ่งไฟล์ภาพภายนอกจึงไม่มีรูปแตก) พร้อมคำอธิบาย: โปรตีน ~30% · ผัก ~35% · คาร์โบไฮเดรต ~25% · ไขมันดี ~10% และมีหมายเหตุตรงไปตรงมาว่าเป็น \"ตัวอย่างเทียบเคียง\" ไม่ใช่สัดส่วนมาตรฐานทางโภชนาการ",
+     status:"pass"},
+    {id:"TC-15-09", ev:"UI+Code",
+     did:"ดูส่วนท้ายรายงานทั้งกรณีมี ticket code และดูโค้ดกรณีไม่มี code",
+     exp:"มีปุ่ม \"ทักแอดมิน\" ใช้กลไกเดียวกับ AdminHandoffCta ที่มีอยู่แล้ว",
+     act:"ทำงานได้ตามเจตนา: เมื่อมี ticket (เส้นทางปกติ) ท้ายรายงานมีกล่อง \"มีคำถามเรื่องแผนของคุณ? แอดมินเห็นคำตอบที่คุณตอบไว้แล้ว\" + รหัส + ปุ่ม \"💬 คุยกับทีม Baby & Mom ที่ LINE OA\" · เมื่อไม่มี code จึงใช้ <AdminHandoffCta> เดิม · เหตุผลที่ไม่ใช้ AdminHandoffCta ตลอดคือกันการยิง /api/lead ซ้ำจนเกิด lead ซ้ำใบ ซึ่งเป็นการตัดสินใจที่ถูก — แต่ถ้อยคำ AC ใน PRD (\"ใช้ AdminHandoffCta เดิม\") ควรปรับให้ตรงกับพฤติกรรมจริง (ดูข้อสังเกตข้อ 5)",
+     status:"pass"},
+    {id:"TC-15-EX", ev:"UI+Harness", extra:true,
+     did:"[ตรวจเพิ่มตามกล่อง 🔒 ท้าย R15 + หัวข้อ regression] ส่งฟอร์มที่ได้ tier teaser (prep / infertility+male_factor artPlan=ยัง) แล้วดูว่ารายงานฉบับเต็มหลุดออกมาไหม · ตรวจ disclaimer ทุกเส้นทางผลลัพธ์ · ตรวจกฎ \"ยังไม่ประเมิน ≠ 0%\"",
+     exp:"gate เดิมอยู่ครบ · disclaimer อยู่ทุกหน้า · pillar ที่ยังไม่ประเมินต้องไม่ถูกนับเป็น 0%",
+     act:"teaser ได้แค่สรุปสั้น + สินค้า 3 ตัว + คำเตือน + ปุ่ม LINE ไม่มีเนื้อรายงานฉบับเต็มหลุดมาเลย (ฝั่ง server ก็ส่งเฉพาะ buildTeaser เมื่อ tier ไม่ใช่ full) · reportTier() ให้ค่าตรงตามกติกาเดิมทุกคอมบิเนชัน (ยัง→teaser · IUI/บำรุงไข่→medium · IVF-ICSI/เตรียมผนัง→full · \"ไม่แน่ใจ\" อย่างเดียว→teaser · ติ๊กปัญหาจริง→medium) · disclaimer \"ไม่แทนคำวินิจฉัยของแพทย์\" ปรากฏครบทั้งหน้า teaser หน้ารายงานเต็ม เครื่องมือความเครียด เครื่องมือวิตามิน และบล็อกความรู้ · pillar ที่ยังไม่ได้ทำเครื่องมือแสดง \"ยังไม่ได้ประเมิน\" (score = null) และคะแนนรวมเป็น 50 ไม่ใช่ 0 · consent gate ยังเป็นหน้าแรกของ /plan ทุก stage ที่เข้าผ่าน ?stage= (ตรวจครบทั้ง 5)",
+     status:"pass"},
+  ]},
+];
+
+var LS_KEY='mmj_testreport_3107';
+var STATUS_OPTIONS = [
+  ['pass','✅ ผ่าน'],
+  ['fail','❌ ไม่ผ่าน'],
+  ['blocked','⛔ ทดสอบไม่ได้'],
+  ['na','– ไม่เกี่ยว'],
+  ['','— ยังไม่ตรวจ —'],
+];
+var STATUS_LABEL = {pass:'ผ่าน', fail:'ไม่ผ่าน', blocked:'ทดสอบไม่ได้', na:'ไม่เกี่ยว', '':'ยังไม่ตรวจ'};
+
+// สถานะที่ QA บันทึกไว้ = ค่าตั้งต้น · ผู้ตรวจแก้ทับได้ (เก็บใน localStorage)
+function baseline(){
+  var o={};
+  SCENARIOS.forEach(function(s){ s.cases.forEach(function(c){ o[c.id]={status:c.status||'', note:''}; }); });
+  return o;
+}
+function loadState(){
+  var b = baseline();
+  try{
+    var saved = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
+    Object.keys(saved).forEach(function(k){ if(b[k]) b[k]=saved[k]; });
+  }catch(e){}
+  window.__st = b;
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(window.__st));
+  var m=document.getElementById('savedMark'); m.classList.add('show');
+  clearTimeout(window.__t); window.__t=setTimeout(function(){m.classList.remove('show');},1200);
+}
+loadState();
+
+var state = { filter:'all', q:'' };
+var FILTERS = [['all','ทั้งหมด'],['fail','❌ เฉพาะที่ไม่ผ่าน'],['blocked','⛔ เฉพาะที่ทดสอบไม่ได้'],['pass','✅ เฉพาะที่ผ่าน']];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+// อนุญาต <b>/<u> ที่เขียนไว้ในข้อความผลทดสอบ แต่ escape อย่างอื่นทั้งหมด
+function rich(s){ return esc(s).replace(/&lt;(\/?)(b|u)&gt;/g,'<$1$2>'); }
+
+function st(id){ return (window.__st[id]||{}).status||''; }
+function note(id){ return (window.__st[id]||{}).note||''; }
+
+/** เคสที่นับคะแนน = 64 เคสตามสัญญาใน test-plan-3107.html เท่านั้น
+ *  เคสที่ QA ตรวจเพิ่มเอง (extra:true) แสดงให้เห็นแต่ไม่นับ เพื่อไม่ให้ตัวเลขเพี้ยนจากแผน */
+function allCases(){ var a=[]; SCENARIOS.forEach(function(s){ s.cases.forEach(function(c){ if(!c.extra) a.push(c); }); }); return a; }
+function extraCases(){ var a=[]; SCENARIOS.forEach(function(s){ s.cases.forEach(function(c){ if(c.extra) a.push(c); }); }); return a; }
+
+function renderStats(){
+  var cs=allCases(), n={pass:0,fail:0,blocked:0,na:0,'':0};
+  cs.forEach(function(c){ n[st(c.id)]=(n[st(c.id)]||0)+1; });
+  document.getElementById('sTotal').textContent=cs.length;
+  document.getElementById('sPass').textContent=n.pass||0;
+  document.getElementById('sFail').textContent=n.fail||0;
+  document.getElementById('sBlocked').textContent=n.blocked||0;
+  document.getElementById('sNa').textContent=(n.na||0)+(n['']||0);
+  var ex=extraCases();
+  document.getElementById('sExtra').textContent = ex.length ? '(+'+ex.length+' เคสที่ QA ตรวจเพิ่ม ไม่นับคะแนน)' : '';
+}
+
+function renderRollup(){
+  document.getElementById('rollupBody').innerHTML = SCENARIOS.map(function(s){
+    var p=0,f=0,b=0, plan=s.cases.filter(function(c){return !c.extra;});
+    plan.forEach(function(c){ var v=st(c.id); if(v==='pass')p++; else if(v==='fail')f++; else if(v==='blocked')b++; });
+    var verdict = f>0 ? '<span class="tsverdict" style="background:var(--fail)">มีข้อไม่ผ่าน</span>'
+      : b>0 ? '<span class="tsverdict" style="background:var(--blocked)">มีข้อค้าง</span>'
+      : '<span class="tsverdict" style="background:var(--pass)">ผ่านทั้งหมด</span>';
+    return '<tr><td><b>'+s.id+'</b></td><td>'+esc(s.title)+'</td><td>'+plan.length+'</td><td style="color:var(--pass)">'+p+'</td><td style="color:var(--fail)">'+(f||'')+'</td><td style="color:var(--blocked)">'+(b||'')+'</td><td>'+verdict+'</td></tr>';
+  }).join('');
+}
+
+function renderFilters(){
+  document.getElementById('filters').innerHTML = FILTERS.map(function(f){
+    var cls='chip'+(f[0]==='fail'?' f':f[0]==='blocked'?' b':'');
+    return '<span class="'+cls+'" data-on="'+(state.filter===f[0]?'1':'0')+'" onclick="setFilter(\''+f[0]+'\')">'+f[1]+'</span>';
+  }).join('');
+}
+function setFilter(v){ state.filter=v; render(); }
+
+function render(){
+  renderStats(); renderRollup(); renderFilters();
+  var q=(document.getElementById('q').value||'').toLowerCase();
+  var html='', shown=0;
+  SCENARIOS.forEach(function(s){
+    var cases = s.cases.filter(function(c){
+      if(state.filter!=='all' && st(c.id)!==state.filter) return false;
+      if(!q) return true;
+      return (c.id+' '+s.id+' '+s.title+' '+c.did+' '+c.exp+' '+c.act).toLowerCase().indexOf(q)>=0;
+    });
+    if(!cases.length) return;
+    shown+=cases.length;
+    html+='<section class="glass scenario" id="'+s.id+'">'
+      + '<div class="shead"><span class="tsid">'+s.id+'</span>'
+      + '<span class="areachip">'+esc(AREAS[s.area]||s.area)+'</span>'
+      + '<span class="pageref">PDF '+esc(s.page)+'</span></div>'
+      + '<div class="stitle">'+esc(s.title)+'</div>'
+      + '<div class="req"><b>สเปก:</b> '+esc(s.requirement)+'</div>'
+      + cases.map(function(c){ return caseHtml(c); }).join('')
+      + '</section>';
+  });
+  document.getElementById('list').innerHTML = shown ? html : '<div class="glass empty">ไม่มีเคสที่ตรงกับตัวกรองนี้</div>';
+}
+
+function caseHtml(c){
+  var v=st(c.id);
+  return '<div class="case st-'+(v||'none')+'">'
+    + '<div class="chead"><span class="caseid">'+c.id+'</span>'
+    + (v?'<span class="badge '+v+'">'+STATUS_LABEL[v]+'</span>':'')
+    + (c.extra?'<span class="badge" style="background:var(--indigo)">ตรวจเพิ่มนอกแผน</span>':'')
+    + '<span class="pageref">หลักฐาน: '+esc(c.ev)+'</span></div>'
+    + '<div class="gwt"><span class="lbl">ทำอะไร</span>'+rich(c.did)+'</div>'
+    + '<div class="gwt"><span class="lbl">คาดหวัง</span>'+rich(c.exp)+'</div>'
+    + '<div class="actual"><b>ผลจริง:</b> '+rich(c.act)+'</div>'
+    + '<div class="reviewrow">'
+    + '<select onchange="setStatus(\''+c.id+'\',this.value)">'
+    + STATUS_OPTIONS.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+o[1]+'</option>'; }).join('')
+    + '</select>'
+    + '<textarea placeholder="คอมเมนต์ของผู้ตรวจ (เช่น ไม่เห็นด้วย / ขอทดสอบซ้ำ / จะแก้เมื่อไหร่)" oninput="setNote(\''+c.id+'\',this.value)">'+esc(note(c.id))+'</textarea>'
+    + '</div></div>';
+}
+
+function setStatus(id,v){ window.__st[id]=window.__st[id]||{}; window.__st[id].status=v; saveState(); render(); }
+function setNote(id,v){ window.__st[id]=window.__st[id]||{}; window.__st[id].note=v; saveState(); renderStats(); }
+
+function exportMd(){
+  var cs=allCases(), n={pass:0,fail:0,blocked:0,na:0,'':0};
+  cs.forEach(function(c){ n[st(c.id)]=(n[st(c.id)]||0)+1; });
+  var L=[];
+  L.push('# QA Test Report — Mommunjai R3 "แก้ไข 31.7.26"','');
+  L.push('- อ้างอิงเคส: `public/test-plan-3107.html` (15 TS / 64 TC) · สเปก: `docs/PRD-UPDATE-R3-3107.md`');
+  L.push('- สภาพแวดล้อม: Next.js dev server localhost:3000 · **ไม่มี Supabase env** (API โหมด dev_mode) · ไม่มี LINE credential');
+  L.push('- ชุดเทสต์ในโปรเจกต์: 295/295 ผ่าน · QA harness เพิ่ม: 66/66 ผ่าน · `tsc --noEmit` และ `npm run build` ผ่าน','');
+  L.push('## สรุป','');
+  L.push('| ทั้งหมด | ผ่าน | ไม่ผ่าน | ทดสอบไม่ได้ | ไม่เกี่ยว/ยังไม่ตรวจ |');
+  L.push('|---|---|---|---|---|');
+  L.push('| '+cs.length+' | '+(n.pass||0)+' | '+(n.fail||0)+' | '+(n.blocked||0)+' | '+((n.na||0)+(n['']||0))+' |','');
+  var fails=cs.filter(function(c){return st(c.id)==='fail';});
+  var blocks=cs.filter(function(c){return st(c.id)==='blocked';});
+  if(fails.length){ L.push('### ❌ ไม่ผ่าน',''); fails.forEach(function(c){ L.push('- **'+c.id+'** — '+c.act.replace(/<\/?[bu]>/g,'')); }); L.push(''); }
+  if(blocks.length){ L.push('### ⛔ ทดสอบไม่ได้',''); blocks.forEach(function(c){ L.push('- **'+c.id+'** — '+c.act.replace(/<\/?[bu]>/g,'')); }); L.push(''); }
+  L.push('## รายละเอียดทุกเคส','');
+  SCENARIOS.forEach(function(s){
+    L.push('### '+s.id+' — '+s.title,'');
+    L.push('> สเปก: '+s.requirement,'');
+    s.cases.forEach(function(c){
+      var v=st(c.id);
+      L.push('#### '+c.id+' — '+(STATUS_LABEL[v]||'ยังไม่ตรวจ')+' (หลักฐาน: '+c.ev+')');
+      L.push('- **ทำอะไร:** '+c.did.replace(/<\/?[bu]>/g,''));
+      L.push('- **คาดหวัง:** '+c.exp.replace(/<\/?[bu]>/g,''));
+      L.push('- **ผลจริง:** '+c.act.replace(/<\/?[bu]>/g,''));
+      if(note(c.id)) L.push('- **คอมเมนต์ผู้ตรวจ:** '+note(c.id));
+      L.push('');
+    });
+  });
+  var blob=new Blob([L.join('\n')],{type:'text/markdown;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='test-report-3107.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+render();
+</script>
+</body>
+</html>

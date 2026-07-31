@@ -108,7 +108,9 @@ export default function LabsPage() {
               that mis-tagged leads in Supabase (e.g. a woman reading the male
               section to help her partner would submit as stage="male"). This tool
               stays intentionally un-personalized per R10 scope. */}
-          <AdminHandoffCta tool="labs" toolInput={{ tab }} toolOutput={null} label="สอบถามหรือปรึกษาเรื่องนี้เพิ่มเติมได้ที่ LINE OA" />
+          {/* R3 — ส่งว่าผู้ใช้กำลังสนใจฝั่งไหน (หญิง/ชาย) ให้แอดมินเห็นบริบทตอนคุยต่อ
+              ผลถูกเก็บลง tool_results ได้แล้วตั้งแต่ migration 0007 (ก่อนหน้านี้ถูกทิ้งเงียบ ๆ) */}
+          <AdminHandoffCta tool="labs" toolInput={{ tab }} toolOutput={{ viewed: tab }} label="สอบถามหรือปรึกษาเรื่องนี้เพิ่มเติมได้ที่ LINE OA" />
         </ResultCard>
       </ToolShell>
     </>

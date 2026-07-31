@@ -5,23 +5,79 @@ import { genTicketCode, rateLimit } from "@/lib/ticket";
 import { CONSENT_POLICY_VERSION } from "@/lib/disclaimer";
 import { generateReport, reportTier, buildTeaser } from "@/lib/report";
 import { verifyResumeToken } from "@/lib/customer";
-import { mapLegacyArtPlan, INFERTILITY_ISSUE_VALUES } from "@/lib/calc/vitamins";
+import { PERSISTED_TOOLS } from "@/lib/persisted-tools";
+import {
+  mapLegacyArtPlan, INFERTILITY_ISSUE_VALUES, MALE_BEHAVIOR_VALUES,
+  EXERCISE_FREQ_VALUES, PCOS_STATUS_VALUES, CONCEPTION_METHODS,
+  type MaleBehavior, type PcosStatus, type ExerciseFreq,
+} from "@/lib/calc/vitamins";
 
 function sanitizeIssues(v: any): string[] {
   if (!Array.isArray(v)) return [];
   return v.filter((x) => (INFERTILITY_ISSUE_VALUES as string[]).includes(x)).slice(0, INFERTILITY_ISSUE_VALUES.length);
 }
 
+// ── R3 (PRD-UPDATE-R3-3107) sanitizers ────────────────────────────────────
+// ทุกค่าที่เข้ามาจาก client ถือว่าไม่น่าเชื่อถือ — ค่าที่ไม่ตรง whitelist ให้กลายเป็น
+// null/[] เงียบ ๆ ไม่ throw (ฟอร์มยาว ผู้ใช้ไม่ควรตกทั้งใบเพราะฟิลด์เสริมพัง)
+function sanitizeBehaviors(v: any): MaleBehavior[] {
+  if (!Array.isArray(v)) return [];
+  return Array.from(new Set(v.filter((x) => (MALE_BEHAVIOR_VALUES as string[]).includes(x)))) as MaleBehavior[];
+}
+/** "HH:MM" 24 ชม. เท่านั้น */
+function sanitizeTime(v: any): string | null {
+  return typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : null;
+}
+function sanitizeNum(v: any, min: number, max: number): number | null {
+  const n = v === "" || v === null || v === undefined ? NaN : Number(v);
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
+}
+function sanitizeEnum<T extends string>(v: any, allowed: readonly string[]): T | null {
+  return typeof v === "string" && allowed.includes(v) ? (v as T) : null;
+}
+/** R7 — ข้อมูลของ "คู่" เก็บเป็นก้อน jsonb แยก ห้ามปนกับน้ำหนัก/ส่วนสูงของผู้กรอกเอง */
+function sanitizePartnerProfile(v: any): Record<string, unknown> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
+  return {
+    weight_kg: sanitizeNum(v.weight_kg ?? v.weightKg, 20, 300),
+    height_cm: sanitizeNum(v.height_cm ?? v.heightCm, 80, 250),
+    sleep_bedtime: sanitizeTime(v.sleep_bedtime),
+    sleep_waketime: sanitizeTime(v.sleep_waketime),
+    exercise_freq: sanitizeEnum(v.exercise_freq, EXERCISE_FREQ_VALUES),
+    behaviors: sanitizeBehaviors(v.behaviors),
+  };
+}
+/** R4 — has_pcos (boolean เดิม) ต้องถูกเขียนคู่กับ pcos_status เสมอ เพื่อให้ข้อมูลเก่า
+ *  + logic/filter/tag เดิมทั้งหมดยังทำงานได้ (`has_pcos = pcos_status === 'yes'`) */
+function resolvePcosFromBody(body: any): { pcos_status: PcosStatus | null; has_pcos: boolean } {
+  const status = sanitizeEnum<PcosStatus>(body.pcos_status, PCOS_STATUS_VALUES);
+  if (status) return { pcos_status: status, has_pcos: status === "yes" };
+  // ฟอร์ม/ไคลเอนต์เก่าที่ยังส่งมาแต่ has_pcos
+  return { pcos_status: body.has_pcos ? "yes" : null, has_pcos: !!body.has_pcos };
+}
+
 function reportProfileFromBody(body: any) {
+  const pcos = resolvePcosFromBody(body);
+  const partner = sanitizePartnerProfile(body.partner_profile);
   return {
     nickname: body.nickname,
     stage: body.stage,
-    weightKg: body.weightKg ? Number(body.weightKg) : undefined,
-    heightCm: body.height_cm ? Number(body.height_cm) : undefined,
+    weightKg: sanitizeNum(body.weightKg ?? body.weight_kg, 20, 300) ?? undefined,
+    heightCm: sanitizeNum(body.height_cm ?? body.heightCm, 80, 250) ?? undefined,
     ageRange: body.age_range,
-    hasPcos: !!body.has_pcos,
+    hasPcos: pcos.has_pcos,
+    pcosStatus: pcos.pcos_status ?? undefined,
     artPlan: mapLegacyArtPlan(body.art_plan),
     infertilityIssues: sanitizeIssues(body.infertility_issues) as any,
+    behaviors: sanitizeBehaviors(body.behaviors),
+    partnerBehaviors: (partner.behaviors as MaleBehavior[]) || [],
+    sleepBedtime: sanitizeTime(body.sleep_bedtime) ?? undefined,
+    sleepWaketime: sanitizeTime(body.sleep_waketime) ?? undefined,
+    exerciseFreq: sanitizeEnum<ExerciseFreq>(body.exercise_freq, EXERCISE_FREQ_VALUES) ?? undefined,
+    hasGdm: !!body.has_gdm,
+    // R10 — อายุครรภ์เป็นแกนของเนื้อหาความรู้ช่วงตั้งครรภ์ (ไตรมาส + กฎน้ำหัวปลี ≥16 สัปดาห์)
+    // ใช้ช่วงเดียวกับที่ sanitize ตอนเขียนลง leads (1–45) เพื่อไม่ให้ 2 ที่หลุดจากกัน
+    gestationalWeeks: sanitizeNum(body.gestational_weeks, 1, 45) ?? undefined,
     tools: body.tools && typeof body.tools === "object" ? body.tools : {},
   };
 }
@@ -75,17 +131,29 @@ export async function POST(req: NextRequest) {
   if (body.stage && !stages.includes(body.stage)) errors.push("stage ไม่ถูกต้อง");
   if (errors.length) return NextResponse.json({ error: errors.join(" · ") }, { status: 400, headers });
 
+  const pcos = resolvePcosFromBody(body);
   const profile = {
     nickname: String(body.nickname).slice(0, 80),
     contact_channel: ["line", "phone", "other"].includes(body.contact_channel) ? body.contact_channel : "line",
     contact_value: String(body.contact_value).slice(0, 120),
     stage: body.stage || null,
     age_range: body.age_range || null,
-    has_pcos: !!body.has_pcos,
+    has_pcos: pcos.has_pcos,
     art_plan: mapLegacyArtPlan(body.art_plan),
     infertility_issues: sanitizeIssues(body.infertility_issues),
-    height_cm: body.height_cm ? Number(body.height_cm) : null,
+    height_cm: sanitizeNum(body.height_cm ?? body.heightCm, 80, 250),
     interests: Array.isArray(body.interests) ? body.interests.slice(0, 20) : [],
+    // ── R3: migration 0006_r3_profile_fields.sql ──────────────────────────
+    weight_kg: sanitizeNum(body.weightKg ?? body.weight_kg, 20, 300),
+    sleep_bedtime: sanitizeTime(body.sleep_bedtime),
+    sleep_waketime: sanitizeTime(body.sleep_waketime),
+    exercise_freq: sanitizeEnum(body.exercise_freq, EXERCISE_FREQ_VALUES),
+    pcos_status: pcos.pcos_status,
+    behaviors: sanitizeBehaviors(body.behaviors),
+    partner_profile: sanitizePartnerProfile(body.partner_profile),
+    conception_method: sanitizeEnum(body.conception_method, CONCEPTION_METHODS),
+    gestational_weeks: sanitizeNum(body.gestational_weeks, 1, 45),
+    has_gdm: !!body.has_gdm,
   };
   const tags = autoTags({
     stage: profile.stage || undefined,
@@ -161,7 +229,7 @@ export async function POST(req: NextRequest) {
     if (body.tools && typeof body.tools === "object") {
       const rows = Object.entries(body.tools).map(([tool, v]: any) => ({
         lead_id: lead.id, tool, input: v?.input ?? null, output: v?.output ?? null,
-      })).filter((r) => ["ovulation", "protein", "nutrients", "sleep", "vitamins", "water"].includes(r.tool));
+      })).filter((r) => PERSISTED_TOOLS.includes(r.tool));
       if (rows.length) await sb.from("tool_results").insert(rows);
     }
 

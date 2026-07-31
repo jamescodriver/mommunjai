@@ -1,21 +1,50 @@
 // Personalized "Fertility Readiness Report" generator (pure, testable).
 // The reward users get for completing the questionnaire — see docs/MOTIVATION-RESEARCH.md.
 // NEVER claim to cure / guarantee pregnancy. Frames as readiness & preparation.
-import { recommendVitamins, Product, VitaminProfile, ArtPlan, InfertilityIssue } from "./calc/vitamins";
+import {
+  recommendVitamins, resolvePcosStatus, Product, VitaminProfile, ArtPlan, InfertilityIssue,
+  EXERCISE_FREQS,
+  type MaleBehavior, type PcosStatus, type ExerciseFreq,
+} from "./calc/vitamins";
 import { calcProtein, Stage } from "./calc/protein";
-import { bmiTier } from "./calc/bmi";
+import { bmiTier, bmiScale, type BmiResult } from "./calc/bmi";
+import { calcWater, type WaterStage } from "./calc/water";
+import { recommendExercise, type BaselineActivity, type ExerciseStage } from "./calc/exercise";
+import { goodFatTarget, type GoodFatResult, type GoodFatStage } from "./calc/goodfat";
+import { assessSleep } from "./calc/sleep";
+import { buildPregnancyKnowledge, type PregnancyKnowledge } from "./calc/pregnancy";
+import { buildLactationKnowledge, type LactationKnowledge } from "./calc/lactation";
+import {
+  PROTEIN_FOODS, PROTEIN_FOODS_SOURCE, RECOMMENDED_VEGETABLES, RECOMMENDED_FRUITS, FOOD_SOURCE_NOTE,
+} from "./calc/food-reference";
 
 export interface ReportProfile {
   nickname?: string;
   stage?: Stage | "infertility";
   weightKg?: number;
-  /** R3 — only collected when the "น้ำหนักเกิน" issue is checked; used internally for a BMI tier only. */
+  /** R4 (R3 rev.) — ตอนนี้ถามส่วนสูงกับทุกคนในขั้น health แล้ว (เดิมถามเฉพาะคนที่ติ๊ก
+   *  "น้ำหนักเกิน") เพราะ R13 ต้องแสดงตัวเลข BMI ให้ผู้ใช้เห็นจริง */
   heightCm?: number;
   ageRange?: string;
   hasPcos?: boolean;
+  /** R4 — 3 สถานะ ("unsure" ไม่ได้ PCO-VIT); ถ้าไม่ส่งมาจะ fallback ไป hasPcos */
+  pcosStatus?: PcosStatus;
   artPlan?: ArtPlan;
   /** R2 — only meaningful when stage === "infertility". */
   infertilityIssues?: InfertilityIssue[];
+  /** R6 — พฤติกรรมของผู้กรอกเอง (stage male) */
+  behaviors?: MaleBehavior[];
+  /** R7 — พฤติกรรมของคู่ (ฝ่ายชาย) เมื่อติ๊ก male_factor — คนละคนกับผู้กรอก */
+  partnerBehaviors?: MaleBehavior[];
+  /** R4 — เวลานอน/ตื่น "HH:MM" + ความถี่ออกกำลังกาย (ใช้เต็มรูปแบบใน R15) */
+  sleepBedtime?: string;
+  sleepWaketime?: string;
+  exerciseFreq?: ExerciseFreq;
+  /** R9 — เบาหวานขณะตั้งครรภ์ */
+  hasGdm?: boolean;
+  /** R9/R10 — อายุครรภ์ (สัปดาห์) ใช้หาไตรมาส + กฎน้ำหัวปลี ≥16 สัปดาห์
+   *  ไม่กรอก = ไม่เดาไตรมาสให้ (ดู lib/calc/pregnancy.ts) */
+  gestationalWeeks?: number;
   tools?: Record<string, { input?: any; output?: any }>;
 }
 
@@ -28,28 +57,106 @@ export interface Pillar {
   toolHref?: string;
   toolLabel?: string;
 }
-export interface PlanPhase {
-  phase: string;
-  title: string;
-  items: string[];
+
+// ── R15 — โครงรายงานใหม่ Part 1 / Part 2 ────────────────────────────────────
+// PRD-UPDATE-R3-3107 §R15 (คอมเมนต์ TC-15-01 *"ปรับแทนที่เลย"*) แทนที่โครงเดิม
+// (จุดแข็ง/จุดที่เสริมได้/เสาคะแนน 5 ด้าน/แผน 3 เฟส 90 วัน/สัปดาห์นี้ทำ 3 อย่าง) ทั้งหมด
+//
+// ทุกฟิลด์ใหม่เป็น optional โดยตั้งใจ — รายงานเก่าที่ snapshot ไว้ใน reports.payload
+// ก่อน R3 ไม่มีฟิลด์เหล่านี้ ต้อง render ได้โดยไม่พัง (แค่บล็อกนั้นหายไป)
+
+export interface WaterTarget {
+  minMl: number;
+  maxMl: number;
+  midMl: number;
+  glassesMin: number;
+  glassesMax: number;
 }
+
+export interface SleepGuide {
+  /** ช่วงที่แนะนำ (คัมภีร์ครูก้อย: เข้านอนก่อน 22:00 · 7–9 ชม.) */
+  recommendedMinHours: number;
+  recommendedMaxHours: number;
+  bedtimeRule: string;
+  /** เวลาที่ผู้ใช้กรอกจริงในขั้น "เล่าเรื่องสุขภาพ" (R4) — ไม่มีก็ได้ */
+  bedtime?: string;
+  waketime?: string;
+  actualHours?: number;
+  beforeTen?: boolean;
+  goodDuration?: boolean;
+  /** ชั่วโมงที่ยังขาดจากขั้นต่ำที่แนะนำ (0 = ถึงแล้ว) — มีเมื่อกรอกเวลาจริงเท่านั้น */
+  shortfallHours?: number;
+  /** ข้อความเทียบ "ที่แนะนำ vs ที่ทำจริง" — โทนอ่อนโยน ไม่ตัดสิน */
+  note: string;
+}
+
+export interface ExerciseGuide {
+  /** ความถี่ที่ผู้ใช้กรอก (R4) แปลงเป็น baseline ของ lib/calc/exercise.ts */
+  freq?: string;
+  freqLabel?: string;
+  baseline: BaselineActivity;
+  weeklyTarget: string;
+  frequency: string;
+  intensity: string;
+  types: string[];
+  tips: string[];
+  avoid?: string[];
+  evidenceNote?: string;
+  sources: string[];
+}
+
+export interface ReportPart1 {
+  bmi: BmiResult | null;
+  water: WaterTarget | null;
+  sleep: SleepGuide;
+  exercise: ExerciseGuide;
+}
+
+export interface ProteinFoodRef {
+  food: string;
+  per: string;
+  protein: string;
+}
+
+export interface ReportPart2 {
+  protein: { min: number; max: number; ferty: number; note?: string } | null;
+  waterMl: WaterTarget | null;
+  goodFat: GoodFatResult;
+  proteinFoods: ProteinFoodRef[];
+  proteinFoodsSource: string;
+  vegetables: string[];
+  fruits: string[];
+  foodSourceNote: string;
+}
+
 export interface Report {
   title: string;
   tagline: string;
   nickname: string;
   greeting: string;
-  score: number; // 0..100 overall — presented gently, AFTER strengths
+  // ── คะแนน/เสา: ไม่ได้แสดงในรายงานฉบับเต็มอีกแล้ว (R15) แต่ **ยังไม่ตาย** —
+  //    เป็นข้อมูลตั้งต้นของ buildTeaser() (tier teaser/medium) และการ์ด Flex ใน LINE
+  //    (lib/line.ts) จึงคงกฎ "ยังไม่ประเมิน ≠ 0%" ไว้เต็มรูปแบบ
+  score: number; // 0..100 overall
   scoreLabel: string;
-  strengths: string[]; // "จุดแข็งของคุณ" — shown FIRST (research: never lead with a low score)
-  improvements: string[]; // "จุดที่เสริมได้" (never framed as failures)
   quickWinToday: string; // 1 thing to do today (dampens "want answer now")
   pillars: Pillar[];
   fertileWindow: { ovulation: string; start: string; end: string; next: string } | null;
   protein: { min: number; max: number; ferty: number; note?: string } | null;
+  /** R13 — ตัวเลข BMI + ระดับ + สี (กลับมติ R2 ที่เคยห้ามแสดงตัวเลข — ดู lib/calc/bmi.ts)
+   *  optional เพราะรายงานที่ถูก snapshot ไว้ก่อน R3 ใน `reports` ยังไม่มีฟิลด์นี้ */
+  bmi?: BmiResult | null;
   vitamins: Product[];
   vitaminNote: string;
-  plan90: PlanPhase[];
-  weeklyActions: string[];
+  /** R15 — ข้อมูลของคุณ (BMI · น้ำ · นอน · ออกกำลังกาย) */
+  part1?: ReportPart1;
+  /** R15 — โภชนาการของคุณ (โปรตีน · น้ำ · ไขมันดี · ตารางอาหาร) */
+  part2?: ReportPart2;
+  /** R10 — ความรู้ช่วงตั้งครรภ์ 4 หัวข้อ (มีเฉพาะ stage "pregnant")
+   *  🔒 optional เสมอ: รายงานที่ snapshot ไว้ก่อน R3 ไม่มีฟิลด์นี้ ต้อง render ได้ปกติ */
+  pregnancyKnowledge?: PregnancyKnowledge;
+  /** R11 — ความรู้ช่วงให้นมบุตร 3 หัวข้อ (มีเฉพาะ stage "lactating") — optional เช่นกัน */
+  lactationKnowledge?: LactationKnowledge;
   partnerNudge: string | null; // include the partner (~40% male factor)
   isMale: boolean; // the view swaps egg/sperm wording and the protein product off this
   cautions: string[];
@@ -118,23 +225,14 @@ export function generateReport(p: ReportProfile): Report {
   const isMale = p.stage === "male";
   // R2 — the infertility checklist's "PCOS" item is equivalent to the older
   // standalone hasPcos flag; either one turns on all the same PCOS-aware copy.
-  const hasPcos = !!p.hasPcos || !!p.infertilityIssues?.includes("pcos");
+  // R4 — ตอนนี้มีทางเข้าที่ 3 คือช่อง 3 สถานะ; "ไม่แน่ใจ" **ไม่นับเป็นมี PCOS**
+  // (ไม่งั้นรายงานจะพูดกับเขาเหมือนคนที่ได้รับการวินิจฉัยแล้ว — ผิด legal-compliance §4)
+  const pcosStatus = resolvePcosStatus(p);
+  const hasPcos = pcosStatus === "yes";
 
-  // ----- pillars from whichever tools were completed -----
+  // ----- pillars: ไม่ได้แสดงในรายงานฉบับเต็มแล้ว (R15) แต่ยังเป็นข้อมูลตั้งต้นของ
+  //       buildTeaser() + การ์ด Flex ใน LINE — กฎ "ยังไม่ประเมิน ≠ 0%" จึงยังบังคับใช้เต็ม
   const { pillars, score, scoreLabel } = computePillars({ isMale, hasPcos, tools: t });
-  const done = pillars.filter((x) => x.score !== null);
-
-  // ----- strengths FIRST (research: never lead with a low score for a hurting person) -----
-  const strengths: string[] = [];
-  done.filter((x) => (x.score as number) >= 65).forEach((x) => strengths.push(`${x.label}ของคุณอยู่ในเกณฑ์ดี (${x.score}%) — รักษาไว้ต่อเนื่องนะคะ`));
-  if (t.ovulation?.output?.ovulationDate) strengths.push(`คุณเริ่มวางแผนจากรอบเดือน${isMale ? "ของคู่" : ""}แล้ว เป็นก้าวที่สำคัญมาก`);
-  if (t.protein?.output) strengths.push(`คุณใส่ใจเรื่องโปรตีนบำรุง${isMale ? "อสุจิ" : "ไข่"} ซึ่งเป็นหัวใจของการเตรียมตัว`);
-  if (strengths.length === 0) strengths.push("คุณลงมือหาข้อมูลและเริ่มเตรียมตัววันนี้ — นั่นคือจุดเริ่มที่ดีที่สุดแล้วค่ะ");
-
-  // ----- "จุดที่เสริมได้" (never "จุดที่พลาด") -----
-  const improvements: string[] = [];
-  done.filter((x) => (x.score as number) < 65).forEach((x) => improvements.push(`${x.label}: มีพื้นที่ให้เสริมอีกนิด — ${x.note}`));
-  // เสาที่ยังไม่ได้ประเมินไม่ต้องพูดซ้ำตรงนี้ — หมวด "ความพร้อมโดยรวม" มีลิงก์ไปทำแบบประเมินให้แล้ว
 
   // ----- fertile window (from ovulation tool) -----
   const ov = t.ovulation?.output;
@@ -157,59 +255,99 @@ export function generateReport(p: ReportProfile): Report {
   }
 
   // ----- vitamins -----
-  // R3 — internal-only BMI tier (never shown as a number), only computed when
-  // both height+weight are present (height is only ever collected after the
-  // "น้ำหนักเกิน" checkbox in R2 — see app/plan/page.tsx).
+  // R13 — ทั้ง tier (ใช้เลือกข้อความ) และตัวเลขจริง + แถบสี (แสดงให้ผู้ใช้เห็น)
+  // คำนวณได้เมื่อมีทั้งน้ำหนักและส่วนสูง — R4 ทำให้ถามครบทุก stage แล้ว
   const weightTier = p.weightKg && p.heightCm ? bmiTier(p.weightKg, p.heightCm) ?? undefined : undefined;
+  const bmi = p.weightKg && p.heightCm ? bmiScale(p.weightKg, p.heightCm) : null;
   const vp: VitaminProfile = {
-    stage: baseStage,
+    // ⚠️ ต้องส่ง stage จริง ไม่ใช่ baseStage — baseStage แปลง "infertility" → "prep"
+    // เพื่อใช้กับตารางโปรตีนเท่านั้น (protein.ts ไม่มีช่วงของ infertility) ถ้าส่ง baseStage
+    // เข้ามาตรงนี้ ตาราง mapping R12 ของ "มีบุตรยาก" จะไม่มีวันทำงานจากรายงานเลย
+    stage: (p.stage as VitaminProfile["stage"]) || "prep",
     hasPcos,
+    pcosStatus,
     artPlan: p.artPlan || "ยัง",
     infertilityIssues: p.infertilityIssues,
     weightTier,
+    ageRange: p.ageRange,
+    behaviors: p.behaviors,
+    partnerBehaviors: p.partnerBehaviors,
+    hasGdm: p.hasGdm,
   };
   const rec = recommendVitamins(vp);
 
-  // ----- personalized 90-day plan (food/behavior FIRST, products last; ART = consult doctor before supplements) -----
   const artActive = !!p.artPlan && p.artPlan !== "ยัง";
   // age-appropriate referral timing (clinical: <35=12mo, 35-39=6mo, 40+=now)
-  const referral =
-    p.ageRange === "40+"
+  // R15 — เดิมข้อความนี้ซ่อนอยู่ในแผน 90 วันเฟส 3 ซึ่งถูกตัดออกแล้ว ย้ายมาอยู่ใน
+  // cautions เพื่อไม่ให้คำแนะนำ "ควรไปหาหมอเมื่อไหร่" หายไปจากรายงานพร้อมโครงเดิม
+  const referral = artActive
+    ? "คุณอยู่ระหว่างกระบวนการรักษาแล้ว — ปรึกษาแพทย์ที่ดูแลคุณเรื่องจังหวะเก็บไข่/ย้ายตัวอ่อนควบคู่ไปกับการดูแลตัวเอง"
+    : p.ageRange === "40+"
       ? "อายุเป็นปัจจัยเรื่องเวลา แนะนำพบแพทย์ผู้เชี่ยวชาญด้านมีบุตรยากได้เลย ไม่ต้องรอให้ครบกำหนด"
       : p.ageRange === "35–39"
         ? "หากพยายามเองแล้วราว 6 เดือนยังไม่สำเร็จ ควรปรึกษาแพทย์"
         : "หากพยายามเองแล้วราว 12 เดือนยังไม่สำเร็จ ควรปรึกษาแพทย์";
 
-  const plan90: PlanPhase[] = isMale
-    ? [
-        { phase: "เดือนที่ 1", title: "ปรับพื้นฐานฝ่ายชาย", items: [
-            "เพิ่มโปรตีน + เมล็ดฟักทอง (ซิงก์) ในมื้ออาหาร",
-            "งดเหล้า-บุหรี่ ลดความร้อนบริเวณอัณฑะ",
-            "นอนก่อน 4 ทุ่ม 7–9 ชม.",
-            "ถ้าต้องการเสริม: M-Z All วันละ 1 เม็ดก่อนนอน (ปรึกษาเภสัชกรถ้ามีโรคประจำตัว)",
-          ] },
-        { phase: "เดือนที่ 2", title: "เร่งบำรุงสเปิร์ม", items: ["ออกกำลังกายสม่ำเสมอ ไม่หักโหม", "ลดน้ำตาล/อาหารแปรรูป", "ถ้าต้องการเสริมโปรตีน: Ferta เวย์โปรตีน วันละ 2 ซอง ชงกับน้ำเปล่า"] },
-        { phase: "เดือนที่ 3", title: "พร้อมไปด้วยกัน", items: ["ตรวจวิเคราะห์น้ำเชื้อกับแพทย์ (ถ้าจะทำ ART)", "ประสานจังหวะกับช่วงไข่ตกของคู่"] },
-      ]
-    : [
-        { phase: "เดือนที่ 1", title: "ปูพื้นฐานบำรุงไข่", items: [
-            artActive ? "ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มวิตามินเสริมทุกชนิด (เพราะอาจมีผลต่อยาที่ได้รับ)" : "ยึดหลัก 70% อาหาร 30% วิตามิน",
-            protein ? `กินโปรตีนให้ถึง ${protein.min}–${protein.max} กรัม/วัน` : "กินโปรตีนให้พอในแต่ละวัน",
-            "นอนก่อน 4 ทุ่ม (22:00) 7–9 ชม.",
-            artActive ? "เมื่อแพทย์อนุญาต จึงเริ่มวิตามินบำรุง เช่น OvaAll" : "ถ้าต้องการเสริม: OvaAll วันละ 1 ซองพร้อมอาหาร",
-          ] },
-        { phase: "เดือนที่ 2", title: "เร่งบำรุงไข่ + สมดุลฮอร์โมน", items: [
-            "งดหวาน/คาเฟอีน/น้ำเย็น" + (hasPcos ? " (สำคัญมากสำหรับการดูแลสมดุลในกลุ่ม PCOS)" : ""),
-            "ออกกำลังกายเบา (เดิน/โยคะ) 3 วัน/สัปดาห์",
-            "เพิ่มอะโวคาโด+น้ำผึ้งชันโรง ครึ่งผล/วัน",
-            "ถ้าต้องการเสริม: โปรตีนเฟอร์ตี้ช่วยให้ได้โปรตีนครบ" + (hasPcos ? " · PCO-VIT สำหรับดูแลสมดุล (ปรึกษาแพทย์/เภสัชกรถ้าใช้ยาอยู่)" : ""),
-          ] },
-        { phase: "เดือนที่ 3", title: artActive ? art3Title(p.artPlan!) : "เตรียมพร้อมสูงสุด", items: [
-            "ดูแลผนังมดลูกด้วยโภชนาการ (ธาตุเหล็ก/โฟเลต/วิตามินอี จากอาหาร) — หลีกเลี่ยงการประคบหรือสมุนไพรกระตุ้นมดลูกในช่วงลุ้นผล และปรึกษาแพทย์ก่อนใช้เทคนิคใด ๆ",
-            "จดบันทึกรอบเดือน/วันไข่ตกให้แม่นขึ้น",
-            artActive ? "ปรึกษาแพทย์เรื่องจังหวะเก็บไข่/ย้ายตัวอ่อน" : referral,
-          ] },
-      ];
+  // ── R15 Part 1 — ข้อมูลของคุณ ────────────────────────────────────────────
+  const stage5: WaterStage & ExerciseStage & GoodFatStage =
+    (["prep", "infertility", "pregnant", "lactating", "male"] as const).includes(p.stage as any)
+      ? (p.stage as WaterStage & ExerciseStage & GoodFatStage)
+      : "prep";
+
+  // น้ำ — ต้องมีน้ำหนักที่ใช้ได้จริง (calcWater คืน error เมื่ออยู่นอกช่วง 30–150 กก.)
+  let water: WaterTarget | null = null;
+  if (p.weightKg) {
+    const w = calcWater({ weightKg: p.weightKg, stage: stage5 });
+    if (!("error" in w)) {
+      water = {
+        minMl: w.targetMinMl, maxMl: w.targetMaxMl, midMl: w.targetMidMl,
+        glassesMin: w.glasses[0], glassesMax: w.glasses[1],
+      };
+    }
+  }
+
+  const sleep = buildSleepGuide(p.sleepBedtime, p.sleepWaketime);
+
+  // ออกกำลังกาย — ความถี่ที่กรอกใน R4 คือแกน personalization จริงของ lib/calc/exercise.ts
+  // (baseline "เคยขยับอยู่แล้ว" vs "เพิ่งเริ่ม") ไม่ใช่อายุ — ดูคอมเมนต์หัวไฟล์ exercise.ts
+  const baseline: BaselineActivity =
+    p.exerciseFreq === "3-4" || p.exerciseFreq === "daily" ? "active" : "sedentary";
+  const ex = recommendExercise({ stage: stage5, baseline });
+  const exercise: ExerciseGuide = {
+    freq: p.exerciseFreq,
+    freqLabel: EXERCISE_FREQS.find((f) => f.v === p.exerciseFreq)?.label,
+    baseline,
+    weeklyTarget: ex.weeklyTarget,
+    frequency: ex.frequency,
+    intensity: ex.intensity,
+    types: ex.type,
+    tips: ex.tips,
+    avoid: ex.avoid,
+    evidenceNote: ex.evidenceNote,
+    sources: ex.sources,
+  };
+
+  const part1: ReportPart1 = { bmi, water, sleep, exercise };
+
+  // ── R15 Part 2 — โภชนาการของคุณ ──────────────────────────────────────────
+  const part2: ReportPart2 = {
+    protein,
+    waterMl: water,
+    goodFat: goodFatTarget(stage5),
+    proteinFoods: PROTEIN_FOODS.map((f) => ({ food: f.food, per: f.per, protein: f.protein })),
+    proteinFoodsSource: PROTEIN_FOODS_SOURCE,
+    vegetables: RECOMMENDED_VEGETABLES,
+    fruits: RECOMMENDED_FRUITS,
+    foodSourceNote: FOOD_SOURCE_NOTE,
+  };
+
+  // ── R10 / R11 — เนื้อหาความรู้ตามช่วงชีวิต ────────────────────────────────
+  // 🔒 อยู่หลัง tier gate เดิมโดยอัตโนมัติ: buildTeaser() ไม่หยิบฟิลด์นี้ และหน้ารายงาน
+  //    ฉบับเต็มถูก render เฉพาะ tier "full" (ดูคอมเมนต์หัว components/report-view.tsx)
+  // 🔒 R11 มีข้อจำกัด พ.ร.บ.นมผง กำกับอยู่ในไฟล์ lib/calc/lactation.ts — อ่านก่อนแก้
+  const pregnancyKnowledge =
+    p.stage === "pregnant" ? buildPregnancyKnowledge({ gestationalWeeks: p.gestationalWeeks }) : undefined;
+  const lactationKnowledge = p.stage === "lactating" ? buildLactationKnowledge() : undefined;
 
   // ----- quick win today (dampens "want answer now") -----
   const quickWinToday = hasPcos
@@ -223,43 +361,82 @@ export function generateReport(p: ReportProfile): Report {
     ? null
     : "ชวนคุณสามีเตรียมตัวไปด้วยกันนะคะ — สุขภาพฝ่ายชายมีผลต่อการเตรียมพร้อมมากกว่าที่คิด ลองให้เขาทำเครื่องมือ ‘บำรุงฝ่ายชาย’ ดู";
 
-  // ----- this-week actions (from weakest pillars) -----
-  const weeklyActions: string[] = [];
-  const weakest = [...done].sort((a, b) => (a.score as number) - (b.score as number))[0];
-  if (weakest?.key === "sleep") weeklyActions.push("สัปดาห์นี้: เข้านอนก่อน 22:00 ให้ได้อย่างน้อย 5 วัน");
-  if (weakest?.key === "nutrition" || weakest?.key === "egg") weeklyActions.push("สัปดาห์นี้: กินไข่ต้ม 2 ฟอง + ปลา 1 มื้อทุกวัน");
-  if (weakest?.key === "water") weeklyActions.push("สัปดาห์นี้: เพิ่มน้ำอีก 1 แก้วในแต่ละมื้อ ค่อย ๆ ไปให้ถึงเป้าหมาย");
-  if (hasPcos) weeklyActions.push("สัปดาห์นี้: งดของหวานทั้งหมด ดื่มน้ำอุ่น 2–3 ลิตร/วัน");
-  if (!fertileWindow) weeklyActions.push("ลองทำ ‘นับวันไข่ตก’ เพื่อวางแผนช่วงมีโอกาส");
-  if (weeklyActions.length < 3) weeklyActions.push("สัปดาห์นี้: จัดจานตามหลัก 70% อาหาร — โปรตีน ผัก ไขมันดี ให้ครบทุกมื้อ");
-
   // ----- cautions (ethics/safety — see docs/MOTIVATION-RESEARCH.md §5) -----
   const cautions: string[] = [
     "แผนนี้เป็นคำแนะนำทั่วไปเพื่อเตรียมความพร้อม ไม่ใช่การวินิจฉัยหรือรักษาโรค และไม่รับประกันการตั้งครรภ์",
   ];
   if (hasPcos) cautions.push("ผู้มีภาวะ PCOS รอบเดือนอาจไม่สม่ำเสมอ ผลการนับวันไข่ตกอาจคลาดเคลื่อน ควรอยู่ในการดูแลของแพทย์");
-  if (p.artPlan && p.artPlan !== "ยัง")
+  if (artActive) {
     cautions.push("คุณกำลังอยู่ในกระบวนการรักษากับแพทย์ — อย่าหยุดหรือปรับยา/วิตามินเองก่อนปรึกษาแพทย์ เพราะบางอย่างอาจมีผลต่อการรักษา");
+    // R15 — ประโยคนี้เคยเป็นข้อแรกของแผน 90 วันเดือนที่ 1 (การ์ดความปลอดภัยของผู้ป่วย ART)
+    // แผนถูกตัดออกตาม TC-15-01 แต่กติกาต้องไม่หายไปด้วย จึงย้ายมาอยู่ในคำเตือน
+    cautions.push("ปรึกษาแพทย์ที่ดูแลคุณก่อนเริ่มวิตามินเสริมทุกชนิด เพราะอาจมีผลต่อยาที่ได้รับ");
+  }
   if (p.ageRange === "40+" || p.ageRange === "35–39" || artActive)
     cautions.push("เรื่องเวลาเป็นสิ่งสำคัญ แนะนำปรึกษาแพทย์ผู้เชี่ยวชาญควบคู่ไปด้วย");
+  cautions.push(referral);
+  // R3 · TC-03-02 🔒 — คำเตือน Safety Matrix ที่ recommendVitamins สร้างไว้ (หยุดเมื่อไหร่ ·
+  // ชุดเตรียมผนังมดลูก · PCOS ไม่แน่ใจ · เบาหวานขณะตั้งครรภ์) เดิม "ตกหล่น" ไม่เคยไปถึง
+  // รายงานเลย เพราะรายงานสร้าง cautions ของตัวเองแยก — ต่อท้ายเข้ามาแบบไม่ซ้ำข้อความ
+  for (const c of rec.cautions) if (!cautions.includes(c)) cautions.push(c);
 
   return {
     title: "แผน 90 วัน มั่นใจก่อนมีลูก — ฉบับของคุณ",
     tagline: "ในวันที่รู้สึกควบคุมอะไรไม่ได้ นี่คือ 90 วันที่คุณลงมือเองได้",
     nickname: p.nickname || "คุณ",
     greeting: `เราอ่านคำตอบของคุณ ${p.nickname || "คุณ"} แล้ว และทำแผนนี้ขึ้นเพื่อคุณโดยเฉพาะค่ะ 💛`,
-    score, scoreLabel, strengths, improvements, quickWinToday,
+    score, scoreLabel, quickWinToday,
     pillars, fertileWindow, protein,
     vitamins: rec.primary, vitaminNote: rec.note,
-    plan90, weeklyActions: weeklyActions.slice(0, 4), partnerNudge, isMale, cautions,
+    part1, part2,
+    pregnancyKnowledge, lactationKnowledge,
+    partnerNudge, isMale, cautions, bmi,
     generatedFor: { stage: stageThai[p.stage || "prep"], hasPcos, artPlan: p.artPlan },
   };
 }
 
-// R4 — "เตรียมผนังมดลูก" reads awkwardly as "เตรียมพร้อมก่อนทำ เตรียมผนังมดลูก";
-// every other artPlan value still fits the original "เตรียมพร้อมก่อนทำ {X}" phrasing.
-function art3Title(ap: ArtPlan): string {
-  return ap === "เตรียมผนังมดลูก" ? "เตรียมผนังมดลูกให้พร้อมที่สุด" : `เตรียมพร้อมก่อนทำ ${ap}`;
+// R15 — ชั่วโมงนอนที่แนะนำ เทียบกับเวลานอน/ตื่นที่ผู้ใช้กรอกจริงในขั้น "เล่าเรื่องสุขภาพ" (R4)
+// เกณฑ์: 7–9 ชม. + เข้านอนก่อน 22:00 (กฎครูก้อย — docs/nutrition-protocol.md §3)
+// โทน: บอก "ห่างอยู่เท่าไร" ไม่ใช่ "คุณทำผิด" — กลุ่มเป้าหมายเปราะบาง (legal-compliance §4)
+const SLEEP_MIN_H = 7;
+const SLEEP_MAX_H = 9;
+const BEDTIME_RULE = "เข้านอนก่อน 4 ทุ่ม (22:00)";
+
+export function buildSleepGuide(bedtime?: string, waketime?: string): SleepGuide {
+  const base = {
+    recommendedMinHours: SLEEP_MIN_H,
+    recommendedMaxHours: SLEEP_MAX_H,
+    bedtimeRule: BEDTIME_RULE,
+  };
+  if (!bedtime || !waketime) {
+    return {
+      ...base,
+      note: `เกณฑ์ที่แนะนำคือนอน ${SLEEP_MIN_H}–${SLEEP_MAX_H} ชั่วโมง และ${BEDTIME_RULE} — ยังไม่ได้กรอกเวลานอนจริงไว้ ถ้ากรอกเพิ่มเราจะเทียบให้เห็นชัดขึ้นค่ะ`,
+    };
+  }
+  const a = assessSleep(bedtime, waketime);
+  if ("error" in a) {
+    return { ...base, note: `เกณฑ์ที่แนะนำคือนอน ${SLEEP_MIN_H}–${SLEEP_MAX_H} ชั่วโมง และ${BEDTIME_RULE}` };
+  }
+  const shortfallHours = Math.max(0, Math.round((SLEEP_MIN_H - a.hours) * 10) / 10);
+  const parts: string[] = [`ตอนนี้คุณนอนราว ${a.hours} ชั่วโมง (${bedtime}–${waketime})`];
+  if (shortfallHours > 0) {
+    parts.push(`ยังห่างจากเกณฑ์ที่แนะนำอยู่ประมาณ ${shortfallHours} ชั่วโมง — ขยับเวลาเข้านอนให้เร็วขึ้นทีละ 15 นาทีก็ช่วยได้แล้วค่ะ`);
+  } else if (a.hours > SLEEP_MAX_H) {
+    parts.push("นอนนานกว่าเกณฑ์เล็กน้อย ลองสังเกตคุณภาพการนอนดูนะคะ");
+  } else {
+    parts.push(`อยู่ในช่วงที่แนะนำ (${SLEEP_MIN_H}–${SLEEP_MAX_H} ชั่วโมง) แล้วค่ะ`);
+  }
+  if (!a.beforeTen) parts.push(`ถ้าขยับให้${BEDTIME_RULE}ได้ จะตรงกับช่วงที่ฮอร์โมนซ่อมแซมทำงานดีที่สุด`);
+  return {
+    ...base,
+    bedtime, waketime,
+    actualHours: a.hours,
+    beforeTen: a.beforeTen,
+    goodDuration: a.goodDuration,
+    shortfallHours,
+    note: parts.join(" · "),
+  };
 }
 
 // R5 — which depth of report a submission is allowed to see immediately (see R6
@@ -288,6 +465,8 @@ export interface TeaserSummary {
   weakestPillars: { label: string; note: string }[];
   recommendedProducts: { id: string; name: string; why: string }[];
   quickWinToday: string;
+  /** 🔒 คำเตือนที่ต้องเดินทางมาถึงหน้า teaser ด้วย — ห้ามตัดออก (ดูคอมเมนต์ใน buildTeaser) */
+  cautions: string[];
 }
 export function buildTeaser(report: Report): TeaserSummary {
   const scored = report.pillars.filter((x) => x.score !== null);
@@ -300,5 +479,12 @@ export function buildTeaser(report: Report): TeaserSummary {
     weakestPillars: ordered.slice(0, 2).map((x) => ({ label: x.label, note: x.note })),
     recommendedProducts: report.vitamins.slice(0, 3).map((x) => ({ id: x.id, name: x.name, why: x.why })),
     quickWinToday: report.quickWinToday,
+    // 🔒 Lucifer red-team 31/7 — หน้า teaser แนะนำอาหารเสริม 3 ตัวโดยไม่มี disclaimer และ
+    // ไม่มีข้อความ referral ตามอายุเลย ทั้งที่ teaser คือ tier ที่ **คนส่วนใหญ่ของแอปเห็น**
+    // (หลัง R5/R11 ตัดคำถาม ART ออกจาก prep/lactating → 2 กลุ่มนี้เป็น teaser เสมอ)
+    // ผลคือ H2 (referral ตามอายุ — งานแก้ red-team รอบแรก: อายุ 40+ ต้องได้ยินว่า
+    // "พบแพทย์ผู้เชี่ยวชาญได้เลย ไม่ต้องรอ") ถอยหลังกลับไปเงียบ ๆ
+    // ทุกผลลัพธ์สุขภาพต้องมี disclaimer เสมอตามกติกาโปรเจกต์ — teaser ไม่ใช่ข้อยกเว้น
+    cautions: report.cautions,
   };
 }
