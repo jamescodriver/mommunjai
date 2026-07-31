@@ -1,6 +1,7 @@
 // Client-safe constants/types (NO node:crypto). Import this from client components.
 export const PERMISSIONS = [
   "view_leads",
+  "manage_leads",
   "manage_tags",
   "view_reports",
   "manage_users",
@@ -11,6 +12,7 @@ export type Permission = (typeof PERMISSIONS)[number];
 
 export const PERMISSION_LABELS: Record<Permission, string> = {
   view_leads: "ดูข้อมูลลูกค้า/Ticket",
+  manage_leads: "แก้ไข/ลบข้อมูลลูกค้า",
   manage_tags: "จัดการ Tag",
   view_reports: "ดูรายงานเฉพาะบุคคล",
   manage_users: "จัดการผู้ใช้ (Admin)",

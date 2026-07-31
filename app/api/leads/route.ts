@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
   let query = sb
     .from("leads")
     .select(
-      "id, created_at, nickname, contact_channel, contact_value, stage, age_range, has_pcos, art_plan, tickets(code), reports(score), tag_assignments(id), line_bindings(id)",
+      "id, created_at, nickname, contact_channel, contact_value, stage, age_range, has_pcos, art_plan, infertility_issues, height_cm, customer_id, tickets(code), reports(score), tag_assignments(id), line_bindings(id)",
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
@@ -85,6 +85,21 @@ export async function GET(req: NextRequest) {
   const { data, count, error } = await query;
   if (error) return NextResponse.json({ error: "ดึงข้อมูลไม่สำเร็จ" }, { status: 500 });
 
+  // Lucifer red-team (2026-07-31): a customer can have multiple leads
+  // (repeat submissions — see supabase/migrations/0003_customer_identity.sql).
+  // Staff acting on a PDPA erasure request need to see "this person has N
+  // submissions" so deleting the one row they searched for doesn't leave
+  // others behind unnoticed. Best-effort — counted only for rows on this
+  // page, not a global count, since it's just a visibility nudge.
+  const customerIds = [...new Set((data || []).map((r: any) => r.customer_id).filter(Boolean))];
+  const submissionCounts: Record<string, number> = {};
+  if (customerIds.length) {
+    const { data: siblings } = await sb.from("leads").select("customer_id").in("customer_id", customerIds);
+    for (const row of siblings || []) {
+      submissionCounts[row.customer_id] = (submissionCounts[row.customer_id] || 0) + 1;
+    }
+  }
+
   const rows = (data || []).map((r: any) => ({
     id: r.id,
     created_at: r.created_at,
@@ -95,10 +110,13 @@ export async function GET(req: NextRequest) {
     age_range: r.age_range,
     has_pcos: r.has_pcos,
     art_plan: r.art_plan,
+    infertility_issues: r.infertility_issues || [],
+    height_cm: r.height_cm,
     ticket: r.tickets?.[0]?.code ?? r.tickets?.code ?? null,
     score: r.reports?.[0]?.score ?? r.reports?.score ?? null,
     tag_count: Array.isArray(r.tag_assignments) ? r.tag_assignments.length : 0,
     line_bound: Array.isArray(r.line_bindings) ? r.line_bindings.length > 0 : !!r.line_bindings,
+    submission_count: r.customer_id ? (submissionCounts[r.customer_id] || 1) : 1,
   }));
 
   // audit (best-effort)

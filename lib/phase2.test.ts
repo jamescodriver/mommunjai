@@ -82,6 +82,26 @@ describe("auth", () => {
     expect(hasPerm({ sid: "s", name: "S", role: "staff", perms: ["view_leads"], exp: 9e9 }, "view_leads")).toBe(true);
     expect(hasPerm(null, "view_leads")).toBe(false);
   });
+
+  // Lucifer red-team (2026-07-31) on the new leads edit/delete admin feature —
+  // this is the exact authorization check app/api/leads/[id]/route.ts's
+  // PATCH/DELETE handlers gate on. manage_leads is deliberately separate from
+  // view_leads: being able to *see* customer PII shouldn't automatically mean
+  // being able to edit/permanently delete it.
+  it("manage_leads is a distinct permission from view_leads — viewing doesn't imply editing/deleting", () => {
+    const viewOnly = { sid: "s", name: "S", role: "staff" as const, perms: ["view_leads" as const], exp: 9e9 };
+    expect(hasPerm(viewOnly, "view_leads")).toBe(true);
+    expect(hasPerm(viewOnly, "manage_leads")).toBe(false);
+  });
+  it("staff granted manage_leads can edit/delete; admin always can regardless of explicit grant", () => {
+    const granted = { sid: "s", name: "S", role: "staff" as const, perms: ["manage_leads" as const], exp: 9e9 };
+    expect(hasPerm(granted, "manage_leads")).toBe(true);
+    const admin = { sid: "a", name: "A", role: "admin" as const, perms: [], exp: 9e9 };
+    expect(hasPerm(admin, "manage_leads")).toBe(true);
+  });
+  it("no session (not logged in) never has manage_leads", () => {
+    expect(hasPerm(null, "manage_leads")).toBe(false);
+  });
 });
 
 describe("line ticket extraction", () => {
