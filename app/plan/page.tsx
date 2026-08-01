@@ -7,12 +7,13 @@ import { CONSENT_TEXT, MEDICAL_DISCLAIMER } from "@/lib/disclaimer";
 import { Field } from "@/components/ui";
 import ReportView from "@/components/report-view";
 import type { Report, ReportTier, TeaserSummary } from "@/lib/report";
+import { STAGE_TITLE } from "@/lib/report";
 import {
   ART_PLAN_VALUES, INFERTILITY_ISSUES, mapLegacyArtPlan, artPlanLabel,
   AGE_RANGES, EXERCISE_FREQS, MALE_BEHAVIORS, CONCEPTION_METHODS,
 } from "@/lib/calc/vitamins";
 import { track } from "@/lib/track";
-import { stepsFor, type Step } from "@/lib/plan-steps";
+import { stepsFor, sanitizeForStage, type Step } from "@/lib/plan-steps";
 
 // Stepped questionnaire applying completion mechanics from docs/MOTIVATION-RESEARCH.md §4:
 // endowed progress (starts >0), personalize early (name), justify each sensitive question,
@@ -20,6 +21,16 @@ import { stepsFor, type Step } from "@/lib/plan-steps";
 // ⚠️ ลำดับขั้น + กติกาว่า stage ไหนเจอขั้นไหน ย้ายไป lib/plan-steps.ts แล้ว (เพื่อให้เทสต์ได้)
 
 const VALID_STAGES = ["prep", "infertility", "pregnant", "lactating", "male"];
+
+// คำโปรยหน้าแรกของแบบสอบถาม แยกตามช่วงชีวิต (หัวข้อใช้ STAGE_TITLE ร่วมกับรายงาน)
+// 🔒 ชุด lactating ห้ามพูดถึงลูก/น้ำนม (พ.ร.บ.นมผง) · ห้ามเคลมผลลัพธ์ทุกชุด
+const STAGE_INTRO: Record<string, string> = {
+  prep: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนบำรุง 90 วันเฉพาะคุณให้ทันที (ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)",
+  infertility: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนบำรุง 90 วันเฉพาะคุณให้ทันที (ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)",
+  male: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนบำรุง 90 วันเฉพาะคุณให้ทันที (อสุจิใช้เวลาพัฒนาจนสมบูรณ์ราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)",
+  pregnant: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนดูแลครรภ์เฉพาะคุณให้ทันที ทั้งเรื่องโภชนาการ การนอน และการเคลื่อนไหวที่เหมาะกับไตรมาสของคุณ",
+  lactating: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนฟื้นฟูร่างกายหลังคลอดเฉพาะคุณให้ทันที ทั้งเรื่องโภชนาการ การนอน และการกลับมาเคลื่อนไหวอย่างปลอดภัย",
+};
 const LINE_OA_URL = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://lin.ee/fBa4xkz";
 
 export default function PlanPage() {
@@ -177,13 +188,17 @@ function PlanPageInner() {
     setLoading(true);
     try {
       const p = readProfile();
+      // 🔒 ล้างคำตอบของขั้นตอนที่ stage นี้ไม่ได้ถาม ก่อนส่ง — ค่าที่ prefill มาจาก
+      //    โปรไฟล์เดิมใน localStorage อาจเป็นของ stage ก่อนหน้า และผู้ใช้ไม่มีโอกาสเห็น
+      //    หรือแก้มันเลย (ดูคำอธิบายเต็มใน lib/plan-steps.ts § sanitizeForStage)
+      const payload = sanitizeForStage(form, steps);
       const res = await fetch("/api/lead", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, consent: true, consent_text: CONSENT_TEXT, tools: p.tools || {}, resume_token: rt || undefined }),
+        body: JSON.stringify({ ...payload, consent: true, consent_text: CONSENT_TEXT, tools: p.tools || {}, resume_token: rt || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
-      track("lead_submit", { stage: form.stage, has_pcos: !!form.has_pcos, art_plan: form.art_plan, tier: data.tier });
+      track("lead_submit", { stage: payload.stage, has_pcos: !!payload.has_pcos, art_plan: payload.art_plan, tier: data.tier });
       setResult({ ticket: data.ticket_code, tier: data.tier, report: data.report, teaser: data.teaser });
     } catch (e: any) { setErr(e.message); } finally { setLoading(false); }
   };
@@ -273,15 +288,18 @@ function PlanPageInner() {
         <div className="h-2 rounded-full bg-teal transition-all" style={{ width: `${progress}%` }} />
       </div>
       <p className="mt-1 text-right text-xs text-ink/50">
-        {i < steps.length - 1 ? `อีก ${steps.length - 1 - i} ขั้นตอน รับแผน 90 วันของคุณ` : "ขั้นตอนสุดท้าย!"}
+        {i < steps.length - 1 ? `อีก ${steps.length - 1 - i} ขั้นตอน รับแผนของคุณ` : "ขั้นตอนสุดท้าย!"}
       </p>
 
       <div className="glass mt-3 p-5 sm:p-7">
         {step === "intro" && (
           <div className="space-y-4 text-center">
             <div className="text-4xl">💛</div>
-            <h1 className="text-xl font-semibold">แผน 90 วัน มั่นใจก่อนมีลูก — ฉบับของคุณ</h1>
-            <p className="text-sm text-ink/70">ตอบไม่กี่ข้อ แล้วเราจะทำ <b>แผนบำรุง 90 วันเฉพาะคุณ</b> ให้ทันที (ทั้งไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน การเริ่มดูแลวันนี้จึงช่วยสนับสนุนการเตรียมพร้อม)</p>
+            {/* 🔒 ข้อความนี้เคย hardcode เป็น "แผน 90 วัน มั่นใจก่อนมีลูก" + "ทั้งไข่และอสุจิ…"
+                ทุก stage → แม่ที่กำลังให้นมหรือคนที่ตั้งครรภ์แล้วเปิดมาเจอหน้าแรกพูดเรื่อง
+                "ก่อนมีลูก" (ต้นเจอเอง 1/8/2026) · ใช้ชุดเดียวกับหัวรายงานใน lib/report.ts */}
+            <h1 className="text-xl font-semibold">{STAGE_TITLE[form.stage] || STAGE_TITLE.prep}</h1>
+            <p className="text-sm text-ink/70">{STAGE_INTRO[form.stage] || STAGE_INTRO.prep}</p>
             {/* R7 — consent moved here, first, instead of the old last "contact" step */}
             <label className="flex items-start gap-2 rounded-xl bg-white/70 p-3 text-left text-xs text-ink/70">
               <input
@@ -532,7 +550,7 @@ function PlanPageInner() {
             {err && <p className="text-sm text-rose-deep">{err}</p>}
             <div className="flex gap-2">
               <button className="btn-ghost flex-1" onClick={back}>ย้อน</button>
-              <button className="btn-primary flex-1" onClick={submit} disabled={loading}>{loading ? "กำลังสร้างแผน…" : "รับแผน 90 วันของฉัน"}</button>
+              <button className="btn-primary flex-1" onClick={submit} disabled={loading}>{loading ? "กำลังสร้างแผน…" : "รับแผนของฉัน"}</button>
             </div>
           </div>
         )}

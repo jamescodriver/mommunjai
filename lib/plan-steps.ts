@@ -35,3 +35,42 @@ export function stepsFor(
     return true;
   });
 }
+
+/** ฟิลด์ที่ "เป็นของ" ขั้นตอนไหน — ถ้าขั้นตอนนั้นไม่ได้ถูกถาม ค่าพวกนี้ต้องไม่ถูกส่ง */
+const FIELDS_BY_STEP: Partial<Record<Step, string[]>> = {
+  issues: ["infertility_issues"],
+  partner: ["partner_profile"],
+  conception: ["conception_method", "gestational_weeks", "has_gdm"],
+  art: ["art_plan"],
+};
+
+/**
+ * ล้างค่าของขั้นตอนที่ **ไม่ได้ถูกถามใน stage นี้** ก่อนส่งเข้า /api/lead
+ *
+ * ⚠️ บั๊กที่ทำให้ต้องมีฟังก์ชันนี้ (ต้นเจอเอง 1/8/2026 — "หน้าที่ให้ลูกค้าเลย กับ หน้าหลัง
+ * ใส่เลข ticket ไม่ต่างกันเลย"):
+ *   /plan prefill ค่าจากโปรไฟล์เดิมใน localStorage ทุกฟิลด์รวมทั้ง art_plan — แต่ stage
+ *   "ให้นมบุตร"/"เตรียมตั้งครรภ์" ไม่มีขั้นตอน art ให้เห็นหรือแก้ ค่าเก่าจึงติดไปกับการส่ง
+ *   ใครที่เคยตอบ "IVF-ICSI" มาก่อนในเบราว์เซอร์เดียวกัน (= คนทำแบบสอบถามซ้ำ ซึ่งเป็น
+ *   ฟีเจอร์ที่เราตั้งใจรองรับ) พอมาทำ "ให้นมบุตร" จะได้ tier = "full" ทันที
+ *   ผลที่ตามมา 3 ชั้น:
+ *     1. ทะลุ gate — ได้แผนเต็มโดยไม่ต้องเข้า LINE ซึ่งคือกลไกเก็บ lead ทั้งหมด
+ *        และทำให้หน้าหลังกรอกเสร็จ = หน้าเดียวกับหลังใส่ ticket เป๊ะ (ReportView ตัวเดียวกัน)
+ *     2. ข้อมูลผิดลง DB — แม่ให้นมถูกบันทึกว่า art_plan = "IVF-ICSI" แอดมินอ่านผิด tag ผิด
+ *     3. สินค้าผิด — recommendVitamins อ่าน artPlan ด้วย ("เตรียมผนังมดลูก" จะดึง
+ *        ดอกคำฝอย/น้ำมันละหุ่งเข้าแผนของแม่หลังคลอด)
+ *
+ * กฎง่าย ๆ ที่ยึด: **ไม่ได้ถาม = ไม่มีคำตอบ** ห้ามเดาจากรอบก่อน
+ */
+export function sanitizeForStage<T extends Record<string, any>>(form: T, steps: Step[]): T {
+  const out: Record<string, any> = { ...form };
+  for (const [step, fields] of Object.entries(FIELDS_BY_STEP)) {
+    if (steps.includes(step as Step)) continue;
+    for (const f of fields) {
+      // art_plan ใช้ "ยัง" เป็นค่าว่างของมันเอง (ไม่ใช่ undefined) เพราะ logic ปลายทาง
+      // คาดหวังสตริงเสมอ — ดู reportTier()
+      out[f] = f === "art_plan" ? "ยัง" : f === "partner_profile" ? { behaviors: [] } : Array.isArray(form[f]) ? [] : undefined;
+    }
+  }
+  return out as T;
+}

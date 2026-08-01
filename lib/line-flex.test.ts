@@ -142,3 +142,39 @@ describe("reportFlex — การ์ดสรุปแผนใน LINE OA", ()
     expect(longRow!.length).toBeLessThan(60);
   });
 });
+
+/**
+ * คำเตือนถูกเขียนขึ้นสำหรับ "คนที่กำลังพยายามมีลูก" แต่เดิมใส่ให้ทุก stage
+ * (ต้นเจอเอง 1/8/2026 ตอนไล่ดูหน้า teaser ของ "ให้นมบุตร")
+ */
+describe("cautions — ต้องตรงกับช่วงชีวิต และต้องไม่ลดจำนวนลง", () => {
+  const gen = (stage: any, ageRange = "40+") =>
+    generateReport({ nickname: "ก้อย", stage, ageRange, weightKg: 62, heightCm: 158 });
+
+  it("🔒 คนตั้งครรภ์/ให้นม ต้องไม่เจอคำเตือนของคนที่กำลังพยายามมีลูก", () => {
+    for (const stage of ["pregnant", "lactating"] as const) {
+      const c = gen(stage).cautions.join("\n");
+      expect(c, stage).not.toContain("ไม่รับประกันการตั้งครรภ์");
+      expect(c, stage).not.toContain("ยังไม่สำเร็จ");
+      expect(c, stage).not.toContain("มีบุตรยาก");
+    }
+  });
+
+  it("🔒 แต่ต้องได้ referral ของตัวเองแทน — ห้ามเงียบ", () => {
+    expect(gen("pregnant").cautions.join("\n")).toContain("ฝากครรภ์ตามนัด");
+    expect(gen("lactating").cautions.join("\n")).toContain("พบแพทย์ทันที");
+  });
+
+  it("🔒 กลุ่มที่กำลังพยายามมีลูก ยังได้ referral ตามอายุเหมือนเดิม (กฎ red-team H2)", () => {
+    expect(gen("prep", "40+").cautions.join("\n")).toContain("ไม่ต้องรอให้ครบกำหนด");
+    expect(gen("prep", "35–39").cautions.join("\n")).toContain("6 เดือน");
+    expect(gen("prep", "ต่ำกว่า 30").cautions.join("\n")).toContain("12 เดือน");
+  });
+
+  it("จำนวนคำเตือนของกลุ่มตั้งครรภ์/ให้นม ต้องไม่น้อยกว่ากลุ่มเตรียมตั้งครรภ์", () => {
+    const base = gen("prep").cautions.length;
+    for (const stage of ["pregnant", "lactating"] as const) {
+      expect(gen(stage).cautions.length, stage).toBeGreaterThanOrEqual(base - 1);
+    }
+  });
+});
