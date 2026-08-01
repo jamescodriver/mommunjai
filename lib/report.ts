@@ -219,6 +219,24 @@ export function computePillars(a: {
   return { pillars, score, scoreLabel };
 }
 
+// หัวเรื่อง/คำโปรยรายงาน แยกตามช่วงชีวิต — ใช้ทั้งบนเว็บและหัวการ์ด Flex ใน LINE
+// 🔒 ห้ามพูดถึงลูก/น้ำนม ในชุด lactating (พ.ร.บ.นมผง — ดู docs/legal-compliance.md §2)
+// 🔒 ห้ามเคลมผลลัพธ์ ("เพิ่มโอกาส"/"การันตี") — ใช้ภาษา "เตรียม/ดูแล/ฟื้นฟู" เท่านั้น
+const STAGE_TITLE: Record<string, string> = {
+  prep: "แผน 90 วัน เตรียมร่างกายให้พร้อม — ฉบับของคุณ",
+  infertility: "แผน 90 วัน บำรุงเฉพาะทาง — ฉบับของคุณ",
+  male: "แผน 90 วัน บำรุงฝ่ายชาย — ฉบับของคุณ",
+  pregnant: "แผนดูแลครรภ์ — ฉบับของคุณ",
+  lactating: "แผนฟื้นฟูร่างกายหลังคลอด — ฉบับของคุณ",
+};
+const STAGE_TAGLINE: Record<string, string> = {
+  prep: "ในวันที่รู้สึกควบคุมอะไรไม่ได้ นี่คือ 90 วันที่คุณลงมือเองได้",
+  infertility: "ในวันที่รู้สึกควบคุมอะไรไม่ได้ นี่คือ 90 วันที่คุณลงมือเองได้",
+  male: "ไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ราว 90 วัน — เริ่มวันนี้ทันเสมอ",
+  pregnant: "ดูแลตัวเองให้ดีในทุกไตรมาส ด้วยความรู้ที่มีงานวิจัยรองรับ",
+  lactating: "ร่างกายคุณแม่ก็ต้องการการฟื้นฟู — เริ่มจากสิ่งที่ทำได้จริงในแต่ละวัน",
+};
+
 export function generateReport(p: ReportProfile): Report {
   const t = p.tools || {};
   const baseStage: Stage = (p.stage === "infertility" ? "prep" : (p.stage as Stage)) || "prep";
@@ -236,7 +254,12 @@ export function generateReport(p: ReportProfile): Report {
 
   // ----- fertile window (from ovulation tool) -----
   const ov = t.ovulation?.output;
-  const fertileWindow = ov && ov.ovulationDate
+  // 🔒 ช่วงมีโอกาสสูงมีความหมายเฉพาะคนที่กำลังพยายามตั้งครรภ์เท่านั้น
+  //    เดิมไม่มีเงื่อนไขช่วงชีวิตเลย → คนที่เคยใช้เครื่องมือนับวันไข่ตกไว้ก่อน แล้วต่อมา
+  //    ตั้งครรภ์/ให้นม จะยังเห็น "ช่วงมีโอกาสสูงรอบถัดไป" ในรายงานและในการ์ด LINE
+  //    ซึ่งทั้งไม่ถูกต้องและสะกิดใจคนที่เพิ่งแท้ง (พบตอนพรีวิวการ์ด Flex ทีละ stage 1/8/2026)
+  const fertileStages = p.stage === undefined || ["prep", "infertility", "male"].includes(p.stage);
+  const fertileWindow = fertileStages && ov && ov.ovulationDate
     ? { ovulation: ov.ovulationDate, start: ov.fertileStart, end: ov.fertileEnd, next: ov.nextPeriod }
     : null;
 
@@ -381,8 +404,11 @@ export function generateReport(p: ReportProfile): Report {
   for (const c of rec.cautions) if (!cautions.includes(c)) cautions.push(c);
 
   return {
-    title: "แผน 90 วัน มั่นใจก่อนมีลูก — ฉบับของคุณ",
-    tagline: "ในวันที่รู้สึกควบคุมอะไรไม่ได้ นี่คือ 90 วันที่คุณลงมือเองได้",
+    // 🔒 หัวเรื่องต้องตรงกับช่วงชีวิตจริง — เดิมเป็นข้อความเดียวตายตัวทุก stage ทำให้
+    //    คนที่ตั้งครรภ์แล้วหรือกำลังให้นม ได้รายงานพาดหัวว่า "มั่นใจก่อนมีลูก"
+    //    (โผล่ทั้งหัวรายงานบนเว็บและหัวการ์ดใน LINE — พบตอนพรีวิวการ์ดทีละ stage 1/8/2026)
+    title: STAGE_TITLE[p.stage || "prep"] || STAGE_TITLE.prep,
+    tagline: STAGE_TAGLINE[p.stage || "prep"] || STAGE_TAGLINE.prep,
     nickname: p.nickname || "คุณ",
     greeting: `เราอ่านคำตอบของคุณ ${p.nickname || "คุณ"} แล้ว และทำแผนนี้ขึ้นเพื่อคุณโดยเฉพาะค่ะ 💛`,
     score, scoreLabel, quickWinToday,

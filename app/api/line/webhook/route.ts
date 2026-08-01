@@ -111,7 +111,8 @@ export async function POST(req: NextRequest) {
       }
 
       await lineReply(ev.replyToken, [
-        { type: "text", text: `เชื่อมข้อมูลสำเร็จค่ะคุณ ${report.nickname} 🎉 นี่คือรายงานความพร้อมของคุณ` },
+        // เลิกใช้คำว่า "รายงานความพร้อม" ตามที่การ์ด Flex เลิกโชว์คะแนนแล้ว (1/8/2026)
+        { type: "text", text: `เชื่อมข้อมูลสำเร็จค่ะคุณ ${report.nickname} 🎉 นี่คือแผนเฉพาะคุณค่ะ` },
         reportFlex(report, code),
       ]);
     } catch {
