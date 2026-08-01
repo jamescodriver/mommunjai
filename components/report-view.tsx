@@ -7,6 +7,7 @@ import { productPhotoSrc } from "@/lib/product-photos";
 import { track } from "@/lib/track";
 import { Wordmark } from "@/components/wordmark";
 import AdminHandoffCta from "@/components/admin-handoff-cta";
+import FontSizeControl from "@/components/font-size-control";
 import PregnancyKnowledgeView from "@/components/knowledge-pregnancy";
 import LactationKnowledgeView from "@/components/knowledge-lactation";
 
@@ -34,6 +35,55 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       <div className="text-sm font-semibold text-teal-deep">{title}</div>
       <div className="mt-1 text-sm text-ink/80">{children}</div>
     </div>
+  );
+}
+
+// ── ชิ้นส่วนของ "วิตามิน 1 รายการ" ────────────────────────────────────────────
+// ใช้ร่วมกันระหว่างการ์ดบนมือถือกับตารางบนจอใหญ่ — เขียนครั้งเดียว 3 ชิ้นนี้
+// เพื่อไม่ให้ 2 เลย์เอาต์แสดงเนื้อหาไม่ตรงกัน (โดยเฉพาะคำเตือน stop ของ Safety Matrix)
+type Vitamin = Report["vitamins"][number];
+
+function VitaminHead({ v }: { v: Vitamin }) {
+  // TC-15-07 — "ถ้ามีก็แสดง ไม่มีก็ไม่ต้องแสดง": สินค้า 7 ตัวที่ยังไม่มีรูป
+  // ต้องขึ้นตามปกติ **โดยไม่มีรูป** ไม่ใช่ซ่อนสินค้า และไม่ปล่อยรูปแตก
+  const photo = productPhotoSrc(v.id);
+  return (
+    <div className="flex gap-2">
+      {photo && (
+        <img src={photo} alt={v.name} loading="lazy" className="h-14 w-14 shrink-0 rounded-lg bg-white object-contain" />
+      )}
+      <div className="min-w-0">
+        <div className="font-semibold leading-tight">{v.name}</div>
+        <div className="text-sm text-teal-deep">{v.price === null ? "สอบถามราคา" : `฿${v.price.toLocaleString()}`}</div>
+      </div>
+    </div>
+  );
+}
+
+function VitaminHowto({ v }: { v: Vitamin }) {
+  // R3 §Reversals (TC-06-08) — สินค้าที่แบรนด์ยังไม่ยืนยัน dosage (Motila1/นมแพะ/
+  // ซุปไก่ดำ/น้ำหัวปลี) แสดงได้ แต่ต้องบอกตรง ๆ ให้ถามทีม ห้ามปล่อยช่องว่าง
+  return v.howto ? <>{v.howto}</> : <span className="text-ink/75">สอบถามทีม Baby &amp; Mom ทาง LINE OA</span>;
+}
+
+function VitaminWhy({ v }: { v: Vitamin }) {
+  return (
+    <>
+      <p>{v.why}</p>
+      {v.caution && <p className="mt-1 text-ink/80">{v.caution}</p>}
+      {/* 🔒 stop-rule ของ Safety Matrix ต้องแสดงในรายงานด้วย ไม่ใช่เฉพาะหน้าเครื่องมือ
+          (ดอกคำฝอย/น้ำมันละหุ่งไม่มี caption แยก คำเตือนอยู่ในฟิลด์ stop เท่านั้น) */}
+      {v.stop && (
+        <p className="mt-1 font-medium text-rose-deep">
+          ❌ หยุดทาน: {[
+            v.stop.ovulation && "ช่วงวันไข่ตก",
+            v.stop.embryoTransfer && "หลังใส่ตัวอ่อน",
+            v.stop.pregnant && "ช่วงตั้งครรภ์",
+            v.stop.lactating && "ช่วงให้นม",
+          ].filter(Boolean).join(" · ")}
+        </p>
+      )}
+    </>
   );
 }
 
@@ -66,13 +116,16 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       {/* header */}
       <div className="glass-strong p-6 text-center">
         <Wordmark height={26} />
-        <p className="text-xs font-medium text-ink/50">by Baby & Mom</p>
+        <p className="text-xs font-medium text-ink/75">by Baby & Mom</p>
         <h1 className="mt-1 text-2xl font-semibold text-teal-deep">{report.title}</h1>
-        <p className="mt-1 text-sm text-ink/70">{report.tagline}</p>
+        <p className="mt-1 text-sm text-ink/80">{report.tagline}</p>
         <p className="mt-3 text-sm">{report.greeting}</p>
         {code && ticketNote && (
           <div className="mt-4 rounded-2xl border-2 border-dashed border-teal bg-teal-soft py-3 text-xl font-bold tracking-widest text-teal-deep">{code}</div>
         )}
+        {/* ให้ผู้ใช้เลือกขนาดตัวอักษรเอง — สายตาแต่ละคนไม่เท่ากัน และรายงานนี้ยาว
+            ค่าที่เลือกจำไว้ ใช้ต่อทุกหน้าและทุกครั้งที่กลับมา */}
+        <FontSizeControl className="mt-4" />
       </div>
 
       {/* ══ Part 1 — ข้อมูลของคุณ ══ */}
@@ -85,7 +138,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
               <div className="mt-1 flex items-end gap-3">
                 <div className="font-display text-4xl font-bold" style={{ color: report.bmi.color }}>{report.bmi.bmi}</div>
                 <div className="pb-1">
-                  <span className="rounded-full px-2 py-0.5 text-xs font-medium text-white" style={{ backgroundColor: report.bmi.color }}>
+                  <span className="rounded-full px-2 py-0.5 text-sm font-medium text-white" style={{ backgroundColor: report.bmi.color }}>
                     {report.bmi.label}
                   </span>
                 </div>
@@ -95,17 +148,17 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                   <div key={b.tier} className="h-3 flex-1" style={{ backgroundColor: b.color, opacity: b.tier === report.bmi!.tier ? 1 : 0.28 }} />
                 ))}
               </div>
-              <div className="mt-1 flex text-[10px] text-ink/50">
+              <div className="mt-1 flex text-xs text-ink/75">
                 {BMI_BANDS.map((b) => (
                   <div key={b.tier} className="flex-1 text-center leading-tight">{b.label}<br />{b.range}</div>
                 ))}
               </div>
-              <p className="mt-2 text-sm text-ink/70">{report.bmi.note}</p>
-              <p className="mt-1 text-xs text-ink/50">ค่า BMI เป็นตัวเลขอ้างอิงคร่าว ๆ ไม่ได้บอกสุขภาพทั้งหมดของคุณ และไม่ใช่การวินิจฉัยค่ะ</p>
+              <p className="mt-2 text-sm text-ink/80">{report.bmi.note}</p>
+              <p className="mt-1 text-xs text-ink/75">ค่า BMI เป็นตัวเลขอ้างอิงคร่าว ๆ ไม่ได้บอกสุขภาพทั้งหมดของคุณ และไม่ใช่การวินิจฉัยค่ะ</p>
             </div>
           ) : (
             <Card title="ค่า BMI ของคุณ">
-              <p className="text-xs text-ink/50">ยังไม่ได้กรอกน้ำหนัก/ส่วนสูงครบ จึงยังคำนวณ BMI ให้ไม่ได้ (เราไม่เดาตัวเลขให้ค่ะ)</p>
+              <p className="text-sm text-ink/75">ยังไม่ได้กรอกน้ำหนัก/ส่วนสูงครบ จึงยังคำนวณ BMI ให้ไม่ได้ (เราไม่เดาตัวเลขให้ค่ะ)</p>
             </Card>
           )}
 
@@ -114,10 +167,10 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
             {p1?.water ? (
               <>
                 <p><b className="text-teal-deep">{p1.water.minMl.toLocaleString()}–{p1.water.maxMl.toLocaleString()} มล./วัน</b> (~{p1.water.glassesMin}–{p1.water.glassesMax} แก้ว แก้วละ 250 มล.)</p>
-                <p className="mt-1 text-xs text-ink/50">คำนวณจากน้ำหนักตัวตามเกณฑ์ทั่วไป 30–35 มล./กก. · ดื่มน้ำไม่เย็นตลอดวัน</p>
+                <p className="mt-1 text-xs text-ink/75">คำนวณจากน้ำหนักตัวตามเกณฑ์ทั่วไป 30–35 มล./กก. · ดื่มน้ำไม่เย็นตลอดวัน</p>
               </>
             ) : (
-              <p className="text-xs text-ink/50">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าน้ำดื่มให้ไม่ได้ค่ะ</p>
+              <p className="text-sm text-ink/75">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าน้ำดื่มให้ไม่ได้ค่ะ</p>
             )}
           </Card>
 
@@ -136,7 +189,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                 <p className="mt-2">{p1.sleep.note}</p>
               </>
             ) : (
-              <p className="text-xs text-ink/50">แนะนำนอน 7–9 ชั่วโมง และเข้านอนก่อน 4 ทุ่ม (22:00)</p>
+              <p className="text-sm text-ink/75">แนะนำนอน 7–9 ชั่วโมง และเข้านอนก่อน 4 ทุ่ม (22:00)</p>
             )}
           </Card>
 
@@ -144,7 +197,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           {p1?.exercise && (
             <Card title="ออกกำลังกายที่เหมาะกับคุณ 🏃‍♀️">
               {p1.exercise.freqLabel && (
-                <p className="text-xs text-ink/60">คุณกรอกไว้ว่าออกกำลังกาย {p1.exercise.freqLabel} → คำแนะนำนี้ปรับตามจุดเริ่มต้นของคุณแล้ว</p>
+                <p className="text-sm text-ink/80">คุณกรอกไว้ว่าออกกำลังกาย {p1.exercise.freqLabel} → คำแนะนำนี้ปรับตามจุดเริ่มต้นของคุณแล้ว</p>
               )}
               <p className="mt-1">เป้าหมาย: <b>{p1.exercise.weeklyTarget}</b></p>
               <p>ความถี่: {p1.exercise.frequency}</p>
@@ -153,12 +206,12 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                 <ul className="mt-1 list-disc pl-5">{p1.exercise.types.map((x, i) => <li key={i}>{x}</li>)}</ul>
               )}
               {p1.exercise.tips.length > 0 && (
-                <ul className="mt-1 list-disc pl-5 text-xs text-ink/70">{p1.exercise.tips.map((x, i) => <li key={i}>{x}</li>)}</ul>
+                <ul className="mt-1 list-disc pl-5 text-sm text-ink/80">{p1.exercise.tips.map((x, i) => <li key={i}>{x}</li>)}</ul>
               )}
               {p1.exercise.avoid && p1.exercise.avoid.length > 0 && (
-                <ul className="mt-1 list-disc pl-5 text-xs text-rose-deep">{p1.exercise.avoid.map((x, i) => <li key={i}>{x}</li>)}</ul>
+                <ul className="mt-1 list-disc pl-5 text-sm text-rose-deep">{p1.exercise.avoid.map((x, i) => <li key={i}>{x}</li>)}</ul>
               )}
-              {p1.exercise.evidenceNote && <p className="mt-1 text-xs text-ink/50">ℹ️ {p1.exercise.evidenceNote}</p>}
+              {p1.exercise.evidenceNote && <p className="mt-1 text-xs text-ink/75">ℹ️ {p1.exercise.evidenceNote}</p>}
             </Card>
           )}
 
@@ -166,7 +219,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           {report.fertileWindow && (
             <Card title="ช่วงมีโอกาสสูงรอบถัดไป 🗓️">
               <p><b className="text-teal-deep">{fmtTH(report.fertileWindow.start)}–{fmtTH(report.fertileWindow.end)}</b>{report.isMale ? " (ของคู่คุณ)" : ""}</p>
-              <p className="mt-1 text-xs text-ink/50">การนับวันไข่ตกใช้คุมกำเนิดไม่ได้ และวันตกไข่เลื่อนได้ในแต่ละรอบ</p>
+              <p className="mt-1 text-xs text-ink/75">การนับวันไข่ตกใช้คุมกำเนิดไม่ได้ และวันตกไข่เลื่อนได้ในแต่ละรอบ</p>
             </Card>
           )}
         </div>
@@ -179,17 +232,17 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
             {report.protein ? (
               <>
                 <p>เป้าหมาย <b className="text-teal-deep">{report.protein.min}–{report.protein.max} กรัม/วัน</b> (เติมด้วย {report.isMale ? "Ferta" : "Ferty"} ~{report.protein.ferty} ซอง ถ้าอาหารไม่ถึง)</p>
-                {report.protein.note && <p className="mt-1 text-xs text-teal-deep">💡 {report.protein.note}</p>}
+                {report.protein.note && <p className="mt-1 text-sm text-teal-deep">💡 {report.protein.note}</p>}
               </>
             ) : (
-              <p className="text-xs text-ink/50">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าโปรตีนให้ไม่ได้ค่ะ</p>
+              <p className="text-sm text-ink/75">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าโปรตีนให้ไม่ได้ค่ะ</p>
             )}
           </Card>
 
           <Card title="น้ำ 💧">
             {p2?.waterMl
               ? <p>เป้าหมาย <b className="text-teal-deep">{p2.waterMl.minMl.toLocaleString()}–{p2.waterMl.maxMl.toLocaleString()} มล./วัน</b></p>
-              : <p className="text-xs text-ink/50">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าน้ำให้ไม่ได้ค่ะ</p>}
+              : <p className="text-sm text-ink/75">ยังไม่ได้กรอกน้ำหนัก จึงยังคำนวณเป้าน้ำให้ไม่ได้ค่ะ</p>}
           </Card>
 
           {/* ── ไขมันดี ────────────────────────────────────────────────────
@@ -204,36 +257,36 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
               <p className="mt-1 text-sm text-ink/80">{p2.goodFat.why}</p>
 
               <div className="mt-3 rounded-lg bg-teal-soft/60 p-2">
-                <div className="text-xs font-semibold text-teal-deep">✅ แหล่ง DHA จริง — มีแค่กลุ่มนี้</div>
-                <ul className="mt-1 list-disc pl-5 text-xs text-ink/80">
+                <div className="text-sm font-semibold text-teal-deep">✅ แหล่ง DHA จริง — มีแค่กลุ่มนี้</div>
+                <ul className="mt-1 list-disc pl-5 text-sm text-ink/80">
                   {p2.goodFat.dhaSources.map((x, i) => <li key={i}>{x}</li>)}
                 </ul>
               </div>
 
               <div className="mt-2 rounded-lg bg-black/[0.04] p-2">
-                <div className="text-xs font-semibold">🥑 ไขมันดีทั่วไป — ดีต่อสุขภาพ แต่ <u>ไม่ใช่</u> แหล่ง DHA</div>
-                <ul className="mt-1 list-disc pl-5 text-xs text-ink/80">
+                <div className="text-sm font-semibold">🥑 ไขมันดีทั่วไป — ดีต่อสุขภาพ แต่ <u>ไม่ใช่</u> แหล่ง DHA</div>
+                <ul className="mt-1 list-disc pl-5 text-sm text-ink/80">
                   {p2.goodFat.generalGoodFats.map((x, i) => <li key={i}>{x}</li>)}
                 </ul>
-                <p className="mt-1 text-xs text-rose-deep">{p2.goodFat.notDhaWarning}</p>
+                <p className="mt-1 text-sm text-rose-deep">{p2.goodFat.notDhaWarning}</p>
               </div>
 
               <div className="mt-2">
-                <div className="text-xs font-semibold">ไขมันที่ควรจำกัดสำหรับช่วงของคุณ</div>
-                <ul className="mt-1 space-y-1 text-xs text-ink/80">
+                <div className="text-sm font-semibold">ไขมันที่ควรจำกัดสำหรับช่วงของคุณ</div>
+                <ul className="mt-1 space-y-1 text-sm text-ink/80">
                   {p2.goodFat.limitFats.map((f, i) => <li key={i}>• <b>{f.label}</b> — {f.note}</li>)}
                 </ul>
               </div>
 
               {p2.goodFat.extraCautions.length > 0 && (
-                <ul className="mt-2 space-y-1 text-xs text-ink/70">
+                <ul className="mt-2 space-y-1 text-sm text-ink/80">
                   {p2.goodFat.extraCautions.map((x, i) => <li key={i}>⚠️ {x}</li>)}
                 </ul>
               )}
 
-              <p className="mt-2 text-xs text-ink/50">ℹ️ {p2.goodFat.evidenceNote}</p>
+              <p className="mt-2 text-xs text-ink/75">ℹ️ {p2.goodFat.evidenceNote}</p>
               {/* TC-15-05 — ตัวเลขต้อง trace กลับหาแหล่งอ้างอิงได้ ห้ามมีตัวเลขลอย */}
-              <p className="mt-1 text-[11px] text-ink/40">ที่มาของตัวเลข: {p2.goodFat.source} · สรุปหลักฐานเต็ม: {p2.goodFat.brief}</p>
+              <p className="mt-1 text-xs text-ink/75">ที่มาของตัวเลข: {p2.goodFat.source} · สรุปหลักฐานเต็ม: {p2.goodFat.brief}</p>
             </div>
           )}
 
@@ -244,7 +297,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
               <div className="mt-2 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-xs text-ink/50">
+                    <tr className="text-left text-xs text-ink/75">
                       <th className="pb-1 font-medium">อาหาร</th>
                       <th className="pb-1 font-medium">ปริมาณอ้างอิง</th>
                       <th className="pb-1 text-right font-medium">โปรตีน</th>
@@ -254,14 +307,14 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                     {p2.proteinFoods.map((f, i) => (
                       <tr key={i} className="border-t border-black/5">
                         <td className="py-1.5">{f.food}</td>
-                        <td className="py-1.5 text-ink/70">{f.per}</td>
+                        <td className="py-1.5 text-ink/80">{f.per}</td>
                         <td className="py-1.5 text-right font-medium text-teal-deep">{f.protein}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <p className="mt-1 text-[11px] text-ink/40">ที่มา: {p2.proteinFoodsSource}</p>
+              <p className="mt-1 text-xs text-ink/75">ที่มา: {p2.proteinFoodsSource}</p>
             </div>
           )}
 
@@ -273,78 +326,63 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           {p2?.fruits && p2.fruits.length > 0 && (
             <Card title="ผลไม้แนะนำ 🍌">
               <ul className="list-disc pl-5 text-sm">{p2.fruits.map((x, i) => <li key={i}>{x}</li>)}</ul>
-              {p2.foodSourceNote && <p className="mt-2 text-[11px] text-ink/40">{p2.foodSourceNote}</p>}
+              {p2.foodSourceNote && <p className="mt-2 text-xs text-ink/75">{p2.foodSourceNote}</p>}
             </Card>
           )}
         </div>
       </Section>
 
-      {/* ══ ตารางแนะนำวิตามิน — 3 คอลัมน์ + รูปสินค้า ══ */}
+      {/* ══ วิตามินที่แนะนำ ══
+          📱 มือถือ = การ์ดเรียงลง · 💻 จอ sm ขึ้นไป = ตาราง 3 คอลัมน์เหมือนเดิม
+          เหตุผลที่ต้องแยก: ตารางเดิมตั้ง min-w-[520px] ไว้ แต่กล่องบนจอ 375px กว้างจริง
+          แค่ ~300px → ล้นออกไป 219px ทำให้ **คอลัมน์ "ประโยชน์" อยู่นอกจอทั้งคอลัมน์**
+          ผู้ใช้ต้องรู้ว่าเลื่อนนิ้วข้างในตารางได้ถึงจะเห็น ซึ่งเกือบไม่มีใครรู้
+          (วัดจากเบราว์เซอร์จริงที่ 375px — ไม่ใช่ประมาณเอา) */}
       <Section n="3" title="วิตามินที่แนะนำสำหรับคุณ 💊">
-        <p className="text-xs text-ink/60">{report.vitaminNote}</p>
-        <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[520px] text-sm">
+        <p className="text-sm text-ink/80">{report.vitaminNote}</p>
+
+        {/* มือถือ */}
+        <div className="mt-3 space-y-3 sm:hidden">
+          {report.vitamins.map((v) => (
+            <div key={v.id} className="rounded-xl bg-white/70 p-3">
+              <VitaminHead v={v} />
+              <dl className="mt-2 space-y-2">
+                <div>
+                  <dt className="text-xs font-medium text-ink/75">วิธีรับประทาน</dt>
+                  <dd className="text-sm text-ink/80"><VitaminHowto v={v} /></dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-ink/75">ประโยชน์</dt>
+                  <dd className="text-sm text-ink/80"><VitaminWhy v={v} /></dd>
+                </div>
+              </dl>
+            </div>
+          ))}
+        </div>
+
+        {/* จอใหญ่ */}
+        <div className="mt-2 hidden overflow-x-auto sm:block">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-ink/50">
+              <tr className="text-left text-xs text-ink/75">
                 <th className="w-[38%] pb-1 font-medium">ผลิตภัณฑ์</th>
                 <th className="w-[30%] pb-1 font-medium">วิธีรับประทาน</th>
                 <th className="pb-1 font-medium">ประโยชน์</th>
               </tr>
             </thead>
             <tbody>
-              {report.vitamins.map((v) => {
-                // TC-15-07 — "ถ้ามีก็แสดง ไม่มีก็ไม่ต้องแสดง": สินค้า 7 ตัวที่ยังไม่มีรูป
-                // ต้องขึ้นแถวตามปกติ **โดยไม่มีรูป** ไม่ใช่ซ่อนสินค้า และไม่ปล่อยรูปแตก
-                const photo = productPhotoSrc(v.id);
-                return (
-                  <tr key={v.id} className="border-t border-black/5 align-top">
-                    <td className="py-2 pr-2">
-                      <div className="flex gap-2">
-                        {photo && (
-                          <img
-                            src={photo}
-                            alt={v.name}
-                            loading="lazy"
-                            className="h-14 w-14 shrink-0 rounded-lg bg-white object-contain"
-                          />
-                        )}
-                        <div className="min-w-0">
-                          <div className="font-semibold leading-tight">{v.name}</div>
-                          <div className="text-xs text-teal-deep">{v.price === null ? "สอบถามราคา" : `฿${v.price.toLocaleString()}`}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-2 pr-2 text-xs text-ink/80">
-                      {v.howto
-                        ? v.howto
-                        // R3 §Reversals (TC-06-08) — สินค้าที่แบรนด์ยังไม่ยืนยัน dosage
-                        // (Motila1/นมแพะ/ซุปไก่ดำ/น้ำหัวปลี) แสดงได้ แต่ต้องบอกตรง ๆ
-                        // ให้ถามทีม ห้ามปล่อยช่องว่าง
-                        : <span className="text-ink/50">สอบถามทีม Baby &amp; Mom ทาง LINE OA</span>}
-                    </td>
-                    <td className="py-2 text-xs text-ink/80">
-                      <p>{v.why}</p>
-                      {v.caution && <p className="mt-1 text-ink/60">{v.caution}</p>}
-                      {/* 🔒 stop-rule ของ Safety Matrix ต้องแสดงในรายงานด้วย ไม่ใช่เฉพาะหน้าเครื่องมือ
-                          (ดอกคำฝอย/น้ำมันละหุ่งไม่มี caption แยก คำเตือนอยู่ในฟิลด์ stop เท่านั้น) */}
-                      {v.stop && (
-                        <p className="mt-1 font-medium text-rose-deep">
-                          ❌ หยุดทาน: {[
-                            v.stop.ovulation && "ช่วงวันไข่ตก",
-                            v.stop.embryoTransfer && "หลังใส่ตัวอ่อน",
-                            v.stop.pregnant && "ช่วงตั้งครรภ์",
-                            v.stop.lactating && "ช่วงให้นม",
-                          ].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {report.vitamins.map((v) => (
+                <tr key={v.id} className="border-t border-black/5 align-top">
+                  <td className="py-2 pr-2"><VitaminHead v={v} /></td>
+                  <td className="py-2 pr-2 text-sm text-ink/80"><VitaminHowto v={v} /></td>
+                  <td className="py-2 text-sm text-ink/80"><VitaminWhy v={v} /></td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-xs text-ink/50">แผนนี้มีค่าแม้คุณจะเลือกกินอาหารก่อนโดยไม่เสริมวิตามินก็ได้ค่ะ (หลัก 70% อาหาร · 30% วิตามิน)</p>
+
+        <p className="mt-2 text-sm text-ink/75">แผนนี้มีค่าแม้คุณจะเลือกกินอาหารก่อนโดยไม่เสริมวิตามินก็ได้ค่ะ (หลัก 70% อาหาร · 30% วิตามิน)</p>
       </Section>
 
       {/* ══ R10 — ความรู้ช่วงตั้งครรภ์ 4 หัวข้อ ══ */}
@@ -410,12 +448,12 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                 {SAMPLE_PLATE.map((part) => (
                   <li key={part.key} className="flex items-start gap-2">
                     <span className="mt-1 h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: part.color }} />
-                    <span><b>{part.label}</b> ~{part.share}% — <span className="text-ink/70">{part.examples}</span></span>
+                    <span><b>{part.label}</b> ~{part.share}% — <span className="text-ink/80">{part.examples}</span></span>
                   </li>
                 ))}
               </ul>
             </div>
-            <p className="mt-2 text-xs text-ink/50">{SAMPLE_PLATE_DISCLAIMER}</p>
+            <p className="mt-2 text-xs text-ink/75">{SAMPLE_PLATE_DISCLAIMER}</p>
           </div>
         )}
 
@@ -425,8 +463,8 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
             ไปแล้ว — Lucifer red-team 31/7 · ยังคงบล็อกท้ายหน้าไว้ด้วยเพื่อไม่ให้ใครพลาด */}
         {report.cautions.length > 0 && (
           <div className="mt-4 rounded-xl border border-rose/30 bg-rose-soft/40 p-3">
-            <p className="text-xs font-semibold text-rose-deep">⚠️ ต้องรู้ก่อนเริ่ม</p>
-            <ul className="mt-1 space-y-1 text-xs text-ink/70">
+            <p className="text-sm font-semibold text-rose-deep">⚠️ ต้องรู้ก่อนเริ่ม</p>
+            <ul className="mt-1 space-y-1 text-sm text-ink/80">
               {report.cautions.map((c, i) => <li key={i}>• {c}</li>)}
             </ul>
           </div>
@@ -439,12 +477,12 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
             - ไม่มี ticket → ใช้ AdminHandoffCta เดิมเก็บชื่อ/ช่องทางแล้วออกรหัสให้ (TC-15-09) */}
         {code ? (
           <div className="mt-3 rounded-xl border border-teal/30 bg-teal-soft/40 p-3 text-center">
-            <p className="text-xs text-ink/70">มีคำถามเรื่องแผนของคุณ? แอดมินเห็นคำตอบที่คุณตอบไว้แล้ว ไม่ต้องเล่าซ้ำ</p>
+            <p className="text-sm text-ink/80">มีคำถามเรื่องแผนของคุณ? แอดมินเห็นคำตอบที่คุณตอบไว้แล้ว ไม่ต้องเล่าซ้ำ</p>
             <div className="mx-auto my-2 w-fit rounded-xl border-2 border-dashed border-teal bg-white px-4 py-1.5 text-lg font-bold tracking-widest text-teal-deep">{code}</div>
             <a className="btn-primary w-full" href={LINE_OA_URL} target="_blank" rel="noreferrer" onClick={() => track("line_click", { code, source: "report" })}>
               💬 คุยกับทีม Baby &amp; Mom ที่ LINE OA
             </a>
-            <p className="mt-1 text-xs text-ink/50">พิมพ์รหัส {code} ในแชท หรือกด “แผนของฉัน” ในเมนู LINE</p>
+            <p className="mt-1 text-sm text-ink/75">พิมพ์รหัส {code} ในแชท หรือกด “แผนของฉัน” ในเมนู LINE</p>
           </div>
         ) : (
           <AdminHandoffCta
@@ -457,7 +495,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
       </section>
 
       {/* cautions / disclaimer — 🔒 ต้องอยู่ทุกเส้นทางการแสดงผล */}
-      <div className="glass p-4 text-xs text-ink/60">
+      <div className="glass p-4 text-sm text-ink/80">
         {report.cautions.map((c, i) => <p key={i} className="mb-1">⚠️ {c}</p>)}
       </div>
     </div>

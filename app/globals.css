@@ -20,6 +20,14 @@ body {
   font-family: "Prompt", "Noto Sans Thai", system-ui, sans-serif;
 }
 
+/* ค่าเริ่มต้นของขนาดตัวอักษรทั้งแอป — ขนาดใน Tailwind เป็น rem จึงอิงกับค่านี้ทั้งหมด
+   17.5px (ไม่ใช่ 16px มาตรฐานเบราว์เซอร์) เพราะผู้ใช้จริงอ่านภาษาไทยบนมือถือแล้วเล็กเกินไป
+   ⚠️ ต้องตรงกับ DEFAULT_ROOT_PX ใน lib/font-scale.ts เสมอ — ปุ่ม ก ก ก อ้างค่านี้เป็น "ขนาดปกติ"
+   ผู้ใช้ที่เคยกดเลือกขนาดไว้ จะถูกทับด้วยค่าที่เลือก (สคริปต์ใน app/layout.tsx) */
+html {
+  font-size: 17.5px;
+}
+
 /* App background — soft mint→pink hero gradient (matches website; skipped in embed mode) */
 body {
   background: linear-gradient(135deg, #e7f7f5 0%, #fdf0f6 48%, #ffe9f2 100%);

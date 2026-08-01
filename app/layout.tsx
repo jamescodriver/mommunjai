@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { FONT_SCALE_BOOT_SCRIPT } from "@/lib/font-scale";
 
 export const metadata: Metadata = {
   title: "Mommunjai — เตรียมตั้งครรภ์ by Baby & Mom",
@@ -21,6 +22,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th">
+      <head>
+        {/* ตั้งขนาดตัวอักษรที่ผู้ใช้เลือกไว้ (ปุ่ม ก ก ก) ตั้งแต่ก่อนวาดหน้าแรก
+            ไม่งั้นหน้าจะโหลดมาขนาดปกติแล้วค่อยกระตุกเป็นขนาดใหญ่ตอน React ทำงาน
+            สคริปต์นี้แตะแค่ style ของ <html> ซึ่ง React ไม่ได้ควบคุม จึงไม่ทำให้ hydrate เพี้ยน */}
+        <script dangerouslySetInnerHTML={{ __html: FONT_SCALE_BOOT_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   );

@@ -47,10 +47,10 @@ function KickCounter() {
 
   return (
     <div className="rounded-xl bg-white/70 p-3 text-center">
-      <div className="text-xs text-ink/60">จำนวนครั้งที่คุณนับได้</div>
+      <div className="text-sm text-ink/80">จำนวนครั้งที่คุณนับได้</div>
       <div className="font-display text-5xl font-bold text-teal-deep">{count}</div>
       {startedAt !== null && minutes >= 1 && (
-        <div className="mt-1 text-xs text-ink/50">เริ่มนับเมื่อประมาณ {minutes} นาทีที่แล้ว</div>
+        <div className="mt-1 text-sm text-ink/75">เริ่มนับเมื่อประมาณ {minutes} นาทีที่แล้ว</div>
       )}
       <div className="mt-3 flex gap-2">
         <button className="btn-primary flex-1" onClick={bump}>+ นับ 1 ครั้ง</button>
@@ -73,7 +73,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-ink/60">{data.trimesterNote}</p>
+      <p className="text-sm text-ink/80">{data.trimesterNote}</p>
 
       <div className="grid grid-cols-2 gap-2">
         {TOPICS.map((t) => (
@@ -97,7 +97,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
               <div className="mt-2 space-y-2">
                 {d.blocks.map((b) => (
                   <div key={b.weeks}>
-                    <div className="text-xs font-semibold text-teal-deep">{b.weeks}</div>
+                    <div className="text-sm font-semibold text-teal-deep">{b.weeks}</div>
                     <ul className="mt-0.5 list-disc pl-5 text-sm text-ink/80">
                       {b.items.map((x, i) => <li key={i}>{x}</li>)}
                     </ul>
@@ -106,7 +106,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
               </div>
             </Box>
           ))}
-          <p className="text-[11px] text-ink/40">ที่มา: {data.developmentSource}</p>
+          <p className="text-xs text-ink/75">ที่มา: {data.developmentSource}</p>
         </div>
       )}
 
@@ -119,13 +119,13 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
           <Box title="สิ่งที่เปลี่ยนตามไตรมาสจริง ๆ คือเหตุผลว่าทำไมตอนนี้ถึงสำคัญ">
             {(data.nutrients.focus ? [data.nutrients.focus] : data.nutrients.allFocus).map((f) => (
               <div key={f.trimester} className="mt-2 first:mt-0">
-                {!data.nutrients.focus && <div className="text-xs font-semibold text-teal-deep">ไตรมาสที่ {f.trimester}</div>}
+                {!data.nutrients.focus && <div className="text-sm font-semibold text-teal-deep">ไตรมาสที่ {f.trimester}</div>}
                 <ul className="mt-0.5 space-y-1 text-sm text-ink/80">
                   {f.focus.map((x, i) => <li key={i}>• {x.nutrient} — {x.why}</li>)}
                 </ul>
               </div>
             ))}
-            <p className="mt-2 text-xs text-rose-deep">⚠️ {data.nutrients.calciumMisreadWarning}</p>
+            <p className="mt-2 text-sm text-rose-deep">⚠️ {data.nutrients.calciumMisreadWarning}</p>
           </Box>
 
           <div className="rounded-xl bg-white/70 p-3">
@@ -133,7 +133,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
             <div className="mt-2 overflow-x-auto">
               <table className="w-full min-w-[420px] text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-ink/50">
+                  <tr className="text-left text-xs text-ink/75">
                     <th className="pb-1 font-medium">สารอาหาร</th>
                     <th className="pb-1 font-medium">ปริมาณ/วัน</th>
                     <th className="pb-1 font-medium">หน้าที่</th>
@@ -143,14 +143,14 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
                   {data.nutrients.items.map((n) => (
                     <tr key={n.name} className="border-t border-black/5 align-top">
                       <td className="py-1.5 pr-2 font-medium">{n.name}</td>
-                      <td className="py-1.5 pr-2 text-xs text-teal-deep">{n.amount}</td>
-                      <td className="py-1.5 text-xs text-ink/70">{n.role}</td>
+                      <td className="py-1.5 pr-2 text-sm text-teal-deep">{n.amount}</td>
+                      <td className="py-1.5 text-sm text-ink/80">{n.role}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="mt-1 text-[11px] text-ink/40">ที่มา: {data.nutrients.source}</p>
+            <p className="mt-1 text-xs text-ink/75">ที่มา: {data.nutrients.source}</p>
           </div>
 
           <Box tone="warn" title="ข้อควรระวังเรื่องอาหารเสริม">
@@ -193,7 +193,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
                 {mode.steps.map((s, i) => <li key={i}>{s}</li>)}
               </ol>
               {/* ป้ายกำกับที่มาของแต่ละโหมด — ถ้อยคำล็อกไว้ใน lib/calc/pregnancy.ts */}
-              <p className="mt-2 text-[11px] text-ink/50">{mode.provenance}</p>
+              <p className="mt-2 text-xs text-ink/75">{mode.provenance}</p>
             </Box>
           )}
 
@@ -201,12 +201,12 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
             <>
               <KickCounter />
               {/* 🔒 แทนที่จะสรุปผล — บอกตรง ๆ ว่าเราจะไม่สรุปผลให้ และทำไม */}
-              <p className="text-xs text-rose-deep">{data.kick.noVerdictRule}</p>
+              <p className="text-sm text-rose-deep">{data.kick.noVerdictRule}</p>
             </>
           )}
 
-          <p className="text-xs text-ink/60">{data.kick.gestationNote}</p>
-          <p className="text-[11px] text-ink/40">ℹ️ {data.kick.evidenceNote}</p>
+          <p className="text-sm text-ink/80">{data.kick.gestationNote}</p>
+          <p className="text-xs text-ink/75">ℹ️ {data.kick.evidenceNote}</p>
         </div>
       )}
 
@@ -223,27 +223,27 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
             >
               โทร {data.danger.cta.criticalTel} (เฉพาะกรณีวิกฤต)
             </a>
-            <p className="mt-2 text-xs text-ink/70">{data.danger.cta.noWaitRule}</p>
+            <p className="mt-2 text-sm text-ink/80">{data.danger.cta.noWaitRule}</p>
           </div>
 
-          <p className="text-xs text-ink/60">{data.danger.timeframeNote}</p>
+          <p className="text-sm text-ink/80">{data.danger.timeframeNote}</p>
 
           <div className="space-y-2">
             {data.danger.signs.map((s, i) => (
               <div key={i} className="rounded-xl bg-white/70 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="text-sm font-semibold">{s.sign}</div>
-                  <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-deep">{s.action}</span>
+                  <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-deep">{s.action}</span>
                 </div>
-                <p className="mt-1 text-xs text-ink/70">{s.detail}</p>
-                <p className="mt-1 text-xs text-ink/60">{s.why}</p>
-                <p className="mt-1 text-[11px] text-ink/40">ที่มา: {s.source}</p>
+                <p className="mt-1 text-sm text-ink/80">{s.detail}</p>
+                <p className="mt-1 text-sm text-ink/80">{s.why}</p>
+                <p className="mt-1 text-xs text-ink/75">ที่มา: {s.source}</p>
               </div>
             ))}
           </div>
 
           <Box tone="teal"><p className="text-sm text-ink/80">{data.danger.cta.closing}</p></Box>
-          <p className="text-[11px] text-ink/40">ที่มา: {data.danger.source}</p>
+          <p className="text-xs text-ink/75">ที่มา: {data.danger.source}</p>
         </div>
       )}
 
@@ -259,10 +259,10 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
                   {photo && <img src={photo} alt={product.name} loading="lazy" className="h-12 w-12 shrink-0 rounded-lg bg-white object-contain" />}
                   <div className="min-w-0 text-sm">
                     <div className="font-medium leading-tight">{product.name}</div>
-                    <div className="text-xs text-teal-deep">{product.price === null ? "สอบถามราคา" : `฿${product.price.toLocaleString()}`}</div>
-                    <p className="text-xs text-ink/70">{product.why}</p>
-                    {note && <p className="text-xs text-ink/60">{note}</p>}
-                    <p className="text-xs text-ink/50">
+                    <div className="text-sm text-teal-deep">{product.price === null ? "สอบถามราคา" : `฿${product.price.toLocaleString()}`}</div>
+                    <p className="text-sm text-ink/80">{product.why}</p>
+                    {note && <p className="text-sm text-ink/80">{note}</p>}
+                    <p className="text-sm text-ink/75">
                       วิธีทาน: {product.howto || "สอบถามทีม Baby & Mom ทาง LINE OA"}
                     </p>
                   </div>
@@ -283,8 +283,8 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
         🍱 ดูเมนูอาหารสำหรับคุณแม่ตั้งครรภ์ (เปิดเพจ Baby &amp; Mom)
       </a>
 
-      <p className="text-xs text-ink/60">⚠️ {MEDICAL_DISCLAIMER}</p>
-      <p className="text-[11px] text-ink/40">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
+      <p className="text-sm text-ink/80">⚠️ {MEDICAL_DISCLAIMER}</p>
+      <p className="text-xs text-ink/75">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
     </div>
   );
 }

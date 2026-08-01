@@ -45,7 +45,7 @@ function VolumeTable({ rows, caption }: { rows: { age: string; amount: string; p
               <tr key={r.age} className="border-t border-black/5 first:border-t-0">
                 <td className="py-1.5 pr-2">{r.age}</td>
                 <td className="py-1.5 pr-2 font-medium text-teal-deep">{r.amount}</td>
-                <td className="py-1.5 text-xs text-ink/60">{r.perWeight || ""}</td>
+                <td className="py-1.5 text-sm text-ink/80">{r.perWeight || ""}</td>
               </tr>
             ))}
           </tbody>
@@ -99,11 +99,11 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
           {/* 🔒 ต้องอยู่คู่กับตัวเลขเสมอ — ตัวเลขรอบปั๊มคือความเห็นผู้เชี่ยวชาญ ไม่ใช่เป้า */}
           <Box tone="warn"><p className="text-sm text-ink/80">{data.pump.evidenceNote}</p></Box>
           <Box title="สิ่งที่เราเลือกจะไม่เขียน เพราะยืนยันไม่ได้">
-            <ul className="space-y-1 text-xs text-ink/70">
+            <ul className="space-y-1 text-sm text-ink/80">
               {data.pump.notInThisApp.map((x, i) => <li key={i}>• {x}</li>)}
             </ul>
           </Box>
-          <p className="text-[11px] text-ink/40">ที่มา: {data.pump.source}</p>
+          <p className="text-xs text-ink/75">ที่มา: {data.pump.source}</p>
         </div>
       )}
 
@@ -116,13 +116,13 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-ink/80">
               {data.nourishment.whatWorks.order.map((x, i) => <li key={i}>{x}</li>)}
             </ol>
-            <p className="mt-2 text-xs text-ink/60">{data.nourishment.whatWorks.abmQuote}</p>
-            <p className="mt-1 text-[11px] text-ink/40">ที่มา: {data.nourishment.whatWorks.source}</p>
+            <p className="mt-2 text-sm text-ink/80">{data.nourishment.whatWorks.abmQuote}</p>
+            <p className="mt-1 text-xs text-ink/75">ที่มา: {data.nourishment.whatWorks.source}</p>
           </Box>
 
           <Box title={data.nourishment.energy.headline}>
             <p className="text-sm text-ink/80">{data.nourishment.energy.detail}</p>
-            <p className="mt-1 text-[11px] text-ink/40">ที่มา: {data.nourishment.energy.source}</p>
+            <p className="mt-1 text-xs text-ink/75">ที่มา: {data.nourishment.energy.source}</p>
           </Box>
 
           <Box title="ทำไมเราเปลี่ยนชื่อหัวข้อนี้">
@@ -135,21 +135,21 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
               {data.nourishment.thaiWisdom.map((w) => (
                 <div key={w.name} className="border-t border-black/5 pt-2 first:border-t-0 first:pt-0">
                   <div className="text-sm font-medium">{w.name}</div>
-                  <p className="text-xs text-ink/70">{w.tradition}</p>
+                  <p className="text-sm text-ink/80">{w.tradition}</p>
                   {/* 🔒 ฟิลด์เดียวที่พูดถึงปริมาณน้ำนมได้ และพูดตามผลวิจัยจริงเท่านั้น */}
-                  <p className="mt-1 text-xs text-ink/80">หลักฐาน: {w.evidence}</p>
-                  <p className="mt-1 text-xs text-ink/60">{w.howWePresentIt}</p>
+                  <p className="mt-1 text-sm text-ink/80">หลักฐาน: {w.evidence}</p>
+                  <p className="mt-1 text-sm text-ink/80">{w.howWePresentIt}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-ink/70">{data.nourishment.consensus}</p>
+            <p className="mt-2 text-sm text-ink/80">{data.nourishment.consensus}</p>
           </div>
 
           <Box title="ความเชื่อที่งานวิจัยไม่รองรับ">
             <ul className="space-y-2 text-sm text-ink/80">
               {data.nourishment.myths.map((m, i) => (
                 <li key={i}>
-                  <div className="text-ink/60">ที่มักได้ยิน: {m.myth}</div>
+                  <div className="text-ink/80">ที่มักได้ยิน: {m.myth}</div>
                   <div>ตามงานวิจัย: {m.fact}</div>
                 </li>
               ))}
@@ -165,11 +165,11 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
           <Box tone="warn"><p className="text-sm text-ink/80">{data.volume.topWarning}</p></Box>
           <VolumeTable rows={data.volume.colostrum} caption="น้ำนมเหลือง (โคลอสตรุม) ต่อมื้อ ในไม่กี่วันแรก" />
           <VolumeTable rows={data.volume.daily} caption="ปริมาณน้ำนมแม่รวมต่อวัน (นมแม่ล้วน ทารกครบกำหนด)" />
-          <p className="text-[11px] text-ink/40">ที่มา: {data.volume.source}</p>
+          <p className="text-xs text-ink/75">ที่มา: {data.volume.source}</p>
 
           <Box tone="teal" title={data.volume.insight.headline}>
             <p className="text-sm text-ink/80">{data.volume.insight.detail}</p>
-            <p className="mt-1 text-[11px] text-ink/40">ที่มา: {data.volume.insight.source}</p>
+            <p className="mt-1 text-xs text-ink/75">ที่มา: {data.volume.insight.source}</p>
           </Box>
 
           <Box title="สิ่งที่ควรดูแทนการนับออนซ์">
@@ -203,17 +203,17 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
               โทร {data.postpartumDanger.cta.criticalTel} (เฉพาะกรณีวิกฤต)
             </a>
           </div>
-          <p className="text-xs text-ink/60">{data.postpartumDanger.cta.timeframeNote}</p>
+          <p className="text-sm text-ink/80">{data.postpartumDanger.cta.timeframeNote}</p>
           <div className="space-y-2">
             {data.postpartumDanger.signs.map((s, i) => (
               <div key={i} className="rounded-xl bg-white/70 p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="text-sm font-semibold">{s.sign}</div>
-                  <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-deep">{s.action}</span>
+                  <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-deep">{s.action}</span>
                 </div>
-                <p className="mt-1 text-xs text-ink/70">{s.detail}</p>
-                <p className="mt-1 text-xs text-ink/60">{s.why}</p>
-                <p className="mt-1 text-[11px] text-ink/40">ที่มา: {s.source}</p>
+                <p className="mt-1 text-sm text-ink/80">{s.detail}</p>
+                <p className="mt-1 text-sm text-ink/80">{s.why}</p>
+                <p className="mt-1 text-xs text-ink/75">ที่มา: {s.source}</p>
               </div>
             ))}
           </div>
@@ -227,7 +227,7 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
           <div className="text-sm font-semibold text-teal-deep">ของบำรุงสำหรับคุณแม่ในช่วงนี้</div>
           {/* 🔒 ประโยคนี้ทำหน้าที่ 2 อย่าง: บอกกรอบที่ถูกกฎหมาย (ของแม่ ไม่ใช่ของเด็ก)
               และกันการเข้าใจผิดว่าสินค้าเหล่านี้เกี่ยวกับปริมาณน้ำนม */}
-          <p className="mt-1 text-xs text-ink/60">
+          <p className="mt-1 text-sm text-ink/80">
             ทั้งหมดนี้เป็นอาหารและเครื่องดื่มบำรุงสำหรับตัวคุณแม่ ไม่ใช่ผลิตภัณฑ์สำหรับเด็ก และไม่ได้เป็นคำแนะนำเรื่องปริมาณน้ำนม
           </p>
           <ul className="mt-2 space-y-2">
@@ -238,10 +238,10 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
                   {photo && <img src={photo} alt={product.name} loading="lazy" className="h-12 w-12 shrink-0 rounded-lg bg-white object-contain" />}
                   <div className="min-w-0 text-sm">
                     <div className="font-medium leading-tight">{product.name}</div>
-                    <div className="text-xs text-teal-deep">{product.price === null ? "สอบถามราคา" : `฿${product.price.toLocaleString()}`}</div>
-                    <p className="text-xs text-ink/70">{product.why}</p>
-                    {note && <p className="text-xs text-ink/60">{note}</p>}
-                    <p className="text-xs text-ink/50">
+                    <div className="text-sm text-teal-deep">{product.price === null ? "สอบถามราคา" : `฿${product.price.toLocaleString()}`}</div>
+                    <p className="text-sm text-ink/80">{product.why}</p>
+                    {note && <p className="text-sm text-ink/80">{note}</p>}
+                    <p className="text-sm text-ink/75">
                       ปริมาณช่วงให้นม: {amount || product.howto || "สอบถามทีม Baby & Mom ทาง LINE OA"}
                     </p>
                   </div>
@@ -262,8 +262,8 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
         🍱 ดูเมนูอาหารสำหรับคุณแม่หลังคลอด (เปิดเพจ Baby &amp; Mom)
       </a>
 
-      <p className="text-xs text-ink/60">⚠️ {MEDICAL_DISCLAIMER}</p>
-      <p className="text-[11px] text-ink/40">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
+      <p className="text-sm text-ink/80">⚠️ {MEDICAL_DISCLAIMER}</p>
+      <p className="text-xs text-ink/75">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
     </div>
   );
 }
