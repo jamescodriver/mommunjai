@@ -8,21 +8,29 @@
 //   (404 ใน console + layout กระตุกตอน fallback) — ตรวจจากรายชื่อคือคำตอบที่แน่นอนกว่า
 //
 // ไฟล์จริงอยู่ที่ public/products/<id>.jpg โดย <id> = id ของสินค้าใน lib/calc/vitamins.ts เป๊ะ ๆ
-// (ตัดจาก leaflet ของแบรนด์ · ต้นฉบับสำรองไว้ที่ assets/products/)
+// (ต้นฉบับความละเอียดสูงจากแบรนด์อยู่ที่ source/product photo/ · สำเนาที่ประมวลผลแล้ว
+//  เก็บคู่ไว้ที่ assets/products/ · แต่ละไฟล์ถูก trim ขอบขาว + วางกลางผืนจัตุรัส 640×640
+//  เพื่อให้ object-contain ในตารางไม่บิดและขนาดสินค้าดูสม่ำเสมอกัน)
 
-/** 19 รายการที่มีไฟล์รูปจริงใน public/products/ */
+/** 25 รายการที่มีไฟล์รูปจริงใน public/products/ */
 export const PRODUCT_PHOTO_IDS = [
   "aos",
+  "bananaflower",
   "castoroil",
   "collatelo",
+  "ferta",
   "ferti9oil",
   "ferty",
   "ginger",
+  "goatmilk",
   "goodgrain",
   "kaffirhoney",
   "kaffirshot",
+  "motila1",
+  "mzall",
   "nightshot",
   "ovaall",
+  "pcovit",
   "phytocrystalc",
   "probiotics",
   "pureblack",
@@ -35,8 +43,8 @@ export const PRODUCT_PHOTO_IDS = [
 
 const PHOTO_SET: ReadonlySet<string> = new Set(PRODUCT_PHOTO_IDS);
 
-/** สินค้าที่ยังไม่มีรูป (PRD R3 Open Question #3 — รอ leaflet ชุดใหม่/ถ่ายใหม่จากทีมครูก้อย):
- *  pcovit · ferta · mzall · motila1 · goatmilk · blackchickensoup · bananaflower */
+/** เหลือรายการเดียวที่ยังไม่มีรูป: **blackchickensoup** (ซุปไก่ดำ)
+ *  — ไม่มีอยู่ในชุดภาพที่แบรนด์ส่งมา (source/product photo, 1 ส.ค. 2026) */
 export function hasProductPhoto(id: string): boolean {
   return PHOTO_SET.has(id);
 }

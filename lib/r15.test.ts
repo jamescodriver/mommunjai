@@ -102,21 +102,26 @@ describe("R15 — ไขมันดี (EPA+DHA) ต่อหมวด", () => 
 
 // ── R15 · TC-15-07 — รูปสินค้า มี/ไม่มี ─────────────────────────────────────
 describe("R15 — รูปสินค้าในตารางวิตามิน (TC-15-07)", () => {
-  const MISSING = ["pcovit", "ferta", "mzall", "motila1", "goatmilk", "blackchickensoup", "bananaflower"];
+  // อ่านจากดิสก์จริง ไม่ฮาร์ดโค้ดจำนวน — ชุดภาพจากแบรนด์เพิ่มได้เรื่อย ๆ (1 ส.ค. 2026
+  // ได้ต้นฉบับความละเอียดสูงมาแทน crop จาก leaflet และเติมของที่ขาดไป 6 รายการ)
+  // เทสต์ชุดนี้จึงต้องยืนยัน "list ตรงกับไฟล์จริง" แทนการล็อกตัวเลขไว้เฉย ๆ
+  const filesOnDisk = fs
+    .readdirSync(path.join(process.cwd(), "public", "products"))
+    .filter((f) => f.endsWith(".jpg"))
+    .map((f) => f.replace(/\.jpg$/, ""))
+    .sort();
+  const MISSING = Object.keys(PRODUCTS).filter((id) => !PRODUCT_PHOTO_IDS.includes(id as any));
 
-  it("มีรูป 19 รายการ และทุก id ต้องเป็นสินค้าจริงใน PRODUCTS (กัน list เพี้ยน)", () => {
-    expect(PRODUCT_PHOTO_IDS).toHaveLength(19);
-    for (const id of PRODUCT_PHOTO_IDS) expect(PRODUCTS[id]).toBeTruthy();
+  it("PRODUCT_PHOTO_IDS ต้องตรงกับไฟล์บนดิสก์เป๊ะทั้งสองทาง (กัน list เพี้ยน/ไฟล์หาย)", () => {
+    expect([...PRODUCT_PHOTO_IDS].sort()).toEqual(filesOnDisk);
+    for (const id of PRODUCT_PHOTO_IDS) expect(PRODUCTS[id], `${id} ไม่มีใน PRODUCTS`).toBeTruthy();
   });
 
-  it("ไฟล์รูปมีอยู่จริงบนดิสก์ทุกรายการที่ประกาศไว้", () => {
-    for (const id of PRODUCT_PHOTO_IDS) {
-      const f = path.join(process.cwd(), "public", "products", `${id}.jpg`);
-      expect(fs.existsSync(f), `ไม่พบไฟล์ ${f}`).toBe(true);
-    }
+  it("ตอนนี้เหลือสินค้าเดียวที่ยังไม่มีรูป: ซุปไก่ดำ (เตือนเมื่อแบรนด์ส่งมาแล้ว)", () => {
+    expect(MISSING).toEqual(["blackchickensoup"]);
   });
 
-  it("สินค้า 7 ตัวที่ยังไม่มีรูป → hasProductPhoto false และ src เป็น null (ไม่ยิงรูปแตก)", () => {
+  it("สินค้าที่ยังไม่มีรูป → hasProductPhoto false และ src เป็น null (ไม่ยิงรูปแตก)", () => {
     for (const id of MISSING) {
       expect(PRODUCTS[id], `${id} หายไปจาก PRODUCTS`).toBeTruthy();
       expect(hasProductPhoto(id)).toBe(false);
@@ -130,10 +135,10 @@ describe("R15 — รูปสินค้าในตารางวิตา�
   });
 
   it("🔒 สินค้าไม่มีรูป ต้องยัง \"ถูกแนะนำ\" ตามปกติ ไม่ถูกซ่อนออกจากรายงาน", () => {
-    // ชาย: mzall + ferta ไม่มีรูปทั้งคู่ แต่ต้องยังอยู่ในตาราง
-    const r = generateReport({ nickname: "โต้ง", stage: "male" });
+    // ซุปไก่ดำยังไม่มีรูป แต่ต้องยังอยู่ในแผนของแม่ให้นมตามปกติ
+    const r = generateReport({ nickname: "ก้อย", stage: "lactating" });
     const ids = r.vitamins.map((v) => v.id);
-    expect(ids).toContain("mzall");
+    expect(ids).toContain("blackchickensoup");
     expect(ids.some((id) => !hasProductPhoto(id))).toBe(true);
   });
 
