@@ -67,12 +67,16 @@ export default function Home() {
           </div>
           <h3 className="mt-3 text-lg font-semibold">{CATEGORIES[0].title}</h3>
           <p className="mt-1 text-base text-ink/70">{CATEGORIES[0].desc}</p>
-          <div className="mt-3 flex gap-2">
+          {/* บนจอ lg ขึ้นไปการ์ดนี้กว้างแค่ ~258px (กริด 4 คอลัมน์) เหลือที่ให้ตัวอักษร
+              ในปุ่มแค่ ~57px → "ฝ่ายหญิง →" ตกเป็น 3 บรรทัดจนปุ่มกลายเป็นวงกลม
+              จึงให้เรียงลงแทนตอนการ์ดแคบ + กันตกบรรทัดด้วย whitespace-nowrap ทุกกรณี
+              (แก้ที่ padding อย่างเดียวไม่พอ — พอขนาดตัวอักษรฐานโตขึ้นก็กลับมาตกอีก) */}
+          <div className="mt-3 flex gap-2 lg:flex-col">
             {/* R1 (PRD-UPDATE-R3-3107 · TC-01-01) — ปุ่มหลักของการ์ดนี้ใบเดียวเปลี่ยนเป็น
                 "ฝ่ายหญิง →" ให้เป็นคู่กับปุ่มรอง "ฝ่ายชาย →" · การ์ดอีก 3 ใบยังเป็น
                 "เริ่มเลย →" เหมือนเดิม (TC-01-02) */}
-            <Link href={CATEGORIES[0].href} className="btn-primary !min-h-0 flex-1 !py-2 text-sm">ฝ่ายหญิง →</Link>
-            <Link href="/plan?stage=male" className="btn-ghost !min-h-0 flex-1 !py-2 text-sm">ฝ่ายชาย →</Link>
+            <Link href={CATEGORIES[0].href} className="btn-primary !min-h-0 flex-1 whitespace-nowrap !px-3 !py-2 text-sm">ฝ่ายหญิง →</Link>
+            <Link href="/plan?stage=male" className="btn-ghost !min-h-0 flex-1 whitespace-nowrap !px-3 !py-2 text-sm">ฝ่ายชาย →</Link>
           </div>
         </div>
 
