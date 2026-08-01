@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Scenario &amp; Test Report — Mommunjai (ฉบับสมบูรณ์)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --ok:#159C97; --ok-soft:#E6F7F6; --warn:#B8860B; --warn-soft:#FBF1DA; --bad:#E14F97; --bad-soft:#FFE7F1;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.7;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding:24px 18px 90px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins,sans-serif;font-size:21px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.9;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 12px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-align:center}
+.stat b{display:block;font-size:24px;font-family:Poppins,sans-serif;color:var(--teal-deep)}
+.stat span{font-size:12px;color:#6B7280}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar button{font:inherit;font-size:12.5px;font-weight:600;color:var(--teal-deep);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.toolbar button:hover{background:var(--teal-soft)}
+.part-title{font-family:Poppins,sans-serif;font-size:18px;font-weight:600;color:var(--teal-deep);margin:28px 0 6px;padding-top:8px;border-top:2px solid var(--teal-soft)}
+.part-sub{font-size:13px;color:#6B7280;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(31,41,55,.04)}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;background:var(--rose-soft);color:var(--rose-deep);padding:3px 10px;border-radius:999px}
+.num{font-size:11.5px;font-weight:700;color:#9CA3AF;font-family:Poppins,sans-serif}
+.status{margin-left:auto;font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:999px}
+.status.sm{margin-left:0;padding:2px 9px;font-size:10.5px}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.warn{background:var(--warn-soft);color:var(--warn)}
+.status.bad{background:var(--bad-soft);color:var(--bad)}
+h3{font-family:Poppins,sans-serif;font-size:15.5px;margin:6px 0 12px;color:var(--ink)}
+.kv{margin-bottom:8px}
+.kv b{display:block;font-size:11.5px;color:var(--teal-deep);font-weight:700;margin-bottom:2px}
+.kv p{margin:0;font-size:13.5px}
+.ev{font-size:11.5px;color:#8B95A1;border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
+.note{background:var(--warn-soft);color:#7A5A0E;border-radius:10px;padding:10px 14px;font-size:12.5px;margin:8px 0}
+details.tech{margin-top:8px;font-size:13px}
+details.tech summary{cursor:pointer;color:var(--teal-deep);font-weight:600;font-size:12.5px;padding:6px 0}
+.cases{margin-top:8px;display:grid;gap:8px}
+.case{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.case-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.case code{background:var(--teal-soft);padding:1px 6px;border-radius:6px;font-size:11px}
+.case p{margin:3px 0;font-size:12.5px}
+.comment{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.comment label{display:block;font-size:11.5px;color:#8B95A1;margin-bottom:4px}
+.comment textarea{width:100%;min-height:46px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;resize:vertical;background:#FBFCFE}
+.comment textarea:focus{outline:2px solid var(--teal);border-color:transparent}
+.savedMark{position:fixed;bottom:18px;right:18px;background:var(--teal-deep);color:#fff;padding:8px 16px;border-radius:999px;font-size:12.5px;font-weight:600;opacity:0;transition:opacity .3s;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.savedMark.show{opacity:1}
+footer.note2{margin-top:28px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media print{ .toolbar,.comment{display:none} details{ }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>🧪 Test Scenario &amp; Test Report — Mommunjai</h1>
+  <p>สร้าง 1 สิงหาคม 2569 · แบ่ง 2 ภาค: (1) ข้อกำหนดหลักของระบบ (2) ตามคอมเมนต์ใน PDF ล่าสุด (31 กรกฎาคม 2569)</p>
+  <div class="src">เอกสารนี้อ่านง่าย ไม่ต้องมีพื้นฐานเทคนิค — แต่ละข้อมี "สิ่งที่ต้องเป็น" + "ผลตรวจจริง" ให้รีวิวได้ทันที กดปุ่มรายละเอียดเพื่อดูหลักฐานเชิงลึกได้ถ้าต้องการ</div>
+</header>
+
+<div class="summary">
+  <div class="stat"><b>26</b><span>ข้อกำหนดหลัก (ภาค 1)</span></div>
+  <div class="stat"><b>26/26</b><span>ผ่านทั้งหมด (ภาค 1)</span></div>
+  <div class="stat"><b>15</b><span>หัวข้อจากคอมเมนต์ PDF (ภาค 2)</span></div>
+  <div class="stat"><b>14/15</b><span>ผ่าน · 1 รอทดสอบบน server จริง</span></div>
+</div>
+
+<div class="toolbar">
+  <button id="expandAll">กางรายละเอียดทั้งหมด</button>
+  <button id="collapseAll">พับรายละเอียดทั้งหมด</button>
+  <button id="exportBtn">ส่งออกความเห็นทั้งหมด (.md)</button>
+  <button onclick="window.print()">พิมพ์ / PDF</button>
+</div>
+
+<h2 class="part-title">ภาค 1 — ข้อกำหนดหลักของระบบ (Main Requirement)</h2>
+<p class="part-sub">ครอบคลุมทั้งระบบ: 9 เครื่องมือ · แบบสอบถามหลัก · ความปลอดภัยของแผนฉบับเต็ม · LINE OA · ระบบแอดมิน · ความอ่านง่าย · กฎหมาย — ไม่ผูกกับคอมเมนต์รอบใดรอบหนึ่งของลูกค้า เป็นสิ่งที่ระบบต้องทำถูกเสมอ</p>
+<div class="grid">
+<article class="card" id="MR-01">
+  <div class="card-head">
+    <span class="tag">หน้าแรก</span>
+    <span class="num">MR-01</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>หน้าแรกแสดง 4 หมวดชีวิต + 9 เครื่องมือครบ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ผู้ใช้เห็นการ์ด 4 หมวด (เตรียมตั้งครรภ์/มีบุตรยาก/ตั้งครรภ์แล้ว/ให้นมบุตร) และเครื่องมือแยก 9 ใบ ทุกลิงก์ใช้งานได้จริง</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>เปิดหน้าแรกจริง เห็นครบทั้ง 4 การ์ด + 9 เครื่องมือ ทุกลิงก์พาไปหน้าเครื่องมือที่ถูกต้อง ไม่มีลิงก์ตาย</p></div>
+  <div class="ev">หลักฐาน: ตรวจในเบราว์เซอร์จริง 1 ส.ค. 2026 (16 เส้นทางหลัก ตอบ 200 ทั้งหมด)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-01" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-02">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-02</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ทุกเครื่องมือ (9 ตัว) เปิดใช้งานได้ ไม่มีหน้าขาว/error</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>นับวันไข่ตก · คำนวณโปรตีน · เช็กสารอาหาร · คำนวณการนอน · เช็คน้ำ · ออกกำลังกาย · ตรวจร่างกาย · ทดสอบความเครียด · แนะนำวิตามิน เปิดได้ทุกตัว</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทุกหน้าเปิดสำเร็จและมีเนื้อหาแสดงผลจริง (ไม่ใช่หน้าว่าง) หลังรอ JavaScript โหลดเสร็จ</p></div>
+  <div class="ev">หลักฐาน: ตรวจสถานะ HTTP + เนื้อหาในเบราว์เซอร์จริงทั้ง 9 หน้า</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-02" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-03">
+  <div class="card-head">
+    <span class="tag">ความปลอดภัย</span>
+    <span class="num">MR-03</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ทุกหน้าเครื่องมือต้องมีคำเตือนทางการแพทย์</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ทุกหน้าที่ให้ผลลัพธ์สุขภาพต้องมีข้อความ &#x27;ไม่ใช่การวินิจฉัยของแพทย์&#x27; กำกับเสมอ</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>พบข้อความคำเตือนครบทุกหน้า (ยืนยันด้วยโค้ดที่ฝังคำเตือนไว้ในโครงกลางที่ทุกหน้าเครื่องมือใช้ร่วมกัน จึงไม่มีทางลืมใส่)</p></div>
+  <div class="ev">หลักฐาน: ตรวจโค้ด ToolShell/Disclaimer component + เปิดหน้าจริงยืนยัน 9/9 หน้า</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-03" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-04">
+  <div class="card-head">
+    <span class="tag">ความปลอดภัย/PDPA</span>
+    <span class="num">MR-04</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ทุกหน้าเครื่องมือต้องขอความยินยอม (consent) ก่อนใช้</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ผู้ใช้ต้องกดยินยอมก่อนเห็นคำถาม/ผลลัพธ์ ในทุกเครื่องมือ ไม่ใช่แค่หน้าแบบสอบถามหลัก</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทุกหน้าเครื่องมือมีกล่องขอความยินยอมฝังอยู่ในโครงกลางเดียวกับคำเตือนแพทย์ (ข้อ MR-03) ทำงานร่วมกับระบบยินยอมของแบบสอบถามหลัก</p></div>
+  <div class="ev">หลักฐาน: ตรวจโค้ด ConsentGate ที่ฝังในทุกหน้าเครื่องมือ</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-04" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-05">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-05</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>นับวันไข่ตก — คำนวณช่วงมีโอกาสสูงถูกต้อง + คำเตือนคุมกำเนิด</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>คำนวณจากวันประจำเดือนล่าสุด+ความยาวรอบ ได้ช่วงไข่ตก/มีโอกาสสูง พร้อมคำเตือน &#x27;ใช้คุมกำเนิดไม่ได้&#x27;</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>สูตรคำนวณผ่านการทดสอบอัตโนมัติครบทุกกรณี (รอบปกติ/รอบสั้น-ยาว/PCOS) คำเตือนแสดงครบ</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติ &#x27;ovulation (M2)&#x27;</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-05" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-06">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-06</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>คำนวณโปรตีน — เป้าตามน้ำหนัก+ช่วงชีวิต แปลงเป็นอาหารจริง</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ได้เป้าโปรตีนเป็นช่วงตัวเลข (กรัม/วัน) ตามน้ำหนักและช่วงชีวิต พร้อมแปลงเป็นไข่/เนื้อสัตว์/Ferty</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>คำนวณถูกต้องตามสูตรที่อ้างอิงเอกสารโภชนาการของแบรนด์ทุกช่วงชีวิต (เตรียมตั้งครรภ์/ตั้งครรภ์/ให้นม/ฝ่ายชาย)</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติ &#x27;protein (M3)&#x27;</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-06" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-07">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-07</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>คำนวณการนอน — 2 โหมด (แนะนำเวลา / ประเมินจริง)</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>โหมดแนะนำเวลาเข้านอนตามรอบหลับ 90 นาที และโหมดประเมินเวลานอนจริงเทียบเป้า 7–9 ชม. ก่อน 4 ทุ่ม</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทั้ง 2 โหมดคำนวณถูกต้อง โหมดแนะนำเวลาไม่ให้คะแนนมั่ว (แก้บั๊กเดิมที่เคยให้คะแนนทั้งที่ยังไม่ได้ประเมินอะไรจริง)</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติ &#x27;sleep (M5)&#x27; + &#x27;report — sleep tool mode A&#x27;</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-07" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-08">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-08</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>เช็คปริมาณน้ำ — สูตร 30–35 มล./กก. + โบนัสตั้งครรภ์/ให้นม</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>คำนวณเป้าน้ำดื่มจากน้ำหนัก บวกโบนัสให้กลุ่มตั้งครรภ์/ให้นมบุตรที่ต้องการน้ำมากกว่าคนทั่วไป</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>คำนวณถูกต้องตามสูตร ครบทุกช่วงชีวิต</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติ &#x27;water (PDF-17)&#x27; + &#x27;report — water pillar&#x27;</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-08" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-09">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-09</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>แนะนำการออกกำลังกาย — คัดกรองข้อห้ามเฉพาะช่วงตั้งครรภ์</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>แนะนำโปรแกรมออกกำลังกายตามระดับที่เคยทำมาก่อน (baseline) และคัดกรองข้อห้ามเฉพาะกลุ่มตั้งครรภ์ตามมาตรฐานสากล</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทำงานถูกต้องตามงานวิจัยที่อ้างอิง (WHO 2020 / SOGC-CSEP 2019) — ไม่มีมาตรฐานไหนแบ่งตามอายุ จึงใช้ baseline-fitness แทนอายุตามที่งานวิจัยแนะนำจริง</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติเฉพาะเครื่องมือออกกำลังกาย (13 เคส) + ผ่าน red-team รอบแรก</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-09" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-10">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-10</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ตรวจร่างกาย (ฮอร์โมน) — ให้ความรู้เท่านั้น ไม่รับผลตรวจจริง</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ให้ความรู้เรื่องฮอร์โมน/ค่าน้ำเชื้อที่ควรตรวจ โดยไม่เก็บผลตรวจจริงของผู้ใช้ (ลดภาระข้อมูลอ่อนไหว)</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ยืนยันแล้วว่าหน้านี้ไม่มีช่องกรอกผลตรวจใด ๆ เป็นเนื้อหาความรู้ล้วน อ้างอิง ASRM/WHO</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติเฉพาะเครื่องมือตรวจร่างกาย (7 เคส) + ตรวจโค้ดหน้ายืนยันไม่มี input ผลตรวจ</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-10" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-11">
+  <div class="card-head">
+    <span class="tag">เครื่องมือ</span>
+    <span class="num">MR-11</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ทดสอบความเครียด (ST-5) — คะแนนสูงต้องเห็นสายด่วนก่อนสินค้าเสมอ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ใช้แบบวัด ST-5 ของกรมสุขภาพจิต (5 ข้อ, 0–15 คะแนน) คะแนนสูง (8 ขึ้นไป) ต้องแสดงคำแนะนำ+สายด่วน 1323 มาก่อนและเด่นกว่าสินค้าเสมอ</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ผ่านครบทุกระดับคะแนน สินค้าที่แนะนำอยู่ใต้หัวข้อ &#x27;ตัวช่วย&#x27; เสมอ ไม่เคยอยู่เหนือคำแนะนำช่วยเหลือ</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบอัตโนมัติเฉพาะเครื่องมือความเครียด (22 เคส)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-11" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-12">
+  <div class="card-head">
+    <span class="tag">วิตามิน</span>
+    <span class="num">MR-12</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>แนะนำวิตามิน 26 รายการ — กรองตามช่วงชีวิต/แผนการรักษาถูกต้องเสมอ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>สินค้าที่ต้องหยุดในบางช่วง (เช่น ช่วงตั้งครรภ์/ให้นม/หลังใส่ตัวอ่อน) ต้องถูกกรองออกอัตโนมัติ ไม่มีทางหลุดผ่านฟีเจอร์ใหม่ใดๆ</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบครบทุกเส้นทางที่แนะนำสินค้า (กฎอายุ, กฎพฤติกรรมฝ่ายชาย, กฎปัญหาเฉพาะ) ยืนยันว่ากรองผ่านตัวกรองความปลอดภัยกลางเสมอ ไม่มีทางเลี่ยงผ่าน</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ &#x27;Safety Matrix — allowedIn() ยังกรองได้ครบทุก code path ใหม่&#x27;</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-12" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-13">
+  <div class="card-head">
+    <span class="tag">แบบสอบถาม</span>
+    <span class="num">MR-13</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>แบบสอบถามหลักถามคำถามต่างกันตามช่วงชีวิต ไม่ถามสิ่งที่ไม่เกี่ยว</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>แต่ละช่วงชีวิต (5 แบบ) เจอคำถามเฉพาะของตัวเอง — เช่น เตรียมตั้งครรภ์/ให้นมบุตรไม่ต้องเจอคำถามกระบวนการทางการแพทย์</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ยืนยันครบทุก stage · พบและแก้บั๊กสำคัญระหว่างพัฒนา: ค่าที่ไม่ได้ถามในบาง stage เคยติดค้างไปกับการส่งได้ ตอนนี้ถูกล้างอัตโนมัติก่อนส่งเสมอ</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ plan-steps (13 เคส) ครอบคลุมทั้ง 5 stage</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-13" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-14">
+  <div class="card-head">
+    <span class="tag">PDPA</span>
+    <span class="num">MR-14</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ระบบยินยอม (consent) มีเวอร์ชัน — เปลี่ยนนโยบายต้องขอยินยอมใหม่</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ถ้าขอบเขตข้อมูลที่เก็บเปลี่ยนไป (เช่น เพิ่มคำถามใหม่) ผู้ใช้ต้องถูกถามยินยอมใหม่ ไม่ใช่ใช้ความยินยอมเดิมตลอดไป</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ระบบมีเลขเวอร์ชันความยินยอมกำกับ และจะถามใหม่อัตโนมัติเมื่อเวอร์ชันเปลี่ยน</p></div>
+  <div class="ev">หลักฐาน: ตรวจโค้ด CONSENT_POLICY_VERSION + needsConsentAgain()</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-14" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-15">
+  <div class="card-head">
+    <span class="tag">🔒ความปลอดภัย</span>
+    <span class="num">MR-15</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>แผนบำรุง 90 วันฉบับเต็ม ต้องไม่มีทางเห็นได้จากในเว็บเลย ไม่ว่ากรณีใด</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ไม่ว่าจะตอบคำถามแบบไหน (แม้แต่กลุ่มที่กำลังทำเด็กหลอดแก้ว ซึ่งเดิมเคยได้แผนเต็มทันที) ต้องเห็นแค่สรุปสั้น + ต้องทักแอดมินใน LINE เท่านั้นถึงจะได้แผนเต็ม</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบยิงคำขอจริงครบ 5 ช่วงชีวิต × 5 คำตอบกระบวนการรักษา (25 ชุด) — ไม่มีชุดใดได้แผนเต็มติดกลับมาเลย พิสูจน์เพิ่มด้วยการจำลองย้อนกลับไปใช้โค้ดเดิมชั่วคราวแล้วเห็นเทสต์แดงจริง ยืนยันว่าตัวตรวจจับได้จริงไม่ใช่ตรวจไม่ครบ</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ lead-gate (11 เคส) ยิงเข้าตัวจัดการคำขอจริง</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-15" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-16">
+  <div class="card-head">
+    <span class="tag">ประสบการณ์ผู้ใช้</span>
+    <span class="num">MR-16</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>หน้าสรุปหลังกรอกเสร็จ ต้องมีตัวเลขของตัวเอง ไม่ใช่ข้อความลอย ๆ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ผู้ใช้ต้องเห็นตัวเลขเป้าหมายที่คำนวณจากคำตอบตัวเอง (โปรตีน/น้ำ/นอน/ออกกำลังกาย) ไม่ใช่คำว่า &#x27;ยังไม่ได้ประเมิน&#x27; ทุกช่อง</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>แก้จากบล็อกเดิมที่ว่างเปล่ากับคนส่วนใหญ่ (เพราะพึ่งผลจากเครื่องมือย่อยที่คนส่วนใหญ่ไม่เคยทำมาก่อน) เป็นตัวเลขที่คำนวณได้จริงจากคำตอบในแบบสอบถามเดียวกัน</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ lead-gate ส่วน teaser metrics + ตรวจในเบราว์เซอร์จริง</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-16" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-17">
+  <div class="card-head">
+    <span class="tag">ประสบการณ์ผู้ใช้</span>
+    <span class="num">MR-17</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ไม่ได้กรอกน้ำหนัก → เติมจากหน้าสรุปได้เลย ไม่ต้องเริ่มใหม่</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ถ้าผู้ใช้ข้ามคำถามน้ำหนัก/ส่วนสูงมา (ไม่บังคับกรอก) ต้องเติมได้จากหน้าสรุป แล้วเห็นตัวเลขคำนวณใหม่ทันที</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบจริงในเบราว์เซอร์: กรอกแล้วกดปุ่ม เห็นตัวเลขโปรตีน/น้ำขึ้นทันทีโดยไม่ต้องโหลดหน้าใหม่หรือกรอกแบบสอบถามซ้ำ</p></div>
+  <div class="ev">หลักฐาน: ตรวจในเบราว์เซอร์จริง 1 ส.ค. 2026 (จำลองเคสข้ามน้ำหนักแล้วเติมทีหลัง)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-17" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-18">
+  <div class="card-head">
+    <span class="tag">🔒ความปลอดภัย</span>
+    <span class="num">MR-18</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ช่องทางเติมน้ำหนักต้องปลอดภัย — แก้ของคนอื่นไม่ได้</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ต้องรู้รหัส ticket ถึงจะเติมได้ · เติมได้เฉพาะช่องที่ยังว่างเท่านั้น (ทับคำตอบเดิมไม่ได้) · ใช้ได้แค่ภายใน 24 ชม. หลังส่งฟอร์ม · มีการจำกัดความถี่การเรียกใช้งาน</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบครบทุกเงื่อนไข (รหัสผิดรูปแบบ/ค่านอกช่วง/ค่าที่สมเหตุสมผล) ผ่านทั้งหมด</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ /api/lead/measure (รวมอยู่ใน lead-gate 11 เคส)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-18" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-19">
+  <div class="card-head">
+    <span class="tag">LINE</span>
+    <span class="num">MR-19</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>การ์ดสรุปแผนใน LINE ต้องไม่มีคะแนน/ราคา/ชื่อสินค้า และมีคำเตือนเสมอ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>การ์ดที่ตอบกลับใน LINE OA ต้องไม่มีคะแนนแบบ x/100 (เสี่ยงถูกอ่านเป็นคำทำนาย) ไม่มีชื่อ/ราคาสินค้า (ไม่มีที่ใส่คำเตือนความปลอดภัยในแชท) และต้องมีคำเตือนแพทย์ทุกครั้ง</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบครบทุกช่วงชีวิต ไม่พบคะแนน/ราคา/ชื่อสินค้าหลุดเลย มีคำเตือนครบ 100% ใช้สีเขียวตรงตามแบรนด์จริง (ของเดิมเป็นสีที่ไม่ตรงไกด์แบรนด์)</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ line-flex (17 เคส)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-19" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-20">
+  <div class="card-head">
+    <span class="tag">LINE</span>
+    <span class="num">MR-20</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>LINE Webhook ตรวจสอบลายเซ็นก่อนประมวลผลทุกครั้ง (กันปลอมข้อความ)</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ข้อความที่เข้ามาต้องผ่านการตรวจสอบว่ามาจาก LINE จริง ก่อนจะประมวลผลใด ๆ — กันคนแอบส่งคำขอปลอม</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ใช้วิธีเปรียบเทียบแบบ timing-safe (กันการเดาผ่านจับเวลา) ตรวจสอบแล้วว่าทำงานถูกต้อง</p></div>
+  <div class="ev">หลักฐาน: ตรวจโค้ด verifyLineSignature() ในเครื่องมือเชื่อม LINE</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-20" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-21">
+  <div class="card-head">
+    <span class="tag">ระบบจดจำลูกค้า</span>
+    <span class="num">MR-21</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ลิงก์ &#x27;แผนของฉัน&#x27; จำลูกค้าข้ามอุปกรณ์ได้ ปลอมแปลงไม่ได้ หมดอายุตามกำหนด</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ลิงก์ที่ส่งกลับให้ลูกค้าทาง LINE ต้องผูกกับตัวตนจริง ปลอมขึ้นเองไม่ได้ และหมดอายุใน 60 วัน</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบครบ: ลิงก์ถูกต้องใช้งานได้ · ลิงก์ที่ถูกแก้ไข/ปลอมถูกปฏิเสธ · ลิงก์ที่หมดอายุถูกปฏิเสธ</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบ resume-token (5 เคส)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-21" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-22">
+  <div class="card-head">
+    <span class="tag">แอดมิน</span>
+    <span class="num">MR-22</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>หน้าแอดมิน/ทีมงาน ต้องล็อกอินก่อนเข้าถึงเสมอ</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>หน้า /admin /staff /leads ต้องเข้าไม่ได้ถ้ายังไม่ล็อกอิน ต้องถูกพาไปหน้าล็อกอินก่อน</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ตรวจแล้วว่ามีการกันทั้ง 2 ชั้น: ชั้นแรกกันไม่ให้เข้าหน้าเลยถ้าไม่มีการล็อกอิน ชั้นที่สองกันไม่ให้ดึงข้อมูลได้แม้เข้าหน้ามาได้ (กันสองชั้นไว้ กันพลาดชั้นใดชั้นหนึ่ง)</p></div>
+  <div class="ev">หลักฐาน: ตรวจโค้ด middleware + client-side guard + ทดสอบเปิดหน้าจริงโดยไม่ล็อกอิน</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-22" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-23">
+  <div class="card-head">
+    <span class="tag">แอดมิน</span>
+    <span class="num">MR-23</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>แก้ไข/ลบข้อมูลลูกค้า ต้องมีสิทธิ์เฉพาะ + บันทึกว่าใครแก้อะไร</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>เฉพาะผู้มีสิทธิ์ที่กำหนดเท่านั้นที่แก้ไข/ลบข้อมูลลูกค้าได้ และทุกการแก้ไขข้อมูลอ่อนไหวต้องมีบันทึกไว้ว่าเปลี่ยนจากอะไรเป็นอะไร</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ทดสอบครบ รวมถึงกรณีลบข้อมูลลูกค้าที่เป็น &#x27;จุดอ้างอิงหลัก&#x27; ของคนคนหนึ่ง ต้องโยกจุดอ้างอิงไปเรคคอร์ดอื่นก่อนลบเสมอ ไม่ให้ระบบเสียการเชื่อมโยง</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบสิทธิ์การแก้ไข/ลบ + ทดสอบยืนยันด้วยเบราว์เซอร์จริง</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-23" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-24">
+  <div class="card-head">
+    <span class="tag">ความอ่านง่าย</span>
+    <span class="num">MR-24</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>ขนาดตัวอักษร/สี ต้องอ่านง่ายบนมือถือและจอใหญ่ ปรับเองได้</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ตัวอักษรภาษาไทยต้องมีระยะบรรทัดพอสำหรับสระ/วรรณยุกต์ สีต้องเข้มพออ่านออก และผู้ใช้ต้องปรับขนาดเองได้ ไม่ใช่ใช้ค่ามาตรฐานของเบราว์เซอร์ที่ออกแบบมาสำหรับภาษาอังกฤษ</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>วัดจากเบราว์เซอร์จริง (ไม่ใช่ประมาณเอา) — ทุกหน้าไม่ล้นแนวนอนแม้ตั้งขนาดตัวอักษรใหญ่สุด ทั้งมือถือและจอคอมพิวเตอร์ ตารางวิตามินที่เคยล้นจอมือถือจนอ่านไม่ครบ ถูกเปลี่ยนเป็นการ์ดเรียงลงแล้ว</p></div>
+  <div class="ev">หลักฐาน: ตรวจในเบราว์เซอร์จริงหลายขนาดจอ + ปุ่มปรับขนาดตัวอักษร 1 ส.ค. 2026</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-24" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-25">
+  <div class="card-head">
+    <span class="tag">เนื้อหา</span>
+    <span class="num">MR-25</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>รูปสินค้าแสดงถูกต้อง ไม่มีรูปแตก แม้สินค้าที่ยังไม่มีรูป</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>สินค้าที่มีรูปต้องแสดงรูปจริงจากแบรนด์ ส่วนสินค้าที่ยังไม่มีรูปต้องแสดงแถวได้ตามปกติโดยไม่มีรูปแตกและไม่ถูกซ่อนหาย</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>25 จาก 26 รายการมีรูปจริงจากแบรนด์แล้ว (เดิมมีแค่ 19 รายการและเป็นรูปตัดจากใบปลิว) เหลือ 1 รายการที่ยังไม่มีรูปแสดงแถวปกติไม่มีปัญหา</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบตรวจสอบรูปสินค้าเทียบไฟล์จริงบนดิสก์ (พิสูจน์แล้วว่าจับไฟล์หายได้จริง)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-25" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="MR-26">
+  <div class="card-head">
+    <span class="tag">กฎหมาย</span>
+    <span class="num">MR-26</span>
+    <span class="status ok">ผ่าน</span>
+  </div>
+  <h3>หมวด &#x27;ให้นมบุตร&#x27; ต้องไม่มีภาพ/คำที่ผิดกฎหมายควบคุมนมผง</h3>
+  <div class="kv"><b>สิ่งที่ต้องเป็น</b><p>ห้ามมีภาพทารก ไอคอนขวดนม/จุกนม ตัวเลขอายุเด็ก หรือข้อความเชื่อมโยงสินค้ากับประโยชน์ต่อลูกโดยตรง ในทุกจุดที่พูดถึงช่วงให้นมบุตร</p></div>
+  <div class="kv"><b>ผลตรวจจริง</b><p>ตรวจครบทุกจุด (หน้าแรก/รายงาน/การ์ด LINE) ไม่พบคำ/ภาพต้องห้ามเลย — ปรับกรอบเนื้อหาให้พูดถึง &#x27;การฟื้นฟูร่างกายแม่&#x27; แทนการพูดถึงประโยชน์ต่อลูก</p></div>
+  <div class="ev">หลักฐาน: ชุดทดสอบเนื้อหาช่วงให้นมบุตร (ส่วนหนึ่งของ 59 เคส) + line-flex (คำต้องห้าม 6 คำ)</div>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="MR-26" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article></div>
+
+<h2 class="part-title">ภาค 2 — ตามคอมเมนต์ใน PDF ล่าสุด (31 กรกฎาคม 2569)</h2>
+<p class="part-sub">รวม 15 หัวข้อ (R1–R15) ที่ทีมครูก้อยคอมเมนต์กลับมาในเอกสาร "App mommunjai แก้ไข_31.7.26.pdf" — แต่ละหัวข้อมีรายละเอียดการทดสอบย่อยกดดูเพิ่มได้</p>
+<div class="grid">
+<article class="card" id="TS-01">
+  <div class="card-head">
+    <span class="tag">หน้าแรก</span>
+    <span class="num">TS-01</span>
+    <span class="status ok">ผ่าน (2/2 รายการย่อย)</span>
+  </div>
+  <h3>การ์ด &quot;เตรียมตั้งครรภ์&quot; หน้าแรก — เปลี่ยนปุ่มหลักเป็น &quot;ฝ่ายหญิง&quot;</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>เปลี่ยน &#x27;เริ่มเลย&#x27; ของการ์ดเตรียมตั้งครรภ์เป็น &#x27;ฝ่ายหญิง&#x27; ให้คู่กับปุ่มรอง &#x27;ฝ่ายชาย →&#x27;</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (2 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-01-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ปุ่มหลักเป็น &quot;ฝ่ายหญิง →&quot; และยังลิงก์ไป /plan?stage=prep</p>
+      <p><b>ผลจริง:</b> เห็น 2 ปุ่มคู่กัน: &quot;ฝ่ายหญิง →&quot; (btn-primary, href=/plan?stage=prep) และ &quot;ฝ่ายชาย →&quot; (btn-ghost, href=/plan?stage=male) · กดแล้วเข้าแบบสอบถาม stage=prep จริง</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-01-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีบุตรยาก / ตั้งครรภ์แล้ว / ให้นมบุตร ยังเป็น &quot;เริ่มเลย →&quot;</p>
+      <p><b>ผลจริง:</b> ทั้ง 3 ใบเป็น &quot;เริ่มเลย →&quot; เหมือนเดิม ไม่ถูกเปลี่ยนตาม (การ์ดเตรียมตั้งครรภ์ถูกแยก render ออกมาต่างหาก มีแค่ใบเดียวที่เปลี่ยน)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-01" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-02">
+  <div class="card-head">
+    <span class="tag">เตรียมตั้งครรภ์</span>
+    <span class="num">TS-02</span>
+    <span class="status ok">ผ่าน (5/5 รายการย่อย)</span>
+  </div>
+  <h3>อายุ 35-39 และ 40+ → เพิ่ม A.O.S</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>ช่วงอายุ 35–39 หรือ 40+ ให้ A.O.S เข้ารายการแนะนำ (ต้องผ่าน allowedIn() ตาม Safety Matrix เหมือนสินค้าอื่น)</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (5 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-02-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี A.O.S ในรายการ</p>
+      <p><b>ผลจริง:</b> มี aos ใน primary</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-02-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี A.O.S</p>
+      <p><b>ผลจริง:</b> มี aos ใน primary</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-02-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ไม่มี A.O.S</p>
+      <p><b>ผลจริง:</b> ไม่มี aos ทั้ง 2 กรณี · ฟังก์ชัน isAosAgeRange() normalize ทั้ง en-dash และ hyphen จึงไม่หลุดเพราะเครื่องหมายขีด</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-02-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> A.O.S ปรากฏครั้งเดียว</p>
+      <p><b>ผลจริง:</b> นับได้ 1 ครั้ง — dedupe() ทำงานถูกต้อง</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-02-EX</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> แม่ตั้งครรภ์อายุ 40+ ต้องไม่ได้ A.O.S (A.O.S มี stop.pregnant)</p>
+      <p><b>ผลจริง:</b> ไม่มี aos — กฎอายุไหลผ่าน keep()/allowedIn() ตามปกติ ไม่มีการ bypass filter</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-02" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-03">
+  <div class="card-head">
+    <span class="tag">เตรียมตั้งครรภ์</span>
+    <span class="num">TS-03</span>
+    <span class="status ok">ผ่าน (2/2 รายการย่อย)</span>
+  </div>
+  <h3>&quot;เตรียมผนังมดลูก&quot; → ชุดสินค้าเฉพาะ + คำเตือนต้องอยู่ครบ</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>artPlan = &quot;เตรียมผนังมดลูก&quot; → Colla Telo + ดอกคำฝอย + น้ำมันละหุ่ง + Ferty Probiotics · ผูกกับค่า artPlan ไม่ใช่ stage</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (2 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-03-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เห็นครบ 4 รายการใน primary</p>
+      <p><b>ผลจริง:</b> ครบทั้ง collatelo · safflower · castoroil · probiotics · ผูกกับค่า artPlan จริง (ตัวแปร liningPrep ใน vitamins.ts บรรทัด 459) ไม่ได้ผูกกับ stage=&#x27;prep&#x27; จึงยังทำงานได้แม้ R5 ตัดคำถาม ART ออกจาก prep แล้ว</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-03-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> คำเตือนหยุดช่วงตกไข่ / หลังใส่ตัวอ่อน / ตั้งครรภ์ ของดอกคำฝอยและน้ำมันละหุ่ง ต้องไม่หายไป</p>
+      <p><b>ผลจริง:</b> cautions มีข้อความ &quot;ชุดเตรียมผนังมดลูก: ดอกคำฝอยและแพ็คน้ำมันละหุ่ง ต้องหยุดทันที เมื่อถึงวันไข่ตก · หลังใส่ตัวอ่อน · และตลอดช่วงตั้งครรภ์&quot; + &quot;น้ำมันละหุ่งใช้ประคบภายนอกเท่านั้น ห้ามรับประทาน&quot; · ฟิลด์ stop ของทั้ง 2 ตัวยังครบ {ovulation, embryoTransfer, pregnant} · รายงานเรนเดอร์บรรทัด &quot;❌ หยุดทาน: …&quot; สีชมพูเข้มในคอลัมน์ประโยชน์จริง</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-03" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-04">
+  <div class="card-head">
+    <span class="tag">เตรียมตั้งครรภ์</span>
+    <span class="num">TS-04</span>
+    <span class="status ok">ผ่าน (5/5 รายการย่อย)</span>
+  </div>
+  <h3>ขั้น &quot;เล่าเรื่องสุขภาพ&quot; — เพิ่ม 4 ฟิลด์ + แยกช่อง PCOS 3 สถานะ</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>เพิ่ม น้ำหนัก/ส่วนสูง · เวลานอน 2 ช่อง · dropdown ความถี่ออกกำลังกาย 4 ตัวเลือก · แยก &quot;มีภาวะ PCOS&quot; ออกจาก &quot;ไม่แน่ใจ&quot; (unsure ไม่ได้ PCO-VIT)</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (5 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-04-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีช่องน้ำหนัก (กก.) และส่วนสูง (ซม.)</p>
+      <p><b>ผลจริง:</b> มีครบทุก stage · สำหรับ pregnant ป้ายเปลี่ยนเป็น &quot;น้ำหนักปัจจุบัน (กก.)&quot; ตาม R9 · ไม่ผูกกับเช็กบ็อกซ์ &quot;น้ำหนักเกิน&quot; อีกแล้ว</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-04-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี time picker 2 ช่อง (เข้านอน / ตื่นนอน)</p>
+      <p><b>ผลจริง:</b> มี &lt;input type=&quot;time&quot;&gt; 2 ช่อง ป้าย &quot;ปกติเข้านอนกี่โมง&quot; และ &quot;ตื่นกี่โมง&quot; (นับ DOM ได้ 2 ช่องพอดี)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-04-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> 4 ตัวเลือก: 0 / 1-2 / 3-4 / ทุกวัน</p>
+      <p><b>ผลจริง:</b> dropdown มี &quot;ไม่ระบุ&quot; + 4 ตัวเลือกตรงตามสเปก (value = 0 · 1-2 · 3-4 · daily) · EXERCISE_FREQS ตรงเป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-04-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เป็น 2 checkbox แยกกันชัดเจน ไม่ใช่ช่องเดียวรวม</p>
+      <p><b>ผลจริง:</b> เป็น 2 checkbox แยกกันจริง และ exclusive ตามสเปก: ติ๊ก &quot;มี&quot; → {yes:true, unsure:false} · ติ๊ก &quot;ไม่แน่ใจ&quot; → {yes:false, unsure:true} (อันแรกหลุดเอง) · กดซ้ำ → หลุดทั้งคู่ = สถานะ &#x27;no&#x27;</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-04-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ไม่มี PCO-VIT แต่มีข้อความชวนไปตรวจยืนยันกับแพทย์</p>
+      <p><b>ผลจริง:</b> ในฟอร์มขึ้นทันที &quot;เดี๋ยวเราจะแนะนำวิธีตรวจยืนยันกับแพทย์ให้ในแผนนะคะ (ยังไม่แนะนำวิตามินเฉพาะกลุ่ม PCOS จนกว่าจะรู้ผลชัด)&quot; · ผลลัพธ์ไม่มี pcovit · cautions มี &quot;คุณระบุว่ายังไม่แน่ใจเรื่องภาวะ PCOS — แนะนำตรวจยืนยันกับแพทย์ก่อนค่ะ…&quot; · ตรวจเพิ่ม: ถ้าติ๊ก &quot;ไม่แน่ใจ&quot; ในเช็กลิสต์มีบุตรยาก จะชนะค่า has_pcos=true ของข้อมูลเก่าด้วย (ได้ base 4 เท่านั้น)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-04" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-05">
+  <div class="card-head">
+    <span class="tag">เตรียมตั้งครรภ์</span>
+    <span class="num">TS-05</span>
+    <span class="status warn">ทดสอบไม่ได้ในเครื่องนี้ (2/3 รายการย่อย)</span>
+  </div>
+  <h3>เตรียมตั้งครรภ์ — ตัดขั้น &quot;เข้าสู่กระบวนการทางการแพทย์&quot; ออก</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>stage=prep ไม่ต้องเจอคำถาม ART · stage อื่นยังเจอ · ค่า art_plan ต้อง default &quot;ยัง&quot; ไม่ใช่ null</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (3 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-05-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ไม่เจอหน้าจอถาม ART เลย</p>
+      <p><b>ผลจริง:</b> ลำดับที่เจอจริง: intro (consent) → &quot;เรียกคุณว่าอะไรดีคะ?&quot; → &quot;เล่าเรื่องสุขภาพอีกนิดนะคะ&quot; → &quot;รับแผนของคุณได้เลย 🎁&quot; · แถบขึ้น &quot;อีก 3 ขั้นตอน&quot; ตั้งแต่ต้น (4 ขั้น) = ไม่มีขั้น art จริง</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-05-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> infertility / pregnant / male ยังเจอคำถามนี้เหมือนเดิม</p>
+      <p><b>ผลจริง:</b> infertility: health → &quot;เข้าสู่กระบวนการทางการแพทย์ไหมคะ?&quot; ✓ · pregnant: conception → ART ✓ · male: กฎ stepsFor() คืน true สำหรับทุก stage ที่ไม่ใช่ prep และจำนวนขั้นตรงกัน ✓</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-05-03</code><span class="status warn sm">ทดสอบไม่ได้ในเครื่องนี้</span></div>
+      <p><b>คาดหวัง:</b> ค่าที่บันทึกเป็น &quot;ยัง&quot; (default) ไม่ใช่ null/undefined</p>
+      <p><b>ผลจริง:</b> ทดสอบไม่ได้ในสภาพแวดล้อมนี้ — ไม่มี SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY จึงเข้าโหมด dev_mode ที่ return ก่อนถึงคำสั่ง INSERT ไม่มีแถวจริงให้ตรวจ · ยืนยันได้เพียงถึงขอบ API: state ตั้งต้น art_plan:&quot;ยัง&quot; (plan/page.tsx:59-62) → mapLegacyArtPlan(&quot;ยัง&quot;) = &quot;ยัง&quot; → ผลข้างเคียงที่สังเกตได้จริงคือ prep ได้ tier=teaser ซึ่งต้องอาศัย artPlan=&quot;ยัง&quot; · ต้องตรวจซ้ำบน staging ที่ต่อ Supabase จริง</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-05" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-06">
+  <div class="card-head">
+    <span class="tag">ฝ่ายชาย</span>
+    <span class="num">TS-06</span>
+    <span class="status ok">ผ่าน (8/8 รายการย่อย)</span>
+  </div>
+  <h3>ฝ่ายชาย — ฟิลด์สุขภาพเดียวกับหญิง + พฤติกรรม 3 ข้อ + กฎสินค้า (&gt;= 2)</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>ติ๊ก &gt;= 2 ข้อ → A.O.S + Motila1 · มิฉะนั้นติ๊กเครียด → A.O.S · มิฉะนั้นติ๊กบุหรี่/ดื่ม → Motila1</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (8 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-06-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีน้ำหนัก + ส่วนสูง + เวลานอน + ความถี่ออกกำลังกาย เหมือนฝ่ายหญิง</p>
+      <p><b>ผลจริง:</b> มีครบ: number 2 ช่อง (น้ำหนัก/ส่วนสูง) · time 2 ช่อง (เข้านอน/ตื่น) · dropdown ความถี่ 4 ตัวเลือก · และไม่มีช่อง PCOS โผล่มา (ถูกต้อง)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี checkbox สูบบุหรี่ / ดื่มแอลกอฮอล์ / เครียด เลือกได้มากกว่า 1</p>
+      <p><b>ผลจริง:</b> มีครบ 3 ช่อง เป็น checkbox อิสระ (toggleBehavior สะสมเป็น array) พร้อมข้อความอธิบายเหตุผลว่ากระทบคุณภาพอสุจิ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี A.O.S</p>
+      <p><b>ผลจริง:</b> คืน [&#x27;aos&#x27;] · ในผลลัพธ์ระดับ stage male ก็มี aos ใน primary จริง</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี Motila1</p>
+      <p><b>ผลจริง:</b> คืน [&#x27;motila1&#x27;]</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี Motila1</p>
+      <p><b>ผลจริง:</b> คืน [&#x27;motila1&#x27;]</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-06</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีทั้ง A.O.S และ Motila1</p>
+      <p><b>ผลจริง:</b> คืน [&#x27;aos&#x27;,&#x27;motila1&#x27;]</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-07</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ยืนยัน &gt;= 2 → 2 ข้อพอดีต้องได้ทั้งคู่</p>
+      <p><b>ผลจริง:</b> ทั้ง 3 คู่คืน [&#x27;aos&#x27;,&#x27;motila1&#x27;] ครบ · ค่าซ้ำ [&#x27;stress&#x27;,&#x27;stress&#x27;] นับเป็น 1 คืน [&#x27;aos&#x27;] เท่านั้น (ใช้ Set กันไว้ถูกต้อง) · ไม่ติ๊กเลยคืน []</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-06-08</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> แสดงได้โดยยังไม่มี dosage ตามที่ client อนุมัติ แต่ต้องมี TODO flag ในโค้ด</p>
+      <p><b>ผลจริง:</b> howto = undefined · อยู่ใน NO_DOSAGE_YET (พร้อม goatmilk/blackchickensoup/bananaflower) · มีคอมเมนต์ TODO(dosage) กำกับที่ vitamins.ts:325-328 อธิบายว่าเป็นการกลับมติ R2 · หน้าจอไม่ปล่อยช่องว่าง แต่แสดง &quot;สอบถามทีม Baby &amp; Mom ทาง LINE OA&quot; แทน</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-06" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-07">
+  <div class="card-head">
+    <span class="tag">ฝ่ายชาย</span>
+    <span class="num">TS-07</span>
+    <span class="status ok">ผ่าน (2/2 รายการย่อย)</span>
+  </div>
+  <h3>ติ๊ก &quot;ปัญหาจากฝ่ายชาย&quot; → แทรกแบบสอบถามฝ่ายชายในฟลว์</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>ติ๊ก male_factor → มีขั้นกรอกข้อมูลฝ่ายชาย · ไม่ติ๊ก → ไม่มีขั้นนี้ · ห้ามเขียนทับน้ำหนัก/ส่วนสูงของผู้หญิง</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (2 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-07-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี MZ-All (และตามตาราง R12 คือ Ferta + MZ-All + Motila1)</p>
+      <p><b>ผลจริง:</b> ได้ base 4 + ferta + mzall + motila1 ครบตามแถว &quot;ปัญหาจากฝ่ายชาย&quot; · ถ้าคู่ติ๊ก &quot;เครียด&quot; ในฟอร์มฝ่ายชายจะได้ aos เพิ่ม และถ้าไม่ติ๊ก male_factor แต่ส่ง partnerBehaviors มา ระบบจะไม่หยิบมาใช้ (ถูกต้อง — กันข้อมูลรั่วข้ามเคส)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-07-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีขั้นตอนกรอกข้อมูลฝ่ายชายปรากฏหลังจากนั้น และไม่ทับข้อมูลของผู้หญิง</p>
+      <p><b>ผลจริง:</b> หลังขั้น health โผล่หน้า &quot;ขอข้อมูลของคุณสามีหน่อยนะคะ&quot; พร้อมฟิลด์ครบ (น้ำหนัก · ส่วนสูง · เข้านอน · ตื่น · ความถี่ออกกำลังกาย · สูบบุหรี่/ดื่ม/เครียด) · ย้อนกลับมาแล้วค่าของผู้หญิงยังเป็น 52/158 ไม่ถูกเขียนทับ (เก็บคนละก้อน: partner_profile เป็น jsonb แยก) · ตรวจกรณีไม่ติ๊ก male_factor: ขั้นนี้ไม่ปรากฏ (health → ART ตรง ๆ) ตามที่สเปกต้องการ</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-07" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-08">
+  <div class="card-head">
+    <span class="tag">ฝ่ายชาย</span>
+    <span class="num">TS-08</span>
+    <span class="status ok">ผ่าน (2/2 รายการย่อย)</span>
+  </div>
+  <h3>ป้ายกำกับ &quot;IVF-ICSI&quot; → &quot;IVF-ICSI (เด็กหลอดแก้ว)&quot;</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>เปลี่ยนเฉพาะ label ที่แสดง ค่าที่เก็บใน DB/tag/analytics ยังเป็น &quot;IVF-ICSI&quot; เหมือนเดิม</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (2 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-08-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ทุกจุดที่แสดงเห็น &quot;IVF-ICSI (เด็กหลอดแก้ว)&quot;</p>
+      <p><b>ผลจริง:</b> /plan แสดง &quot;IVF-ICSI (เด็กหลอดแก้ว)&quot; ✓ · /tools/vitamins แสดงเหมือนกัน ✓ และไม่พบข้อความ &quot;IVF-ICSI&quot; เปล่า ๆ (regex ตรวจแล้ว) · /leads เรียก artPlanLabel() ครบทั้งตัวกรอง ตารางแถว และฟอร์มแก้ไข (บรรทัด 135 · 177 · 241) แต่ตัวหน้าต้อง login staff จึงยืนยันจากโค้ดเท่านั้น</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-08-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ค่าที่เก็บจริงไม่เปลี่ยน</p>
+      <p><b>ผลจริง:</b> ART_PLAN_VALUES ยังเป็น [&#x27;ยัง&#x27;,&#x27;IUI&#x27;,&#x27;IVF-ICSI&#x27;,&#x27;บำรุงไข่&#x27;,&#x27;เตรียมผนังมดลูก&#x27;] เป๊ะ · label อยู่ใน ART_PLAN_LABELS แยกต่างหาก และปุ่มส่งค่า v เดิมไม่ใช่ label (plan/page.tsx:522) จึงไม่กระทบข้อมูลเก่า/lib/tagging.ts</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-08" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-09">
+  <div class="card-head">
+    <span class="tag">ตั้งครรภ์แล้ว</span>
+    <span class="num">TS-09</span>
+    <span class="status ok">ผ่าน (3/3 รายการย่อย)</span>
+  </div>
+  <h3>ตั้งครรภ์ — คำถามวิธีตั้งครรภ์ + สุขภาพเพิ่มเติม</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>เพิ่มคำถาม &quot;ท้องด้วยวิธีไหน&quot; (2 ตัวเลือกก่อน ออกแบบเผื่อเติม) + อายุครรภ์ + น้ำหนักปัจจุบัน + checkbox เบาหวานขณะตั้งครรภ์</p></div>
+  <div class="note">⚠️ หมายเหตุปรับปรุง 1 ส.ค. 2026: ตอนตรวจรอบนี้ (31 ก.ค.) ทีมทดสอบผ่านการเปิดหน้ารายงานเต็มโดยตรงชั่วคราว ต่อมาช่องทางนั้นถูกปิดถาวรตามนโยบายใหม่ (ดู MR-15 ในภาคที่ 1) — เนื้อหา/กติกาที่ระบุไว้ในข้อนี้ยังถูกต้องและมีการตรวจซ้ำด้วยชุดทดสอบอัตโนมัติที่ตรวจตรงจากเครื่องคำนวณอยู่แล้ว ไม่กระทบผลสรุปว่า "ผ่าน"</div>
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (3 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-09-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีคำถาม &quot;ท้องด้วยวิธีไหน&quot; ให้เลือก</p>
+      <p><b>ผลจริง:</b> เจอหน้า &quot;ท้องนี้ตั้งครรภ์ด้วยวิธีไหนคะ?&quot; มี 2 ปุ่ม: ท้องธรรมชาติ / ท้องด้วย ICSI · ขั้นนี้ปรากฏเฉพาะ stage=pregnant เท่านั้น</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-09-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีอายุครรภ์ (สัปดาห์) + น้ำหนักปัจจุบัน + checkbox เบาหวานขณะตั้งครรภ์</p>
+      <p><b>ผลจริง:</b> มีครบ: ป้ายน้ำหนักเปลี่ยนเป็น &quot;น้ำหนักปัจจุบัน (กก.)&quot; · ช่อง &quot;อายุครรภ์ (สัปดาห์)&quot; · checkbox &quot;มีภาวะเบาหวานขณะตั้งครรภ์&quot; · ติ๊กแล้วขึ้นข้อความสีชมพูทันทีว่าต้องอยู่ในการดูแลของแพทย์/นักโภชนาการ (ตรงกับกล่อง 🔒 ใน PRD ที่ห้ามให้คำแนะนำที่ทำให้ชะลอการพบแพทย์) และข้อความเดียวกันไหลไปอยู่ใน cautions ของรายงานด้วย</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-09-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เป็น constant array ที่เติมตัวเลือกที่ 3 ได้โดยแก้ที่เดียว</p>
+      <p><b>ผลจริง:</b> CONCEPTION_METHODS = [&#x27;ท้องธรรมชาติ&#x27;,&#x27;ท้องด้วย ICSI&#x27;] อยู่ใน lib/calc/vitamins.ts ที่เดียว · ทั้งหน้า /plan (render ปุ่ม) และ /api/lead (sanitizeEnum) import จากตัวเดียวกัน ไม่มี hardcode ซ้ำที่ไหน → เติมตัวที่ 3 แก้บรรทัดเดียวจริง</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-09" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-10">
+  <div class="card-head">
+    <span class="tag">ตั้งครรภ์แล้ว</span>
+    <span class="num">TS-10</span>
+    <span class="status ok">ผ่าน (5/5 รายการย่อย)</span>
+  </div>
+  <h3>ตั้งครรภ์แล้ว — เนื้อหาความรู้ 4 หัวข้อ + product set</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>ปุ่มเข้าเนื้อหา: พัฒนาการลูกตามไตรมาส · สารอาหาร · นับลูกดิ้น (2 โหมด) · สัญญาณอันตราย · product: นมแพะ/Ferty/Ferti9oil/probiotic (+ น้ำหัวปลีเมื่อ ≥16 สัปดาห์) + ปุ่มเมนู FB</p></div>
+  <div class="note">⚠️ หมายเหตุปรับปรุง 1 ส.ค. 2026: ตอนตรวจรอบนี้ (31 ก.ค.) ทีมทดสอบผ่านการเปิดหน้ารายงานเต็มโดยตรงชั่วคราว ต่อมาช่องทางนั้นถูกปิดถาวรตามนโยบายใหม่ (ดู MR-15 ในภาคที่ 1) — เนื้อหา/กติกาที่ระบุไว้ในข้อนี้ยังถูกต้องและมีการตรวจซ้ำด้วยชุดทดสอบอัตโนมัติที่ตรวจตรงจากเครื่องคำนวณอยู่แล้ว ไม่กระทบผลสรุปว่า "ผ่าน"</div>
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (5 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-10-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีปุ่มเข้าสู่เนื้อหา &quot;พัฒนาการลูก&quot;</p>
+      <p><b>ผลจริง:</b> รายงานมีหัวข้อ &quot;4 ความรู้สำหรับช่วงตั้งครรภ์ 🤰&quot; พร้อมปุ่ม 4 ใบ: 🌱 พัฒนาการลูก · 🥗 สารอาหารที่ต้องได้ · ⏱️ นับลูกดิ้น · 🚨 สัญญาณอันตราย · หมายเหตุ: เส้นทาง &quot;หลังส่ง code เข้า LINE แล้วเปิด /r/&lt;code&gt;&quot; ทดสอบตรง ๆ ไม่ได้ (ไม่มี Supabase/LINE) แต่หน้านั้นเรนเดอร์ ReportView คอมโพเนนต์เดียวกันเป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-10-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> แสดงพัฒนาการ + สารอาหาร + ตัวนับลูกดิ้น + สัญญาณอันตราย ตามไตรมาสที่คำนวณจากอายุครรภ์</p>
+      <p><b>ผลจริง:</b> ขึ้น &quot;อายุครรภ์ 20 สัปดาห์ อยู่ในไตรมาสที่ 2&quot; และเนื้อหาโฟกัสไตรมาส 2 · ครบทั้ง 4 หัวข้อ · ตรวจเพิ่มตามกล่อง 🔒 R10: (ก) โหมดนับเลขไม่สรุปผลใด ๆ — กด &quot;+ นับ 1 ครั้ง&quot; 6 ครั้งแล้วหน้าจอแสดงแค่เลข 6 ตามด้วยประโยค &quot;ไม่มีการสรุปว่าปกติหรือผิดปกติ&quot; ไม่มีคำว่าปกติ/ผ่าน/ติ๊กเขียว (ข) ข้อความความปลอดภัย 3 ข้อแสดงครบ &quot;ทั้ง 2 โหมด&quot; — สลับไปโหมด &quot;แบบแนวทางใหม่&quot; แล้วยังเห็นครบ 3 ข้อเหมือนเดิม (บล็อกอยู่นอก toggle จริง) (ค) สัญญาณอันตราย 21 รายการทุกข้อติดป้าย &quot;ไปโรงพยาบาลทันที&quot; ไม่มีข้อไหนเป็น &quot;รอดูอาการ&quot; (คำว่า &quot;รอดูอาการ&quot; ปรากฏครั้งเดียวในประโยคปฏิเสธ &quot;…ไม่มีข้อไหนที่ให้รอดูอาการก่อน&quot;) และมีปุ่มโทร 1669 กำกับว่าเฉพาะกรณีวิกฤต</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-10-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ≥16 สัปดาห์มีน้ำหัวปลีเพิ่ม · &lt;16 ไม่มี</p>
+      <p><b>ผลจริง:</b> ที่ 20 สัปดาห์เห็น &quot;น้ำหัวปลี มามอง ฿1,850&quot; เพิ่มจากชุดพื้นฐาน 4 ตัว · ที่ 16 สัปดาห์มี (ขอบพอดี) · ที่ 15 สัปดาห์ไม่มี · ไม่กรอกอายุครรภ์ก็ไม่มี (ไม่เดาแทนผู้ใช้) · การ์ดน้ำหัวปลีเขียนตรง ๆ ว่าเหตุผลเชิงโภชนาการยังรอทีมยืนยัน จึงไม่ระบุสรรพคุณ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-10-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] client ยืนยันแล้ว → เพิ่มนมแพะ ฿650 วิธีทานเว้นว่าง + TODO flag</p>
+      <p><b>ผลจริง:</b> มีในแคตตาล็อกจริง: id goatmilk · ชื่อ &quot;นมแพะคัดเกรด Goats Milk&quot; · ราคา 650 · howto = undefined · อยู่ใน NO_DOSAGE_YET · มีคอมเมนต์ TODO(dosage) อ้าง Open Question #2 · หน้าจอแสดง &quot;สอบถามทีม Baby &amp; Mom ทาง LINE OA&quot; แทนช่องว่าง</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-10-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ลิงก์ไป facebook.com/media/set/?set=a.1370821821166202&amp;type=3 เปิดแท็บใหม่</p>
+      <p><b>ผลจริง:</b> href ตรงเป๊ะ https://www.facebook.com/media/set/?set=a.1370821821166202&amp;type=3 · target=_blank rel=noreferrer · client ยืนยันแล้วว่าเป็นเพจของบริษัทเอง จึงไม่มีประเด็นลิขสิทธิ์</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-10" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-11">
+  <div class="card-head">
+    <span class="tag">ให้นมบุตร</span>
+    <span class="num">TS-11</span>
+    <span class="status ok">ผ่าน (5/5 รายการย่อย)</span>
+  </div>
+  <h3>ให้นมบุตร — ตัด ART + เนื้อหาความรู้ + product set 7 รายการ</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>ตัดคำถาม ART ออก · ความรู้ 3 หัวข้อ · product: นมแพะ + Ferty 1 ซอง + Ferti9oil 1-2 + probiotic 1 + น้ำหัวปลี + ขิงทอง + ซุปไก่ดำ + ปุ่มเมนู FB (คนละลิงก์กับ pregnant)</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (5 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-11-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ไม่มีคำถาม ART-plan (เหมือน TS-05 แต่สำหรับ lactating)</p>
+      <p><b>ผลจริง:</b> 🔧 **เดิมไม่ผ่าน — แก้แล้วทันทีหลังได้รับรายงาน** · อาการเดิม: /plan?stage=lactating ขึ้น &quot;อีก 4 ขั้นตอน&quot; และหน้าที่ 4 คือ &quot;เข้าสู่กระบวนการทางการแพทย์ไหมคะ?&quot; · ต้นตอ: app/plan/page.tsx เขียนแค่ `return stage !== &quot;prep&quot;` ตัดออกเฉพาะ prep · ผลต่อเนื่องที่ QA สังเกตได้จริง (รายงาน MJ-KM9B6R): แม่ให้นมเลือก IVF-ICSI ได้ → tier full ทันที แผนมี A.O.S พร้อมข้อความ &quot;ดูแลคุณภาพไข่และตัวอ่อน&quot; และถ้าเลือก &quot;เตรียมผนังมดลูก&quot; จะได้ดอกคำฝอย+น้ำมันละหุ่งเข้าแผนหลังคลอด (ทั้งคู่ไม่มี stop.lactating) · **การแก้:** ย้าย stepsFor() ออกจาก page.tsx ไป lib/plan-steps.ts (เพราะเดิมไม่มีเทสต์คลุมเลย จึงรอด 295 เทสต์มาได้) แล้วแก้เป็น `return stage !== &quot;prep&quot; &amp;&amp; stage !== &quot;lactating&quot;` + เพิ่ม lib/plan-steps.test.ts 8 เคสล็อกทั้ง 5 stage · **re-verify:** vitest 303/303 ผ่าน · tsc clean · build ผ่าน</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-11-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ครบ 3 หัวข้อ: ตารางปั๊มนม + อาหารเพิ่มน้ำนม + เด็กอายุ(เดือน)→ปริมาณนม(ออนซ์)</p>
+      <p><b>ผลจริง:</b> เห็นหัวข้อ &quot;4 ความรู้สำหรับช่วงให้นมบุตร 🌿&quot; มี 4 ปุ่ม: ⏱️ ตารางปั๊มนม · 🍲 อาหารบำรุงแม่หลังคลอด · 📊 ลูกกินนมวันละเท่าไหร่ · 🚨 สัญญาณอันตรายหลังคลอด · ครบ 3 หัวข้อตามสเปก โดยหัวข้อที่ 2 ใช้ชื่อใหม่ตามมติที่ client เคาะ 31/7 (&quot;เปลี่ยนกรอบเลย&quot;) และมีหัวข้อความปลอดภัยเพิ่มมาอีก 1 ซึ่งเป็นส่วนเกินที่ควรมี</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-11-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีนมแพะ, Ferty(1 ซอง), Ferti9oil(1-2), probiotic(1), น้ำหัวปลี, ขิงทอง, ซุปไก่ดำ</p>
+      <p><b>ผลจริง:</b> ครบ 7 รายการเรียงตามสเปก และปริมาณตรง: Ferty &quot;วันละ 1 ซอง&quot; · Ferti 9 Oil &quot;วันละ 1–2 เม็ด&quot; · Probiotics &quot;วันละ 1 ซอง&quot; · อีก 4 ตัวขึ้น &quot;สอบถามทีม Baby &amp; Mom ทาง LINE OA&quot; หรือ howto เดิม · ตรวจเพิ่ม: Varginaree (stop.lactating) ถูกกรองออกจากคำแนะนำของกลุ่มนี้จริง · สแกนข้อความที่ผูกกับสินค้าไม่พบคำเคลมเรื่องเพิ่มน้ำนมเลยแม้แต่คำเดียว และมีประโยคกำกับหัวบล็อกว่า &quot;…ไม่ใช่ผลิตภัณฑ์สำหรับเด็ก และไม่ได้เป็นคำแนะนำเรื่องปริมาณน้ำนม&quot;</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-11-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ลิงก์ไป facebook.com/share/p/1Bm3bDyo4X (คนละลิงก์กับ TS-10)</p>
+      <p><b>ผลจริง:</b> href = https://www.facebook.com/share/p/1Bm3bDyo4X/ · คนละลิงก์กับของ pregnant จริง (ตรวจ DOM ของทั้ง 2 รายงาน)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-11-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] ยืนยันแล้ว → เพิ่มซุปไก่ดำ ฿1,800 และน้ำหัวปลี ฿1,850 พร้อม TODO flag</p>
+      <p><b>ผลจริง:</b> มีทั้งคู่ในแคตตาล็อก ราคา 1800 / 1850 ตรงกับ docs/product-catalog.md · howto เว้นว่าง · อยู่ใน NO_DOSAGE_YET ทั้งคู่ · การวางกรอบถูกต้องตาม พ.ร.บ.นมผง (ซุปไก่ดำ = &quot;อาหารโปรตีนบำรุงกำลังสำหรับคุณแม่&quot; ไม่แตะเรื่องน้ำนม)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-11" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-12">
+  <div class="card-head">
+    <span class="tag">มีบุตรยาก</span>
+    <span class="num">TS-12</span>
+    <span class="status ok">ผ่าน (7/7 รายการย่อย)</span>
+  </div>
+  <h3>มีบุตรยาก — ตาราง product mapping ใหม่ (ยึดตารางเป๊ะทุกช่อง)</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>base 4 = Ferty · OvaAll · น้ำมะกรูด Shot 100% · Ferti 9 Oil · แล้วเพิ่มตามปัญหาที่ติ๊ก · &quot;ไม่แน่ใจ&quot; = base 4 เท่านั้น</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (7 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-12-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT และไม่มี Colla Telo / Varginaree</p>
+      <p><b>ผลจริง:</b> ผลลัพธ์เท่ากับ base4 + pcovit เป๊ะ · ไม่มี collatelo และไม่มี varginaree จริงตามที่ client ยืนยันว่าตั้งใจตัดออก (เป็นการเปลี่ยนจากเดิมที่ Colla Telo เคยเป็น core ให้ทุกคน)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> base 4 + Varginaree</p>
+      <p><b>ผลจริง:</b> เท่ากับ base4 + varginaree เป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> base 4 + Varginaree</p>
+      <p><b>ผลจริง:</b> เท่ากับ base4 + varginaree เป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> base 4 + Colla Telo + Varginaree</p>
+      <p><b>ผลจริง:</b> เท่ากับ base4 + collatelo + varginaree เป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เป็น union ของทั้ง 2 ชุด ไม่ซ้ำกัน</p>
+      <p><b>ผลจริง:</b> ได้ base4 + pcovit + collatelo + varginaree · ไม่มีตัวซ้ำเลย (Set size = array length) · ไม่มีตัวตกหล่น</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-06</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [รอยืนยัน → client เคาะแล้ว] ใช้ base 4 เท่านั้น</p>
+      <p><b>ผลจริง:</b> ได้ base 4 เท่านั้นจริง · และแม้จะมี has_pcos=true ค้างจากข้อมูลเก่า เช็กลิสต์ก็ยังชนะ ไม่มี pcovit หลุดเข้ามา (ตรงกับกติกา &quot;ไม่แน่ใจ ต้องไม่ถูกบอกว่าคุณเป็น&quot;)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-12-07</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] mapping ตรงตารางทุกช่อง</p>
+      <p><b>ผลจริง:</b> map ตรงทุกแถว: pcos→[pcovit] · diminished_ovary→[varginaree] · low_hormone→[varginaree] · thin_lining→[collatelo,varginaree] · male_factor→[ferta,mzall,motila1] · overweight→[pcovit] · unsure→[] · น้ำมะกรูดใช้ SKU Shot 100% (kaffirshot, ฿600) ตาม default ที่ระบุใน Open Question #1 ไม่ใช่สูตร 70% ฿2,376 · โครงสร้าง core/targeted ถูกเขียนใหม่จริง (infertility ไม่ใช้ชุด core เดิมของ prep แล้ว)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-12" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-13">
+  <div class="card-head">
+    <span class="tag">มีบุตรยาก</span>
+    <span class="num">TS-13</span>
+    <span class="status ok">ผ่าน (4/4 รายการย่อย)</span>
+  </div>
+  <h3>น้ำหนักเกิน — โชว์ตัวเลข BMI + แถบสี 4 ระดับ + โภชนาการ + ออกกำลังกาย</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>แสดงตัวเลข BMI จริง + แถบสีบอกระดับ (กลับมติ R2) · เพิ่มระดับ &quot;ต่ำกว่าเกณฑ์&quot; · สินค้าตามตาราง R12 · คำแนะนำลดคาร์บ + โปรตีน + ออกกำลังกาย</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (4 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-13-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED — client ยืนยันให้กลับมาโชว์] เห็นตัวเลข BMI + แถบสี + บอกว่าอยู่ระดับไหน</p>
+      <p><b>ผลจริง:</b> (ก) แสดง &quot;21.5&quot; ตัวใหญ่สีเขียว + ป้าย &quot;ปกติ&quot; (ข) แสดง &quot;33.3&quot; + ป้าย &quot;อ้วน&quot; · ทั้ง 2 ชุดมีแถบสี 4 ช่วงเรียงครบพร้อมตัวเลขกำกับ (ต่ำกว่าเกณฑ์ &lt; 18.5 · ปกติ 18.5–22.9 · เกินเกณฑ์ 23.0–24.9 · อ้วน ≥ 25.0) ช่วงที่ตรงกับผู้ใช้ทึบ ที่เหลือจาง และมี aria-label &quot;ระดับ BMI: อ้วน&quot; · ตรวจขอบเขตแบบ exact: 18.4→underweight, 18.5→normal, 22.9→normal, 23.0→overweight, 24.9→overweight, 25.0→obese (ปัดเศษหลังตัดระดับ จึงไม่มีเคส 22.96 กลายเป็นเกินเกณฑ์) · ค่า input ที่ใช้ไม่ได้ (0/NaN) คืน null ไม่ throw และหน้าจอขึ้นข้อความว่ายังคำนวณให้ไม่ได้แทนการเดาตัวเลข · ระดับ &quot;ต่ำกว่าเกณฑ์&quot; มีอยู่จริงตามกล่อง 🔒</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-13-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มี Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil, PCOVIT</p>
+      <p><b>ผลจริง:</b> บนรายงานจริงเห็นครบทั้ง 5 (Ferty โปรตีน · OvaAll · น้ำมะกรูด Shot · Ferti 9 Oil · PCO-VIT) · ระดับ mapping เทียบชุดแบบตรงตัวแล้วเท่ากับ base4 + pcovit เป๊ะ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-13-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีคำแนะนำโภชนาการ (ลดคาร์บ) + ตัวเลขโปรตีนต่อวัน</p>
+      <p><b>ผลจริง:</b> มีข้อความ &quot;แนะนำลดคาร์บขัดสี เพิ่มโปรตีนให้ถึงเป้าต่อวัน และขยับร่างกาย…&quot; · Part 2 แสดง &quot;เป้าหมาย 96–120 กรัม/วัน (เติมด้วย Ferty ~5 ซอง ถ้าอาหารไม่ถึง)&quot; คำนวณจาก lib/calc/protein.ts เดิม · มีข้อความตามระดับ BMI ต่อท้ายด้วยโทนไม่ตัดสิน (&quot;…แนะนำปรึกษาแพทย์/นักโภชนาการควบคู่ไป…&quot;)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-13-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีลิงก์/คำแนะนำออกกำลังกาย ผูกกับเครื่องมือที่มีอยู่แล้ว</p>
+      <p><b>ผลจริง:</b> Part 1 มีการ์ด &quot;ออกกำลังกายที่เหมาะกับคุณ 🏃‍♀️&quot; แสดงเป้าหมาย/ความถี่/ระดับ/ชนิด/ข้อควรเลี่ยง มาจาก lib/calc/exercise.ts เดิม และปรับตามความถี่ที่ผู้ใช้กรอกใน R4 (baseline active/sedentary) · cautions ก็ชี้ไปที่เครื่องมือ &quot;แนะนำการออกกำลังกาย&quot; ด้วย</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-13" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-14">
+  <div class="card-head">
+    <span class="tag">เครื่องมือแยก</span>
+    <span class="num">TS-14</span>
+    <span class="status ok">ผ่าน (3/3 รายการย่อย)</span>
+  </div>
+  <h3>เครื่องมือแยก — การ์ดสุดท้ายเป็น &quot;ทดสอบความเครียด&quot; (ST-5)</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>แทนที่การ์ด &quot;รับแผนเฉพาะคุณ&quot; ด้วยแบบประเมินความเครียด · ใช้ ST-5 กรมสุขภาพจิต · ผลลัพธ์ Night Shot + A.O.S โดยคะแนน 8–15 ต้องขึ้นสายด่วนก่อนกรอบ &quot;ตัวช่วย&quot;</p></div>
+  
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (3 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-14-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED — client ยืนยันแล้ว] การ์ดสุดท้ายเป็น &quot;ทดสอบความเครียด&quot; แทนการ์ด &quot;รับแผนเฉพาะคุณ&quot;</p>
+      <p><b>ผลจริง:</b> กริดมี 9 การ์ด ใบสุดท้ายคือ &quot;แบบประเมินความเครียด — 5 ข้อสั้น ๆ จากแบบประเมินกรมสุขภาพจิต (ST-5)&quot; · การ์ด &quot;รับแผนเฉพาะคุณ&quot; หายไปแล้วจริง · ทางเข้า /plan ยังอยู่ชัดเจน: ปุ่ม hero &quot;💛 รับคำแนะนำเฉพาะคุณ&quot; + การ์ดหมวดชีวิต 4 ใบด้านบน + ปุ่ม PlanCta ท้ายทุกเครื่องมือ จึงไม่เสียเส้นทาง conversion ตามที่ AC กำหนด</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-14-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] ใช้ ST-5 ถ้อยคำและเกณฑ์คะแนนตรงต้นฉบับ ห้ามแต่งคำถามเอง</p>
+      <p><b>ผลจริง:</b> คำถาม 5 ข้อตรงต้นฉบับ (ปัญหาการนอน / สมาธิน้อยลง / หงุดหงิด-กระวนกระวาย-ว้าวุ่นใจ / เบื่อ เซ็ง / ไม่อยากพบปะผู้คน) · ตัวเลือก 4 ระดับ 0–3 เหมือนกันทุกข้อ · กรอบเวลา &quot;ในช่วง 2–4 สัปดาห์ที่ผ่านมา&quot; · เครดิต &quot;…พัฒนาโดย โรงพยาบาลศรีธัญญา กรมสุขภาพจิต กระทรวงสาธารณสุข&quot; แสดงในหน้า · ชื่อเครื่องมือคือ &quot;แบบประเมินความเครียด&quot; ไม่ได้อ้างว่าเป็นแบบประเมินสำหรับคนท้อง (ถูกต้องตามข้อจำกัดที่ ST-5 ไม่เคย validate ในกลุ่มนี้) · มี disclaimer ว่าเป็นการคัดกรองเบื้องต้น</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-14-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> ได้ Night Shot + A.O.S โดยเฉพาะระดับคะแนนที่เหมาะสม</p>
+      <p><b>ผลจริง:</b> ขอบเขตตรงตาราง PRD ทุกจุด: 0–4 เครียดน้อย · 5–7 ปานกลาง · 8–9 เครียดมาก · 10–15 เครียดมากที่สุด (ตรวจที่ค่า 0,4,5,7,8,9,10,15) · ที่ 7 → ไม่มีสายด่วน หัวข้อกรอบสินค้าเป็น &quot;🌿 ตัวช่วยดูแลตัวเอง&quot; · ที่ 8 และ 10 → ขึ้นกล่องสายด่วน 1323 พร้อมปุ่มโทร และตำแหน่งอยู่ &quot;เหนือ&quot; กรอบสินค้าจริง (วัดจากตำแหน่งข้อความในหน้า: index 962 vs 1054) หัวข้อกรอบเปลี่ยนเป็น &quot;🌿 ตัวช่วย&quot; เป๊ะตามมติ พร้อมประโยคกำกับว่าไม่ใช่สิ่งทดแทนการปรึกษาผู้เชี่ยวชาญ · สินค้าเป็น Night Shot + A.O.S · &lt;b&gt;เคสแม่ตั้งครรภ์:&lt;/b&gt; ตั้ง stage=pregnant แล้วทำได้ 15/15 → ยังขึ้นสายด่วนและกรอบ &quot;ตัวช่วย&quot; แต่เหลือเฉพาะ Night Shot &lt;b&gt;ไม่มี A.O.S&lt;/b&gt; (ถูกกรองด้วย productsForStage → allowedIn เพราะ A.O.S มี stop.pregnant) ตรงตามที่กติกาความปลอดภัยต้องการ · ตอบไม่ครบ 5 ข้อ → ไม่ให้ผลใด ๆ ขึ้นข้อความให้ตอบให้ครบก่อน (ไม่มีการสรุปผลบางส่วน)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-14" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article>
+<article class="card" id="TS-15">
+  <div class="card-head">
+    <span class="tag">รายงานฉบับเต็ม</span>
+    <span class="num">TS-15</span>
+    <span class="status ok">ผ่าน (10/10 รายการย่อย)</span>
+  </div>
+  <h3>รายงานฉบับเต็ม — โครงใหม่ Part 1 / Part 2 แทนโครงเดิมทั้งหมด</h3>
+  <div class="kv"><b>สิ่งที่ลูกค้าขอ (จากคอมเมนต์ในเอกสาร)</b><p>Part 1 (BMI+เกณฑ์ · น้ำ · นอน · ออกกำลังกาย) → Part 2 (โปรตีน/น้ำ/ไขมันดี + ตารางอาหาร) → ตารางวิตามิน 3 คอลัมน์ + รูปสินค้า → ปุ่มแนะนำเมนู → ปุ่มทักแอดมิน</p></div>
+  <div class="note">⚠️ หมายเหตุปรับปรุง 1 ส.ค. 2026: ตอนตรวจรอบนี้ (31 ก.ค.) ทีมทดสอบผ่านการเปิดหน้ารายงานเต็มโดยตรงชั่วคราว ต่อมาช่องทางนั้นถูกปิดถาวรตามนโยบายใหม่ (ดู MR-15 ในภาคที่ 1) — เนื้อหา/กติกาที่ระบุไว้ในข้อนี้ยังถูกต้องและมีการตรวจซ้ำด้วยชุดทดสอบอัตโนมัติที่ตรวจตรงจากเครื่องคำนวณอยู่แล้ว ไม่กระทบผลสรุปว่า "ผ่าน"</div>
+  <details class="tech">
+    <summary>ดูรายละเอียดการทดสอบทีละจุด (10 รายการ)</summary>
+    <div class="cases"><div class="case">
+      <div class="case-head"><code>TC-15-01</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED — client เคาะ &quot;ปรับแทนที่เลย&quot;] โครงเดิมหายไปแล้ว ถูกแทนที่ด้วย Part 1 / Part 2</p>
+      <p><b>ผลจริง:</b> หัวข้อที่เหลือคือ 1 ข้อมูลของคุณ · 2 โภชนาการของคุณ · 3 วิตามินที่แนะนำสำหรับคุณ · (4 ความรู้ตามช่วงชีวิต ถ้ามี) · ชวนคู่ของคุณไปด้วยกัน · ไม่พบข้อความของโครงเดิมเลยแม้แต่คำเดียว · หมายเหตุที่ควรรู้: ข้อมูล pillars/score ยังคำนวณอยู่เบื้องหลังเพราะ teaser และการ์ด LINE Flex ใช้อยู่ แค่ไม่แสดงในรายงานฉบับเต็มแล้ว</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-02</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เห็นครบ: BMI (พร้อมเกณฑ์) · เป้าน้ำ/วัน · ชม.นอนที่แนะนำ · ประเภทออกกำลังกายที่เหมาะ</p>
+      <p><b>ผลจริง:</b> ครบทั้ง 4: ค่า BMI + แถบเกณฑ์ 4 ระดับ · &quot;น้ำดื่มที่ควรได้ต่อวัน 2,350–2,625 มล./วัน (~9–11 แก้ว)&quot; · &quot;การนอน แนะนำ 7–9 ชั่วโมง/คืน · เข้านอนก่อน 4 ทุ่ม (22:00)&quot; พร้อมเทียบเวลาจริงถ้ากรอกมา · &quot;ออกกำลังกายที่เหมาะกับคุณ&quot; ปรับตามความถี่ที่กรอก · มีการ์ดช่วงมีโอกาสสูงเพิ่มให้เฉพาะคนที่เคยทำเครื่องมือนับวันไข่ตก</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-03</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] แสดง BMI สอดคล้องกับ R13 ที่เดียวกันทั้งแอป</p>
+      <p><b>ผลจริง:</b> สอดคล้องกัน — ทั้งสองจุดอ่านจาก lib/calc/bmi.ts ตัวเดียว (bmiScale + BMI_BANDS) ไม่มีเกณฑ์ซ้ำสองที่ · ในรายงานมีประโยคกำกับเพิ่มว่า &quot;ค่า BMI เป็นตัวเลขอ้างอิงคร่าว ๆ ไม่ได้บอกสุขภาพทั้งหมดของคุณ และไม่ใช่การวินิจฉัยค่ะ&quot;</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-04</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เห็นตัวเลขเป้าหมาย โปรตีน / น้ำ / ไขมันดี ของคนคนนั้น</p>
+      <p><b>ผลจริง:</b> เห็นครบทั้ง 3 และเป็นค่าเฉพาะบุคคล เช่น เคสหนึ่งได้ &quot;โปรตีน 96–120 กรัม/วัน&quot; + &quot;น้ำ 2,400–2,800 มล./วัน&quot; + &quot;EPA+DHA อย่างน้อย 250 มก./วัน&quot; อีกเคส (ให้นม) ได้ 300 มก./วัน · ถ้าไม่กรอกน้ำหนักจะขึ้นข้อความว่ายังคำนวณให้ไม่ได้ ไม่เดาตัวเลขให้</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-05</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] ตัวเลขต้อง trace กลับหาแหล่งอ้างอิงได้ ห้ามใส่ตัวเลขที่ไม่มีที่มา</p>
+      <p><b>ผลจริง:</b> มีแค่ 2 ค่าเท่านั้นจริงตามข้อสรุปงานวิจัย: prep/infertility/male = 250 มก./วัน · pregnant/lactating = 300 มก./วัน (โดยเป็น DHA ≥200) · &lt;b&gt;ไม่มีการประดิษฐ์ตัวเลขแยก 5 หมวด&lt;/b&gt; · หน้าจอแสดงบรรทัด &quot;ที่มาของตัวเลข: FAO/WHO 2010 Table 7.2 … · สรุปหลักฐานเต็ม: docs/GOOD-FAT-BY-CATEGORY-RESEARCH-BRIEF.md §0&quot; · และแยกกล่อง &quot;แหล่ง DHA จริง&quot; ออกจาก &quot;ไขมันดีทั่วไป&quot; คนละกล่องพร้อมคำเตือนว่าน้ำมันมะกอก/อะโวคาโด/ถั่วไม่ใช่แหล่ง DHA ตามข้อบังคับในบรีฟ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-06</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีตารางอ้างอิงโปรตีนต่อ 100 กรัมของอาหารทั่วไป</p>
+      <p><b>ผลจริง:</b> มีตาราง 3 คอลัมน์ (อาหาร / ปริมาณอ้างอิง / โปรตีน): อกไก่ 100 กรัม ≈30 ก. · ปลา 100 กรัม ≈20 ก. · ไข่ต้ม 1 ฟอง ≈6–7 ก. · Ferty 1 ซอง ≈25 ก. · มีบรรทัดที่มา docs/nutrition-protocol.md §1 · มีบล็อกผักแนะนำและผลไม้แนะนำต่อท้าย</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-07</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> [เดิม BLOCKED] แสดงรูปเมื่อมีไฟล์ / ไม่แสดงรูปเมื่อไม่มี — แถวต้องไม่พัง</p>
+      <p><b>ผลจริง:</b> ไฟล์รูปมีจริง 19 รายการที่ public/products/ · แถวที่มีรูปเรนเดอร์ &lt;img src=&quot;/products/&lt;id&gt;.jpg&quot;&gt; โหลดได้ 200 image/jpeg · แถวของสินค้าที่ยังไม่มีรูป (นมแพะ · ซุปไก่ดำ · น้ำหัวปลี · PCO-VIT · Ferta · MZ-All · Motila1) &lt;b&gt;ยังขึ้นแถวครบพร้อมชื่อ ราคา วิธีทาน ประโยชน์ แค่ไม่มีรูป&lt;/b&gt; ไม่ถูกซ่อน · ระบบใช้รายชื่อที่รู้ล่วงหน้า (lib/product-photos.ts) แทน onError จึงไม่มี request 404 ให้เห็นใน console เลย (ยืนยันแล้วว่า /products/pcovit.jpg และ /products/goatmilk.jpg คืน 404 แต่ไม่เคยถูกเรียก)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-08</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> เห็นภาพตัวอย่างจานอาหาร (โปรตีน+คาร์บเชิงซ้อน+ผัก+ผลไม้/ไขมันดี) พร้อมคำอธิบายส่วนประกอบ</p>
+      <p><b>ผลจริง:</b> เปิดออกมาเป็นภาพวงกลมแบ่ง 4 ส่วน (SVG วาดในหน้า ไม่พึ่งไฟล์ภาพภายนอกจึงไม่มีรูปแตก) พร้อมคำอธิบาย: โปรตีน ~30% · ผัก ~35% · คาร์โบไฮเดรต ~25% · ไขมันดี ~10% และมีหมายเหตุตรงไปตรงมาว่าเป็น &quot;ตัวอย่างเทียบเคียง&quot; ไม่ใช่สัดส่วนมาตรฐานทางโภชนาการ</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-09</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> มีปุ่ม &quot;ทักแอดมิน&quot; ใช้กลไกเดียวกับ AdminHandoffCta ที่มีอยู่แล้ว</p>
+      <p><b>ผลจริง:</b> ทำงานได้ตามเจตนา: เมื่อมี ticket (เส้นทางปกติ) ท้ายรายงานมีกล่อง &quot;มีคำถามเรื่องแผนของคุณ? แอดมินเห็นคำตอบที่คุณตอบไว้แล้ว&quot; + รหัส + ปุ่ม &quot;💬 คุยกับทีม Baby &amp; Mom ที่ LINE OA&quot; · เมื่อไม่มี code จึงใช้ &lt;AdminHandoffCta&gt; เดิม · เหตุผลที่ไม่ใช้ AdminHandoffCta ตลอดคือกันการยิง /api/lead ซ้ำจนเกิด lead ซ้ำใบ ซึ่งเป็นการตัดสินใจที่ถูก — แต่ถ้อยคำ AC ใน PRD (&quot;ใช้ AdminHandoffCta เดิม&quot;) ควรปรับให้ตรงกับพฤติกรรมจริง (ดูข้อสังเกตข้อ 5)</p>
+    </div><div class="case">
+      <div class="case-head"><code>TC-15-EX</code><span class="status ok sm">ผ่าน</span></div>
+      <p><b>คาดหวัง:</b> gate เดิมอยู่ครบ · disclaimer อยู่ทุกหน้า · pillar ที่ยังไม่ประเมินต้องไม่ถูกนับเป็น 0%</p>
+      <p><b>ผลจริง:</b> teaser ได้แค่สรุปสั้น + สินค้า 3 ตัว + คำเตือน + ปุ่ม LINE ไม่มีเนื้อรายงานฉบับเต็มหลุดมาเลย (ฝั่ง server ก็ส่งเฉพาะ buildTeaser เมื่อ tier ไม่ใช่ full) · reportTier() ให้ค่าตรงตามกติกาเดิมทุกคอมบิเนชัน (ยัง→teaser · IUI/บำรุงไข่→medium · IVF-ICSI/เตรียมผนัง→full · &quot;ไม่แน่ใจ&quot; อย่างเดียว→teaser · ติ๊กปัญหาจริง→medium) · disclaimer &quot;ไม่แทนคำวินิจฉัยของแพทย์&quot; ปรากฏครบทั้งหน้า teaser หน้ารายงานเต็ม เครื่องมือความเครียด เครื่องมือวิตามิน และบล็อกความรู้ · pillar ที่ยังไม่ได้ทำเครื่องมือแสดง &quot;ยังไม่ได้ประเมิน&quot; (score = null) และคะแนนรวมเป็น 50 ไม่ใช่ 0 · consent gate ยังเป็นหน้าแรกของ /plan ทุก stage ที่เข้าผ่าน ?stage= (ตรวจครบทั้ง 5)</p>
+    </div></div>
+  </details>
+  <div class="comment">
+    <label>ความเห็นของคุณ (บันทึกอัตโนมัติในเครื่องนี้)</label>
+    <textarea data-key="TS-15" placeholder="พิมพ์ความเห็น/คำถามตรงนี้ได้เลย…"></textarea>
+  </div>
+</article></div>
+
+<div id="savedMark" class="savedMark">บันทึกความเห็นแล้ว ✓</div>
+<footer class="note2">Mommunjai — Test Scenario &amp; Test Report ฉบับสมบูรณ์ · 1 สิงหาคม 2569 · ความเห็นที่พิมพ์ไว้บันทึกเฉพาะในเบราว์เซอร์นี้เท่านั้น กดปุ่ม "ส่งออกความเห็น" เพื่อเก็บเป็นไฟล์</footer>
+</div>
+<script>
+var LS_KEY = 'mmj_test_full_r4_comments';
+function loadComments(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveComment(key, val){
+  var o = loadComments(); o[key]=val; localStorage.setItem(LS_KEY, JSON.stringify(o));
+  var m=document.getElementById('savedMark'); m.classList.add('show'); clearTimeout(window.__t); window.__t=setTimeout(()=>m.classList.remove('show'),1400);
+}
+document.querySelectorAll('textarea[data-key]').forEach(function(t){
+  var saved = loadComments()[t.dataset.key]; if(saved) t.value = saved;
+  t.addEventListener('input', function(){ saveComment(t.dataset.key, t.value); });
+});
+document.getElementById('expandAll').onclick = ()=>document.querySelectorAll('details.tech').forEach(d=>d.open=true);
+document.getElementById('collapseAll').onclick = ()=>document.querySelectorAll('details.tech').forEach(d=>d.open=false);
+document.getElementById('exportBtn').onclick = function(){
+  var c = loadComments(); var lines=['# ความเห็นที่บันทึกไว้ — ' + new Date().toISOString().slice(0,10), ''];
+  Object.keys(c).forEach(function(k){ if(c[k] && c[k].trim()) lines.push('## '+k, c[k], ''); });
+  var blob = new Blob([lines.join('\n')], {type:'text/markdown'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mommunjai-test-comments.md'; a.click();
+};
+</script>
+</body>
+</html>

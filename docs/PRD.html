@@ -1,88 +1,549 @@
 <!doctype html>
-<html lang="th"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRD — Mommunjai — Mommunjai</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRD — Mommunjai (ฉบับสมบูรณ์)</title>
 <style>
-  :root{ --rose:#E8A0BF; --teal:#5FB3B3; --cream:#FFF7F3; --ink:#3d3d4d; --gold:#E7B84B;
-         --glass:rgba(255,255,255,.62); --line:rgba(255,255,255,.7); --shadow:0 8px 30px rgba(90,60,80,.12);}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,-apple-system,sans-serif;color:var(--ink);
-       background:linear-gradient(135deg,#FFF7F3 0%,#FDEBF1 40%,#E7F5F4 100%);min-height:100vh;line-height:1.6}
-  .wrap{max-width:1200px;margin:0 auto;padding:24px;display:grid;grid-template-columns:250px 1fr;gap:24px}
-  header.top{grid-column:1/-1;display:flex;align-items:center;gap:14px;background:var(--glass);
-       backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;padding:18px 24px;box-shadow:var(--shadow)}
-  header.top .em{font-size:34px}
-  header.top h1{margin:0;font-size:22px;font-weight:600}
-  header.top .sub{margin:0;font-size:13px;opacity:.7}
-  nav.toc{position:sticky;top:24px;align-self:start;background:var(--glass);backdrop-filter:blur(14px);
-       border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);max-height:85vh;overflow:auto}
-  nav.toc a{display:block;padding:6px 10px;border-radius:10px;color:var(--ink);text-decoration:none;font-size:13px;opacity:.85}
-  nav.toc a:hover{background:rgba(232,160,191,.18)}
-  main{min-width:0}
-  details.sec{background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;
-       padding:6px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
-  details.sec>summary{cursor:pointer;font-size:19px;font-weight:600;padding:14px 0;list-style:none;display:flex;align-items:center;gap:10px}
-  details.sec>summary::-webkit-details-marker{display:none}
-  details.sec>summary::before{content:'▸';color:var(--rose);transition:transform .2s}
-  details.sec[open]>summary::before{transform:rotate(90deg)}
-  .body{padding-bottom:16px}
-  h1,h2,h3{line-height:1.3} h3{font-size:16px;margin-top:20px}
-  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;overflow:auto;display:block}
-  th,td{border:1px solid rgba(120,90,110,.18);padding:8px 10px;text-align:left;vertical-align:top}
-  th{background:rgba(95,179,179,.14)}
-  code{background:rgba(120,90,110,.1);padding:2px 6px;border-radius:6px;font-size:.9em}
-  pre{background:rgba(40,40,60,.9);color:#eee;padding:14px;border-radius:12px;overflow:auto}
-  pre code{background:none;color:inherit}
-  a{color:#c85a8a} blockquote{border-left:4px solid var(--teal);margin:12px 0;padding:6px 16px;background:rgba(95,179,179,.08);border-radius:8px}
-  input[type=checkbox]{margin-right:6px}
-  .mermaid{background:rgba(255,255,255,.5);border-radius:12px;padding:12px;margin:12px 0;text-align:center}
-  .toolbar{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
-  .btn{background:var(--glass);border:1px solid var(--line);border-radius:12px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink)}
-  .btn:hover{background:rgba(232,160,191,.2)}
-  @media(max-width:820px){.wrap{grid-template-columns:1fr;padding:14px}nav.toc{position:static;max-height:none}}
-  @media print{nav.toc,.toolbar{display:none}details.sec{break-inside:avoid}}
-</style></head><body>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.7;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding:24px 18px 80px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins,sans-serif;font-size:21px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.9;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 12px}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar button{font:inherit;font-size:12.5px;font-weight:600;color:var(--teal-deep);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer}
+.toolbar button:hover{background:var(--teal-soft)}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+nav.toc a{font-size:12px;color:var(--teal-deep);text-decoration:none;background:var(--teal-soft);padding:5px 11px;border-radius:999px;font-weight:500}
+nav.toc a:hover{background:var(--teal);color:#fff}
+details.sec{background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;padding:4px 20px;box-shadow:0 2px 10px rgba(31,41,55,.04)}
+details.sec>summary{cursor:pointer;padding:14px 0;font-family:Poppins,sans-serif;font-weight:600;font-size:15.5px;list-style:none;display:flex;align-items:center;gap:10px;color:var(--teal-deep);scroll-margin-top:16px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"▸";color:var(--rose);transition:.15s}
+details.sec[open]>summary::before{content:"▾"}
+.body{padding-bottom:16px;font-size:14px}
+.body h3{font-family:Poppins,sans-serif;font-size:15px;margin:18px 0 8px;color:var(--ink)}
+.body p{margin:8px 0}
+.body ul,.body ol{padding-left:22px}
+.body li{margin-bottom:4px}
+.body blockquote{background:var(--rose-soft);border-left:4px solid var(--rose);border-radius:0 12px 12px 0;padding:10px 16px;margin:12px 0;font-size:13.5px;color:#7A1E4B}
+.body blockquote p{margin:4px 0}
+.body code{background:var(--teal-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+.body table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0;display:block;overflow-x:auto}
+.body th,.body td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+.body th{background:var(--teal-soft);color:var(--teal-deep);font-family:Poppins,sans-serif;font-weight:600;white-space:nowrap}
+.body a{color:var(--teal-deep)}
+.body strong{color:var(--ink)}
+footer.note{margin-top:24px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media print{ .toolbar,nav.toc{display:none} details.sec{page-break-inside:avoid} details{ open:true } }
+</style>
+</head>
+<body>
 <div class="wrap">
-  <header class="top"><span class="em">📋</span><div><h1>PRD — Mommunjai</h1><p class="sub">Mommunjai · เอกสารรีวิว (พับ/กางแต่ละ section ได้ · แก้ที่ไฟล์ .md แล้ว regenerate)</p></div></header>
-  <div class="toolbar">
-    <button class="btn" onclick="document.querySelectorAll('details.sec').forEach(d=>d.open=true)">กางทั้งหมด</button>
-    <button class="btn" onclick="document.querySelectorAll('details.sec').forEach(d=>d.open=false)">พับทั้งหมด</button>
-    <button class="btn" onclick="window.print()">พิมพ์ / PDF</button>
-  </div>
-  <nav class="toc" id="toc"></nav>
-  <main id="main"></main>
+
+<header class="top">
+  <h1>📋 PRD — Mommunjai (ฉบับสมบูรณ์)</h1>
+  <p>เวอร์ชัน 2.0 · 2026-08-01 · สถานะ: Live — ใช้งานจริง</p>
+  <div class="src">เอกสารรีวิว ไม่ต้องใช้อินเทอร์เน็ต/สคริปต์ภายนอกในการแสดงผล — พับ/กางแต่ละหัวข้อได้ · แก้ที่ไฟล์ .md แล้ว regenerate ผ่านสคริปต์เดิม</div>
+</header>
+
+<div class="toolbar">
+  <button id="expandAll">กางทั้งหมด</button>
+  <button id="collapseAll">พับทั้งหมด</button>
+  <button onclick="window.print()">พิมพ์ / PDF</button>
+</div>
+
+<nav class="toc"><a href="#s0">0. บทสรุปผู้บริหาร</a><a href="#s1">1. Problem Statement</a><a href="#s2">2. Goals & Success Metrics</a><a href="#s3">3. Non-Goals</a><a href="#s4">4. Personas & User Stories</a><a href="#s5">5. ภาพรวมระบบ & Module Map</a><a href="#s6">6. Requirements รายโมดูล</a><a href="#s7">7. กติกาความปลอดภัย/Compliance ที่ผูกกับทุกโมดูล</a><a href="#s8">8. Brand CI & Design System</a><a href="#s9">9. Widget Embed Spec</a><a href="#s10">10. Non-Functional Requirements (NFR)</a><a href="#s11">11. Analytics & Event Tracking</a><a href="#s12">12. คุณภาพของระบบ ณ วันนี้</a><a href="#s13">13. Open Questions</a><a href="#s14">14. Timeline & Phasing</a></nav>
+
+<details class="sec" id="s0" open><summary>0. บทสรุปผู้บริหาร</summary><div class="body"><p><strong>Mommunjai</strong> คือชุดเครื่องมือฟรีบนเว็บ (mobile-first) สำหรับผู้หญิง/คู่รักที่ <strong>อยากมีลูก · เตรียมตั้งครรภ์ · มีบุตรยาก · ตั้งครรภ์แล้ว · ให้นมบุตร</strong> ภายใต้แบรนด์ Baby &amp; Mom (ครูก้อย)</p>
+<p>เป้าหมายทางธุรกิจ: <strong>หา lead ใหม่</strong> เข้าระบบแบรนด์ และ <strong>ผูกใจลูกค้าเดิม</strong> โดยให้คุณค่าจริงก่อน (คำนวณ+ความรู้ตามคัมภีร์ครูก้อย) แล้วเก็บ lead ผ่านแบบสอบถาม → consent (PDPA) → ออกเลข ticket → <strong>ทุกคนต้องทักแอดมินใน LINE OA เพื่อรับแผนบำรุง 90 วันฉบับเต็ม</strong> (กติกาที่เคาะแน่นอนแล้ว 1 ส.ค. 2026 — ไม่มีทางลัดใดที่เห็นแผนเต็มในเว็บได้อีก)</p>
+<p><strong>สถานะปัจจุบัน (ต่างจาก v1.0 อย่างมาก):</strong></p>
+<ul>
+<li>จาก 6 เครื่องมือ → <strong>9 เครื่องมือ</strong> (เพิ่มน้ำ/ออกกำลังกาย/ตรวจร่างกาย-ฮอร์โมน/ทดสอบความเครียด)</li>
+<li>จากวิตามิน 19 รายการ (ชุดเดียวทุกคน) → <strong>26 รายการ แยกตามปัญหาเฉพาะบุคคล</strong> ตามตาราง mapping ที่ทีมครูก้อยใช้จริง</li>
+<li>จาก &quot;หน้า staff ค้น ticket แบบง่าย&quot; → <strong>ระบบ auth+RBAC เต็มรูป</strong> (login, จัดการสิทธิ์ผู้ใช้, audit log)</li>
+<li>จาก &quot;ไม่มี LINE bot&quot; → <strong>LINE OA bot ทำงานจริง</strong>: verify signature, จับรหัส ticket จากข้อความ, ตอบการ์ด Flex ส่วนบุคคล, จำลูกค้าข้ามอุปกรณ์ผ่าน resume-token, ปุ่มเมนู &quot;แผนของฉัน&quot;</li>
+<li>จาก &quot;รายงานทั่วไปที่ใครก็เหมือนกัน&quot; → <strong>รายงานที่มีตัวเลขของตัวเอง</strong> (BMI/น้ำ/นอน/โปรตีน/ไขมันดี) พร้อมเนื้อหาความรู้เฉพาะช่วงชีวิต (ตั้งครรภ์/ให้นมบุตร)</li>
+<li><strong>แผนฉบับเต็มไม่มีวันหลุดออกจากเว็บอีกต่อไป</strong> — ปิดที่ระดับ API ไม่ใช่แค่ซ่อนหน้าจอ</li>
+</ul>
+<p><strong>สแตกเทคนิค:</strong> Next.js 14 (App Router) + Tailwind + Supabase (Postgres+Auth, สถาปัตย์ BFF) → Vercel · dual GitHub remote (deploy จริงจาก <code>tonpalearn/mommunjai</code>)</p>
+<hr />
+</div></details>
+<details class="sec" id="s1" open><summary>1. Problem Statement</summary><div class="body"><p>ผู้หญิงที่พยายามมีลูก โดยเฉพาะกลุ่มมีบุตรยาก/PCOS เจอข้อมูลเตรียมตัวที่กระจัดกระจาย น่ากลัว และขายของเกินจริง ทำให้ตัดสินใจยากและรู้สึกโดดเดี่ยว ขณะเดียวกันแบรนด์ Baby &amp; Mom มีความรู้ (คัมภีร์ครูก้อย) และสินค้าอยู่แล้ว แต่ไม่มีเครื่องมือดิจิทัลที่เปลี่ยนคนแปลกหน้า → lead ที่ระบุตัวตนได้อย่างเป็นระบบ</p>
+<p><strong>ปัญหาที่เจอเพิ่มหลังใช้งานจริง (comment รอบ 31/7/2569):</strong> คำแนะนำสินค้าที่แอปให้ในตอนแรก <strong>ไม่ตรงกับวิธีที่ทีมแนะนำลูกค้าจริง</strong> — แนะนำชุดเดียวกันให้ทุกคนโดยไม่แยกตามปัญหา ทำให้แอดมินต้องแก้คำแนะนำใหม่ทั้งหมดตอนคุยใน LINE เสียทั้งความน่าเชื่อถือของแอปและเวลาแอดมิน → นี่คือที่มาของ mapping สินค้าต่อปัญหาแบบละเอียดที่ใช้อยู่วันนี้ (§6 M6)</p>
+<blockquote>
+<p>ต้นทุนของการไม่ทำ: lead หลุดมือ · ทีมตอบแชตซ้ำ ๆ โดยไม่รู้บริบทคนถาม · แข่งกับเพจคู่แข่งที่มีเครื่องมือ · เสียความน่าเชื่อถือถ้าคำแนะนำผิดจุด</p>
+</blockquote>
+</div></details>
+<details class="sec" id="s2"><summary>2. Goals & Success Metrics</summary><div class="body"><h3>เป้าหมาย (outcomes)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>เป้าหมาย</th>
+<th>ตัววัด</th>
+<th>เป้า</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>เปลี่ยนผู้เข้าชม → lead ที่ระบุตัวตน (มี ticket)</td>
+<td>conversion rate (เข้าเครื่องมือ→ได้ ticket)</td>
+<td>≥ 12%</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>ดึงเข้า LINE OA เพื่อรับแผนเต็ม</td>
+<td>% ของ ticket ที่กด/แจ้งใน LINE OA</td>
+<td>≥ 60% ของ ticket (ตอนนี้ <strong>ทุกคนต้องเข้า LINE เพื่อได้แผนเต็ม</strong> ไม่มีทางลัดแล้ว จึงคาดว่าตัวเลขนี้ควรขยับขึ้น)</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>ทีมคุยต่อได้ตรงจุด (ปิดการขาย)</td>
+<td>เวลาเฉลี่ยที่ทีมใช้ระบุตัวตนลูกค้า</td>
+<td>&lt; 30 วินาที/เคส</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>เครื่องมือมีคุณค่าจริง (ใช้ซ้ำ)</td>
+<td>สัดส่วนผู้กลับมาใช้ ≥ 2 เครื่องมือ</td>
+<td>≥ 25%</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>แอดมินไม่ต้องแก้คำแนะนำใหม่</td>
+<td>อัตราที่ทีม LINE ต้องแก้คำแนะนำสินค้าใหม่ทั้งหมด</td>
+<td>ลดลงชัดเจนจากก่อน mapping รอบ 31/7 (metric นี้ระบบไม่มีข้อมูล ต้องให้ทีม LINE รายงานเอง)</td>
+</tr>
+</tbody>
+</table>
+<h3>Leading indicators (เห็นเร็ว)</h3>
+<p>adoption (คนเริ่มใช้เครื่องมือ/วัน) · completion (ทำแบบสอบถามจบ) · % ผู้กรอกฟิลด์น้ำหนัก/ส่วนสูงครบตั้งแต่แบบสอบถาม (เป้า ≥80%) · % ที่กด &quot;ทักแอดมิน&quot; จากหน้าสรุป</p>
+<h3>Lagging indicators (เห็นช้า)</h3>
+<p>retention · # lead→ปิดการขาย · ยอดขายสินค้าที่ผูกกับผลเครื่องมือ</p>
+</div></details>
+<details class="sec" id="s3"><summary>3. Non-Goals</summary><div class="body"><table>
+<thead>
+<tr>
+<th>Non-goal</th>
+<th>เหตุผล</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ตะกร้า/ชำระเงินในแอป</td>
+<td>ใช้ช่องทางขายเดิม (LINE) — ลดความซับซ้อน/PCI</td>
+</tr>
+<tr>
+<td>ระบบ login ผู้ใช้ทั่วไป</td>
+<td>ใช้ ticket + resume-token แทน — ลดแรงเสียดทาน ลดภาระ PDPA</td>
+</tr>
+<tr>
+<td>LIFF เต็มรูป (LINE Login)</td>
+<td>ต้องขอ channel ใหม่จากเจ้าของ LINE OA — ใช้ resume-token ผ่านปุ่มข้อความ Rich Menu แทนได้ผลใกล้เคียงโดยไม่ต้องรอ</td>
+</tr>
+<tr>
+<td>e-commerce/ตะกร้าสินค้า</td>
+<td>เหมือนเดิม — จบที่ ticket ไปคุยแอดมิน</td>
+</tr>
+<tr>
+<td>แชตบอต AI / คอมมูนิตี้ / AI แปลผลรูปอาหาร</td>
+<td>นอกโฟกัส lead-gen เตรียมตั้งครรภ์ — อยู่ backlog Phase 2</td>
+</tr>
+<tr>
+<td>เก็บผลตรวจ lab จริงของผู้ใช้</td>
+<td><code>/tools/labs</code> เป็นความรู้อย่างเดียว ไม่รับ input ค่าผลตรวจ — ลดภาระ PDPA §26</td>
+</tr>
+<tr>
+<td>เชื่อม GFC lab-booking + โค้ดส่วนลด</td>
+<td>รอ partnership จริงก่อน (PDF-18 ส่วนที่เหลือ)</td>
+</tr>
+<tr>
+<td>Native app (iOS/Android)</td>
+<td>เว็บครอบคลุมพอสำหรับ lead-gen</td>
+</tr>
+</tbody>
+</table>
+</div></details>
+<details class="sec" id="s4"><summary>4. Personas & User Stories</summary><div class="body"><h3>Personas</h3>
+<ul>
+<li><strong>P1 — &quot;หมิว&quot; ผู้เตรียมตั้งครรภ์ทั่วไป</strong> (30–38 ปี) อยากรู้วันไข่ตก/กินอะไรดี</li>
+<li><strong>P2 — &quot;แนน&quot; กลุ่มมีบุตรยาก/PCOS</strong> (35–43 ปี) กำลังจะทำ/เพิ่งทำ IUI/IVF/ICSI · อ่อนไหว · ต้องการกำลังใจ+ความแม่นยำ</li>
+<li><strong>P3 — &quot;คุณพ่อ&quot; ฝ่ายชาย</strong> ต้องบำรุงสเปิร์ม ได้แบบสอบถามชุดเดียวกับหญิง ไม่ใช่พลเมืองชั้นสอง</li>
+<li><strong>P4 — &quot;แม่ตั้งครรภ์แล้ว/ให้นมบุตร&quot;</strong> อยากรู้พัฒนาการลูก/สัญญาณอันตราย/อาหารบำรุงตัวเอง — กลุ่มที่เพิ่งเปิดรับ (เดิมอยู่ non-goal เพราะกังวล พ.ร.บ.นมผง ตอนนี้ทำแล้วโดยระวังคำ/ภาพตามกฎหมาย)</li>
+<li><strong>P5 — &quot;พี่ทีมครูก้อย&quot; (staff)</strong> รับ lead ต่อใน LINE OA · เห็น ticket → โปรไฟล์+ผล+tag ทันที</li>
+<li><strong>P6 — &quot;แอดมินระบบ&quot; (RBAC)</strong> จัดการสิทธิ์ผู้ใช้ทีม แก้ไข/ลบข้อมูลลูกค้าที่ผิดพลาด (สิทธิ์ <code>manage_leads</code>)</li>
+</ul>
+<h3>User Stories (เรียงตามความสำคัญ)</h3>
+<ol>
+<li>ในฐานะผู้เตรียมตั้งครรภ์ ฉันอยากรู้ช่วงวันไข่ตก/โปรตีน/สารอาหาร/การนอนของฉัน เพื่อวางแผนได้แม่นขึ้น</li>
+<li>ในฐานะคนที่ติ๊กปัญหาสุขภาพเฉพาะ (PCOS/รังไข่เสื่อม/ผนังมดลูกบาง ฯลฯ) ฉันอยากได้วิตามินที่ตรงกับปัญหาจริง ไม่ใช่ชุดทั่วไปที่ใครก็ได้</li>
+<li>ในฐานะคนที่กรอกแบบสอบถามจบ ฉันอยากเห็นตัวเลขของตัวเอง (โปรตีน/น้ำ/นอน/ออกกำลังกาย) ทันที เพื่อรู้สึกว่าคุ้มที่กรอก แม้จะยังไม่ได้แผนฉบับเต็ม</li>
+<li>ในฐานะคนที่ยังไม่ได้กรอกน้ำหนัก ฉันอยากเติมได้จากหน้าสรุปเลย ไม่ต้องเริ่มแบบสอบถามใหม่</li>
+<li>ในฐานะฝ่ายชาย ฉันอยากถูกถามเรื่องสูบบุหรี่/ดื่ม/ความเครียด เพราะนั่นคือสิ่งที่กระทบคุณภาพอสุจิจริง ๆ</li>
+<li>ในฐานะแม่ตั้งครรภ์/ให้นมบุตร ฉันอยากรู้พัฒนาการลูก/สัญญาณอันตราย/อาหารบำรุงตัวเอง จากแหล่งที่เชื่อถือได้ ไม่ใช่ข้อมูลขัดกันจากอินเทอร์เน็ต</li>
+<li>ในฐานะคนที่เคยทำแบบสอบถามแล้ว ฉันอยากพิมพ์ &quot;แผนของฉัน&quot; ใน LINE แล้วได้ลิงก์ดูแผนล่าสุด/แก้ข้อมูลใหม่ โดยไม่ต้องเริ่มนับหนึ่ง</li>
+<li>ในฐานะทีมครูก้อย ฉันอยากค้น ticket แล้วเห็นโปรไฟล์+ผล+tag ทันที เพื่อคุยให้ตรงและปิดการขาย</li>
+<li>ในฐานะแอดมิน ฉันอยากแก้/ลบข้อมูลลูกค้าที่กรอกผิดได้ พร้อมมี audit log ว่าใครแก้อะไร</li>
+<li><strong>Edge/error:</strong> กรอกไม่ครบ/ปฏิเสธ consent/พยายามอ่านแผนเต็มโดยไม่ผ่าน LINE → ระบบต้องจัดการอย่างสุภาพและปลอดภัย ห้ามมีทางลัด</li>
+</ol>
+<hr />
+</div></details>
+<details class="sec" id="s5"><summary>5. ภาพรวมระบบ & Module Map</summary><div class="body"><table>
+<thead>
+<tr>
+<th>Module</th>
+<th>ชื่อ</th>
+<th>สรุป</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1</strong></td>
+<td>App Shell + Brand + Design System</td>
+<td>โครงแอป, glass UI, responsive, type scale ภาษาไทย, ปุ่มปรับขนาดตัวอักษร (ก-ก-ก)</td>
+</tr>
+<tr>
+<td><strong>M2–M10</strong></td>
+<td>9 เครื่องมือคำนวณ/ความรู้</td>
+<td>ไข่ตก · โปรตีน · สารอาหาร · การนอน · น้ำ · ออกกำลังกาย · ตรวจร่างกาย(ฮอร์โมน) · ทดสอบความเครียด (ST-5) · <strong>แนะนำวิตามิน</strong> (26 SKU, mapping ตามปัญหา)</td>
+</tr>
+<tr>
+<td><strong>M11</strong></td>
+<td>Lead Capture + Consent + Ticket</td>
+<td>แบบสอบถามหลัก (แยกคำถามตาม 5 stage) → consent (PDPA, versioned) → Supabase → ticket → <strong>teaser เท่านั้น ทุก tier</strong></td>
+</tr>
+<tr>
+<td><strong>M12</strong></td>
+<td>Personalized Report Engine</td>
+<td>รายงาน Part 1 (BMI/น้ำ/นอน/ออกกำลังกาย) + Part 2 (โปรตีน/น้ำ/ไขมันดี/ตารางอาหาร) + เนื้อหาความรู้ตั้งครรภ์/ให้นมบุตร — <strong>เห็นได้เฉพาะที่ <code>/r/&lt;code&gt;</code> หลังผ่าน LINE เท่านั้น</strong></td>
+</tr>
+<tr>
+<td><strong>M13</strong></td>
+<td>Customer Identity &amp; Resume</td>
+<td>HMAC resume-token (60 วัน) · จำลูกค้าข้ามอุปกรณ์ผ่าน <code>line_user_id</code> · เปลี่ยน stage/แก้ข้อมูลได้โดยไม่นับเป็นคนใหม่</td>
+</tr>
+<tr>
+<td><strong>M14</strong></td>
+<td>LINE OA Bot</td>
+<td>verify signature (timing-safe) · จับรหัส ticket จากข้อความ → ส่งการ์ด Flex (สีเขียว CI จริง, ตัวเลขเฉพาะบุคคล, ไม่มีคะแนน/ราคา/ชื่อสินค้า) · ปุ่มเมนู &quot;แผนของฉัน&quot; (resume flow)</td>
+</tr>
+<tr>
+<td><strong>M15</strong></td>
+<td>Tagging + BFF API + Staff Lookup</td>
+<td>auto-tag จากคำตอบ + BFF endpoints + หน้า <code>/staff</code> ค้น ticket</td>
+</tr>
+<tr>
+<td><strong>M16</strong></td>
+<td>Admin Console (Auth + RBAC)</td>
+<td><code>/login</code> → session cookie (HMAC) · <code>/admin</code> จัดการผู้ใช้/สิทธิ์ 7 ประเภท · <code>/leads</code> ดู/แก้/ลบ lead พร้อม audit log (diff เก่า→ใหม่ของฟิลด์อ่อนไหว) + PDPA erasure note</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>ทุกเครื่องคำนวณ (M2–M10) แชร์ &quot;โปรไฟล์ผู้ใช้&quot; (<code>localStorage</code>) เพื่อ prefill M11 ได้ไร้รอยต่อ และอัปเดตสดข้ามแท็บผ่าน <code>storage</code> event</p>
+</blockquote>
+<hr />
+</div></details>
+<details class="sec" id="s6"><summary>6. Requirements รายโมดูล</summary><div class="body"><h3>M1 — App Shell + Brand + Design System</h3>
+<ul>
+<li>หน้าแรก 4 การ์ดหมวดชีวิต (เตรียมตั้งครรภ์/มีบุตรยาก/ตั้งครรภ์แล้ว/ให้นมบุตร — การ์ดแรกมีปุ่มย่อยฝ่ายหญิง/ฝ่ายชาย) + กริดเครื่องมือ 9 ใบ (ใบสุดท้าย = ทดสอบความเครียด)</li>
+<li><strong>Type scale ภาษาไทยเฉพาะ</strong> (แก้ 1 ส.ค. 2026): ขนาดฐาน 17.5px บนมือถือ / <strong>19.5px บนจอ ≥1024px</strong> พร้อมระยะบรรทัด 1.75–1.85 (มาตรฐาน Tailwind ออกแบบมาสำหรับอักษรละติน ไม่พอสำหรับสระ+วรรณยุกต์ไทยที่ซ้อนได้ 3 ชั้น)</li>
+<li>ทุกข้อความห้ามจางกว่า opacity <code>/75</code> บนพื้นขาว (ผ่าน WCAG AA contrast 4.5:1)</li>
+<li><strong>ปุ่ม ก-ก-ก</strong> ปรับขนาดตัวอักษรทั้งหน้าด้วยตัวคูณ CSS variable (ไม่ใช่ px ตรง ๆ เพราะฐานต่างกันระหว่างมือถือ/desktop) จำค่าไว้ใน localStorage</li>
+<li>ตารางวิตามินบนมือถือ = การ์ดเรียงลง (จอ ≥640px ยังเป็นตาราง 3 คอลัมน์) — ตารางเดิมล้นจอมือถือจนคอลัมน์ขวาสุดมองไม่เห็น</li>
+<li>disclaimer แพทย์อยู่ท้ายทุกหน้าเครื่องมือ (<code>&lt;Disclaimer&gt;</code> ฝังใน <code>&lt;ToolShell&gt;</code> ทุกหน้า ไม่ต้องเรียกแยก)</li>
+<li><code>ConsentGate</code> ฝังใน <code>ToolShell</code> ทุกหน้าเครื่องมือ — ต้องยินยอมก่อนเห็นคำถาม/ผลลัพธ์</li>
+</ul>
+<h3>M2–M10 — 9 เครื่องมือ</h3>
+<table>
+<thead>
+<tr>
+<th>เครื่องมือ</th>
+<th>หน้าที่</th>
+<th>ที่มาตัวเลข</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>นับวันไข่ตก</td>
+<td>fertile window จากรอบเดือน · เปิดให้ทุกคนใช้ (กรอกแทนคู่ได้)</td>
+<td>luteal phase ~14 วัน</td>
+</tr>
+<tr>
+<td>คำนวณโปรตีน</td>
+<td>เป้ากรัม/วันตามน้ำหนัก+stage → แปลงเป็นอาหาร/Ferty</td>
+<td><code>docs/nutrition-protocol.md</code> §1</td>
+</tr>
+<tr>
+<td>เช็กสารอาหาร</td>
+<td>ติ๊กสิ่งที่กินวันนี้ เทียบ 3 เสา</td>
+<td>คัมภีร์ครูก้อย</td>
+</tr>
+<tr>
+<td>คำนวณการนอน</td>
+<td>2 โหมด (แนะนำเวลา / ประเมินจริง)</td>
+<td>รอบหลับ 90 นาที + กฎก่อน 4 ทุ่ม</td>
+</tr>
+<tr>
+<td>เช็คปริมาณน้ำ</td>
+<td>30–35 มล./กก. + โบนัสตั้งครรภ์/ให้นม</td>
+<td>มาตรฐานทั่วไป</td>
+</tr>
+<tr>
+<td>แนะนำการออกกำลังกาย</td>
+<td>คัดกรองข้อห้าม (เฉพาะตั้งครรภ์) + baseline fitness</td>
+<td>WHO 2020 / SOGC-CSEP 2019 (ไม่มีมาตรฐานแบ่งตามอายุ)</td>
+</tr>
+<tr>
+<td>ตรวจร่างกาย (ฮอร์โมน)</td>
+<td>ความรู้ 6 ฮอร์โมน + ค่าน้ำเชื้อ WHO 6th ed. — <strong>ไม่รับ input ผลตรวจจริง</strong></td>
+<td>ASRM/WHO</td>
+</tr>
+<tr>
+<td>ทดสอบความเครียด</td>
+<td><strong>ST-5</strong> กรมสุขภาพจิต (5 ข้อ, 0–15 คะแนน, 4 ระดับ)</td>
+<td>Open Data กรมสุขภาพจิต — เลือกเพราะไม่มีข้อคำถามทำร้ายตัวเอง (ต่างจาก EPDS ที่มีและต้องมีระบบรับช่วงต่อ)</td>
+</tr>
+<tr>
+<td>แนะนำวิตามินครูก้อย</td>
+<td>ดูรายละเอียดเต็มด้านล่าง</td>
+<td><code>docs/product-catalog-master.md</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>กติกาบังคับของเครื่องมือทดสอบความเครียด:</strong> คะแนนสูง (8–15) ต้องแสดง<strong>คำแนะนำ + สายด่วน 1323 มาก่อนและเด่นกว่า</strong>สินค้าเสมอ · สินค้าที่แนะนำต้องอยู่ใต้หัวข้อ <strong>&quot;ตัวช่วย&quot;</strong> (ไม่ใช่ &quot;แนะนำสำหรับคุณ&quot;) ห้ามอยู่เหนือคำแนะนำช่วยเหลือ — เส้นแบ่งระหว่าง &quot;ให้ทางเลือก&quot; กับ &quot;ขายความกลัว&quot;</p>
+<h3>M11 — Vitamin Recommender (แนะนำวิตามินครูก้อย)</h3>
+<p>26 SKU แบ่งเป็นชุดพื้นฐาน (base 4: Ferty/OvaAll/น้ำมะกรูด Shot/Ferti 9 Oil) + สินค้าเสริมตามปัญหาที่ติ๊ก:</p>
+<table>
+<thead>
+<tr>
+<th>ปัญหาที่ติ๊ก (มีบุตรยาก)</th>
+<th>สินค้าเสริม</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PCOS</td>
+<td>+ PCO-VIT</td>
+</tr>
+<tr>
+<td>รังไข่เสื่อมก่อนวัย / ฮอร์โมนเพศต่ำ</td>
+<td>+ Varginaree</td>
+</tr>
+<tr>
+<td>ผนังมดลูกบาง</td>
+<td>+ Colla Telo + Varginaree</td>
+</tr>
+<tr>
+<td>ปัญหาจากฝ่ายชาย</td>
+<td>Ferta + M-Z All + Motila1 (+ A.O.S ถ้าคู่ติ๊ก &quot;เครียด&quot;)</td>
+</tr>
+<tr>
+<td>น้ำหนักเกิน</td>
+<td>+ PCO-VIT + คำแนะนำโภชนาการ/ออกกำลังกาย</td>
+</tr>
+<tr>
+<td>อายุ 35+</td>
+<td>+ A.O.S (ผ่าน Safety Matrix — ไม่ให้แม่ตั้งครรภ์)</td>
+</tr>
+<tr>
+<td>ไม่แน่ใจ</td>
+<td>base 4 เท่านั้น</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Safety Matrix (บังคับทุกเส้นทางที่แนะนำสินค้า):</strong> สินค้าที่มี <code>stop.{ovulation/embryoTransfer/pregnant/lactating}=true</code> ต้องถูกกรองอัตโนมัติตาม stage/artPlan ของผู้ใช้เสมอ ห้าม bypass — ตรวจแล้วว่าฟีเจอร์ใหม่ทุกตัว (กฎอายุ, กฎพฤติกรรมฝ่ายชาย) เดินผ่าน filter นี้จริง</p>
+<h3>M12 — Personalized Report Engine</h3>
+<ul>
+<li><strong>Part 1 — ข้อมูลของคุณ:</strong> BMI (ตัวเลข+แถบสี 4 ระดับ) · เป้าน้ำดื่ม · ชั่วโมงนอนที่แนะนำเทียบเวลาจริง · รูปแบบออกกำลังกาย</li>
+<li><strong>Part 2 — โภชนาการของคุณ:</strong> โปรตีน/น้ำ (ตัวเลขเฉพาะบุคคล) · ไขมันดี (แยก &quot;แหล่ง DHA จริง&quot; กับ &quot;ไขมันดีทั่วไปที่ไม่ใช่ DHA&quot; ชัดเจน — ป้องกันเข้าใจผิด) · ตารางอ้างอิงโปรตีนต่ออาหาร</li>
+<li>เนื้อหาความรู้เฉพาะ stage: <strong>ตั้งครรภ์</strong> (พัฒนาการตามไตรมาส · สารอาหาร · นับลูกดิ้น 2 โหมด Toggle พร้อม provenance label · สัญญาณอันตราย 13 ข้อจาก CDC/AIM) · <strong>ให้นมบุตร</strong> (ตารางปั๊มนม · อาหารบำรุงแม่หลังคลอด · เด็กกินกี่ออนซ์)</li>
+<li>ตารางวิตามิน 3 คอลัมน์ + รูปสินค้า (25/26 รายการมีรูปจริงจากแบรนด์)</li>
+<li>ปิดท้าย: ปุ่มแนะนำเมนูอาหาร (ภาพจานตัวอย่าง) + ปุ่มทักแอดมิน (พกข้อมูลที่ตอบไว้แล้วไปด้วย ไม่ต้องเล่าซ้ำ)</li>
+<li>🔒 <strong>gate:</strong> หน้านี้เปิดได้ที่ <code>/r/&lt;code&gt;</code> เท่านั้น หลังทีมส่ง ticket เข้า LINE — <strong>ไม่มีเส้นทางใดใน <code>/plan</code> ที่ render หน้านี้อีกแล้ว</strong> (เปลี่ยน 1 ส.ค. 2026 — ดู §7)</li>
+</ul>
+<h3>M13 — Customer Identity &amp; Resume</h3>
+<ul>
+<li>ทำแบบสอบถามซ้ำ = นับเป็นคนเดิม (ผูกกับ <code>line_user_id</code> เมื่อเชื่อมสำเร็จ) เปลี่ยนหมวด (stage) ได้</li>
+<li>resume-token เป็น HMAC self-contained (ไม่ต้องมี DB row ก็ verify ได้) หมดอายุ 60 วัน</li>
+<li>Rich Menu ปุ่ม &quot;แผนของฉัน&quot; (ข้อความคงที่ ส่งเข้าเว็บฮุกเดิม) → ตอบกลับด้วยลิงก์ resume เฉพาะคนนั้น (LINE รู้ <code>line_user_id</code> จริงจาก event ปลอมไม่ได้ — ไม่ต้องรอ LIFF)</li>
+</ul>
+<h3>M14 — LINE OA Bot</h3>
+<ul>
+<li>Webhook verify signature (HMAC-SHA256, timing-safe compare)</li>
+<li>จับรหัส ticket (<code>MJ-XXXXXX</code>) จากข้อความอิสระ → หา report → ตอบการ์ด Flex</li>
+<li><strong>การ์ด Flex (ออกแบบใหม่ 1 ส.ค. 2026):</strong> สีเขียว CI จริง (<code>#1BC0BA</code>) ไม่ใช่ชมพูเดิมที่ไม่ตรงไกด์ · แสดง<strong>เป้าหมายต่อวันที่คำนวณจริง</strong> (โปรตีน/น้ำ/นอน/ออกกำลังกาย) แทนคะแนน x/100 เดิม (ตัดออกเพราะรายงานเต็มเลิกใช้คะแนนแล้ว และคะแนน &quot;ความพร้อมมีลูก&quot; เสี่ยงถูกอ่านเป็นคำพยากรณ์) · <strong>ไม่มีชื่อ/ราคาสินค้า</strong> (การ์ดในแชทไม่มีที่พอใส่คำเตือน Safety Matrix — บอกได้แค่จำนวนรายการ) · disclaimer แพทย์ทุกการ์ด</li>
+<li>ปุ่มเมนู &quot;แผนของฉัน&quot; ตอบตามสถานะ: มีลูกค้าอยู่แล้ว → ปุ่ม &quot;ดูแผนล่าสุด&quot; + &quot;เปลี่ยนข้อมูล/ทำใหม่&quot; · ไม่รู้จัก → ปุ่ม &quot;เริ่มทำแบบสอบถาม&quot;</li>
+</ul>
+<h3>M15 — Tagging + BFF + Staff Lookup</h3>
+<ul>
+<li><code>POST /api/lead</code> (สร้าง lead+ticket+auto-tag, <strong>ตอบ teaser เสมอทุก tier</strong>) · <code>GET /api/ticket/:code</code> (staff) · <code>POST /api/ticket/:code/tags</code></li>
+<li><code>POST /api/lead/measure</code> (เติมน้ำหนัก/ส่วนสูงหลังส่งฟอร์มแล้ว — ดู §7)</li>
+<li>หน้า <code>/staff</code> ค้น ticket → เห็นโปรไฟล์+ผล+tag</li>
+</ul>
+<h3>M16 — Admin Console (Auth + RBAC)</h3>
+<ul>
+<li><code>/login</code> → session cookie (<code>mmj_staff</code>, HMAC, TTL 8 ชม.) · middleware กันเข้า <code>/admin</code> <code>/staff</code> ถ้าไม่มี cookie</li>
+<li>7 สิทธิ์: <code>view_leads</code> · <code>manage_leads</code> · <code>manage_tags</code> · <code>view_reports</code> · <code>manage_users</code> · <code>line_admin</code> · <code>export_data</code></li>
+<li><code>/leads</code>: ดู/แก้/ลบ lead (ต้องมีสิทธิ์ <code>manage_leads</code>) — ลบต้องพิมพ์ยืนยันแบบมีเงื่อนไข (ไม่ใช่กดครั้งเดียว) · audit log เก็บ diff เก่า→ใหม่เฉพาะฟิลด์อ่อนไหว (stage/PCOS/artPlan/infertility_issues) ไม่ log ค่าที่ไม่กระทบการตัดสินใจ (ลด PII เกินจำเป็น) · แสดงจำนวนครั้งที่ลูกค้าคนนี้เคยส่งฟอร์ม + หมายเหตุสิทธิ์ขอลบข้อมูล (PDPA)</li>
+</ul>
+<hr />
+</div></details>
+<details class="sec" id="s7"><summary>7. กติกาความปลอดภัย/Compliance ที่ผูกกับทุกโมดูล</summary><div class="body"><p><strong>1. แผนฉบับเต็มต้องมาจาก LINE OA เท่านั้น — ปิดที่ API (เคาะ 1 ส.ค. 2026)</strong>
+<code>POST /api/lead</code> ตอบ <code>{ teaser }</code> เสมอ ไม่ว่า tier จะเป็นอะไร (เดิม tier <code>full</code> เช่นคนที่เลือก IVF-ICSI/เตรียมผนังมดลูก จะได้ <code>{ report }</code> เต็มกลับมาทันที — คนกลุ่มที่ตั้งใจดูแลตัวเองมากที่สุดจึงไม่จำเป็นต้องทักแอดมินเลย ปิดกลไกเก็บ lead ทั้งหมด) <code>tier</code> ยังคงส่งกลับเพื่อให้แอดมิน/analytics ใช้ดูชั้นของ lead แต่ <strong>ไม่มีผลต่อสิ่งที่ผู้ใช้เห็นในเว็บอีกต่อไป</strong> — ต้องปิดที่ระดับ response ของ API เท่านั้น เพราะถ้าซ่อนแค่ที่หน้าจอ ข้อมูลเต็มยังเดินทางมาให้เปิด DevTools อ่านได้</p>
+<p><strong>2. หน้าสรุปหลังกรอกต้องมีตัวเลขจริงของผู้ใช้ ไม่ใช่ &quot;ยังไม่ได้ประเมิน&quot; ลอย ๆ</strong>
+เดิมบล็อกนี้ดึงจาก pillar-score ของเครื่องมือย่อยที่คนส่วนใหญ่ (เข้าจากหน้าแรก) ไม่เคยทำมาก่อน จึงว่างเปล่าเสมอ — เปลี่ยนเป็นเป้าหมายต่อวัน (โปรตีน/น้ำ/นอน/ออกกำลังกาย) ที่คำนวณจากคำตอบจริง ใช้ตัวสร้างเดียวกับการ์ด LINE (<code>planMetrics()</code>) เพื่อไม่ให้ 2 จุดแสดงเลขต่างกัน · กฎ &quot;ยังไม่ประเมิน ≠ 0&quot; ยังบังคับ — แถวที่คำนวณไม่ได้ (ไม่มีน้ำหนัก) ต้องหายไป ห้ามแสดง 0 · ถ้าไม่มีน้ำหนัก มีช่องกรอกเติมได้ตรงหน้านั้น คำนวณใหม่ทันทีในเครื่อง แล้วบันทึกเบื้องหลัง</p>
+<p><strong>3. <code>/api/lead/measure</code> (endpoint เขียนข้อมูลสุขภาพแบบสาธารณะ) ล็อก 5 ชั้น:</strong>
+ต้องรู้รหัส ticket (ความลับระดับเดียวกับที่เปิด <code>/r/&lt;code&gt;</code>) · <strong>เติมได้เฉพาะช่องว่าง ทับค่าที่ตอบไปแล้วไม่ได้เด็ดขาด</strong> · เฉพาะ lead ที่สร้างภายใน 24 ชม. · rate-limit ต่อ IP · รับแค่ 2 ฟิลด์ (น้ำหนัก/ส่วนสูง) ฟิลด์อื่นถูกทิ้งทั้งหมด</p>
+<p><strong>4. ไม่ได้ถาม = ไม่มีคำตอบ (<code>sanitizeForStage</code>)</strong>
+แต่ละ stage ถามคำถามไม่เท่ากัน (เช่น &quot;เตรียมตั้งครรภ์&quot;/&quot;ให้นมบุตร&quot; ไม่มีคำถามกระบวนการทางการแพทย์) — ค่าที่เคย prefill มาจาก localStorage ของ stage ก่อนหน้าต้องถูกล้างก่อนส่ง ไม่ใช่ปล่อยให้ค่าเก่าติดไปกับการส่งโดยผู้ใช้ไม่มีทางรู้/แก้ (เคยทำให้ tier กระโดดเป็น full และสินค้าผิด stage หลุดเข้าแผนมาแล้วจริง)</p>
+<p><strong>5. คำเตือน/referral ต้องตรงกับ &quot;ช่วงชีวิต&quot; ของผู้ใช้ ไม่ใช่ชุดเดียวทุกคน</strong>
+คำเตือนที่เขียนขึ้นสำหรับ &quot;คนที่กำลังพยายามมีลูก&quot; (เช่น &quot;ไม่รับประกันการตั้งครรภ์&quot;, referral ตามอายุ 6/12 เดือน) ต้องไม่ไปโผล่กับคนตั้งครรภ์แล้ว/ให้นมบุตร — แต่ 2 กลุ่มนี้ต้องได้ referral ของตัวเองแทน (เช่น &quot;มีอาการผิดปกติ พบแพทย์ทันทีไม่ต้องรอนัด&quot;) <strong>ห้ามลดจำนวนคำเตือนลง</strong></p>
+<p><strong>6. พ.ร.บ.นมผง (มาตรา ๑๔ ผูกกับ &quot;ผู้ใด&quot; = ตัวแอปเองก็เป็นผู้กระทำได้ โทษจำคุกถึง 1 ปี)</strong>
+เนื้อหา/ภาพในหมวด &quot;ให้นมบุตร&quot; ห้ามมีภาพทารก/ไอคอนขวดนม-จุกนม/ตัวเลขอายุเด็ก/ข้อความ &quot;แม่กินแล้วดีต่อลูก&quot; — สื่อสารเรื่องแม่ล้วน ไม่แตะลูก (&quot;ฟื้นฟูร่างกายหลังคลอด ดูแลตัวคุณแม่&quot;)</p>
+<p><strong>7. ห้ามเดา — ทุกตัวเลขสุขภาพต้องมีแหล่งอ้างอิงจริง</strong>
+ไขมันดี/นับลูกดิ้น/แบบทดสอบความเครียด ทุกตัวเลขต้อง trace กลับไปหา research brief ที่อ่านต้นฉบับ guideline จริงได้ (<code>docs/*-RESEARCH-BRIEF.md</code>) — ห้ามประดิษฐ์ตัวเลขที่ฟังดูสมเหตุสมผลแต่ไม่มีองค์กรไหนตีพิมพ์จริง (บังคับที่ระดับ type ในบางจุด เช่น <code>epaDhaMgPerDay: 250 | 300</code> เพื่อกันการแต่งตัวเลขเองไม่ให้ทำได้เลย)</p>
+<hr />
+</div></details>
+<details class="sec" id="s8"><summary>8. Brand CI & Design System</summary><div class="body"><ul>
+<li><strong>Palette (CI จริง):</strong> PRIMARY เขียว <code>#1BC0BA</code> · SECONDARY ชมพู <code>#F978B3</code> · ครีม <code>#FFF8FB</code> · ทอง accent <code>#E7B84B</code> · ink <code>#3D3D4D</code></li>
+<li><strong>Typography:</strong> Poppins (อังกฤษ/หัวเรื่อง/ตัวเลข) + Prompt (ไทย) · ดู §6 M1 สำหรับ type scale ที่ปรับใหม่</li>
+<li><strong>Logo:</strong> โลโก้ทางการ (แม่อุ้มลูก เขียว+ชมพู) + wordmark <code>baby&amp;mom+</code></li>
+<li><strong>Glassmorphism:</strong> การ์ดโปร่งแสง + backdrop-blur + เงานุ่ม + พื้นหลัง gradient มินต์→ชมพู + ปุ่ม pill</li>
+<li><strong>โทนภาพ:</strong> อบอุ่น ให้กำลังใจ · เลี่ยงภาพทารกถี่เกินจนกดดันกลุ่มมีบุตรยาก · ห้ามภาพทารก/ขวดนมในหมวดให้นมบุตร (พ.ร.บ.นมผง)</li>
+</ul>
+</div></details>
+<details class="sec" id="s9"><summary>9. Widget Embed Spec</summary><div class="body"><p>เป้าหมาย: เอาเครื่องมือไปแปะบนเว็บปัจจุบันของแบรนด์ได้ด้วยโค้ดสั้น ๆ — <code>&lt;iframe src=&quot;.../tools/&lt;tool&gt;?embed=1&quot;&gt;</code> + auto-resize ผ่าน postMessage · โหมด <code>embed=1</code> ซ่อน nav/footer · CORS allowlist โดเมนแบรนด์เท่านั้นสำหรับ <code>POST /api/lead</code></p>
+</div></details>
+<details class="sec" id="s10"><summary>10. Non-Functional Requirements (NFR)</summary><div class="body"><table>
+<thead>
+<tr>
+<th>ด้าน</th>
+<th>ข้อกำหนด</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Performance</strong></td>
+<td>เครื่องคำนวณตอบ &lt; 100ms (client, pure function)</td>
+</tr>
+<tr>
+<td><strong>Responsive</strong></td>
+<td>320–1440px+ · ตรวจแล้วไม่ล้นแนวนอนแม้ปรับตัวอักษรใหญ่สุด (ก-ก-ก)</td>
+</tr>
+<tr>
+<td><strong>Accessibility</strong></td>
+<td>contrast ≥4.5:1 (บังคับ /75 ขึ้นไป) · ปุ่ม ≥44px · keyboard nav</td>
+</tr>
+<tr>
+<td><strong>Security</strong></td>
+<td>BFF ซ่อน service key · rate-limit ทุก endpoint ที่เขียนข้อมูล · CORS/CSP allowlist · แผนเต็มปิดที่ API ไม่ใช่ UI</td>
+</tr>
+<tr>
+<td><strong>Privacy/PDPA</strong></td>
+<td>consent versioned (<code>CONSENT_POLICY_VERSION</code>) — เปลี่ยนเนื้อหาที่เก็บ ต้องถามยินยอมใหม่ · audit log เก็บเฉพาะ diff ฟิลด์อ่อนไหว · หน้า <code>/leads</code> มีหมายเหตุสิทธิ์ขอลบข้อมูล</td>
+</tr>
+<tr>
+<td><strong>Reliability</strong></td>
+<td>บันทึก lead ต้อง atomic · ไม่ได้ถาม = ไม่มีคำตอบ (กันข้อมูลผิด stage ติดไปกับ record)</td>
+</tr>
+<tr>
+<td><strong>Compliance content</strong></td>
+<td>disclaimer ทุกผล · ห้ามเคลมรักษา/การันตีท้อง · red-team บังคับก่อน ship เนื้อหาสุขภาพใหม่ทุกครั้ง</td>
+</tr>
+</tbody>
+</table>
+</div></details>
+<details class="sec" id="s11"><summary>11. Analytics & Event Tracking</summary><div class="body"><p>events: <code>tool_open</code> · <code>tool_complete</code> · <code>lead_submit</code> · <code>consent_given</code> · <code>ticket_created</code> · <code>line_click</code> · <code>measure_filled</code> (ใหม่ — เติมน้ำหนักจากหน้าสรุป)</p>
+</div></details>
+<details class="sec" id="s12"><summary>12. คุณภาพของระบบ ณ วันนี้</summary><div class="body"><ul>
+<li><strong>336 automated tests ผ่านทั้งหมด</strong> (12 ไฟล์เทสต์) · <code>tsc --noEmit</code> สะอาด · <code>next build</code> ผ่าน</li>
+<li>Migration ที่ apply แล้วบน production: <code>0001</code>–<code>0007</code> (additive-only ทุกไฟล์ ไม่มีการ alter/drop คอลัมน์เดิม)</li>
+<li>สินค้า 26 SKU มีรูปจริงจากแบรนด์ 25 รายการ (เหลือซุปไก่ดำที่ยังไม่มี)</li>
+<li>รายละเอียดเชิงลึก + เหตุผลของทุกการตัดสินใจ อยู่ใน <code>docs/PRD-UPDATE-R3-3107.md</code> และ commit message ของแต่ละการเปลี่ยนแปลง (ค้นด้วย <code>git log</code>)</li>
+</ul>
+</div></details>
+<details class="sec" id="s13"><summary>13. Open Questions</summary><div class="body"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>คำถาม</th>
+<th>ใคร</th>
+<th>บล็อก?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>อัปเกรด <code>next@14.2.5</code> → <code>14.2.35</code> (มี CVE ระดับ critical 2 รายการ)</td>
+<td>ต้น</td>
+<td>ไม่บล็อก dev แต่ควรทำก่อนเปิดวงกว้าง</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>human sign-off เนื้อหาสุขภาพ (ตั้งครรภ์/ให้นมบุตร/ความเครียด/ออกกำลังกาย/ตรวจร่างกาย) จากแพทย์/เภสัชกร/นักโภชนาการตัวจริง</td>
+<td>ทีมครูก้อย</td>
+<td>ควรได้ก่อน ship วงกว้าง (ผ่านแค่ AI research + AI red-team ตอนนี้)</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>คำเคลม &quot;เพิ่มน้ำนม&quot;/&quot;บำรุงน้ำนม&quot; ต้องขอเลขอนุญาตโฆษณาอาหาร (ฆอ.) ไหม</td>
+<td>ทีมครูก้อย/legal</td>
+<td>ก่อนใช้ถ้อยคำนี้ในสื่อใด ๆ</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>ตั้งปุ่ม Rich Menu &quot;แผนของฉัน&quot; ใน LINE OA Manager จริง</td>
+<td>ต้น/เจ้าของ LINE OA</td>
+<td>manual step นอกโค้ด</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>รูปซุปไก่ดำ (SKU เดียวที่ยังไม่มีรูปจริง)</td>
+<td>ทีมครูก้อย</td>
+<td>ไม่บล็อก — แสดงแถวไม่มีรูปได้</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>&quot;น้ำอินทผาลัม Pure Heaven&quot; (มีรูปในชุดที่ส่งมาแต่ไม่มีในแคตตาล็อก 26 รายการ) เป็นสินค้าใหม่ที่ต้องเพิ่มไหม</td>
+<td>ทีมครูก้อย</td>
+<td>ไม่บล็อก — รอยืนยันก่อนแต่งข้อมูลสินค้าเอง</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>data controller/นโยบายเก็บ-ลบข้อมูล (PDPA) ตัวเต็ม</td>
+<td>แบรนด์/legal</td>
+<td>ควรได้ก่อน launch วงกว้าง</td>
+</tr>
+</tbody>
+</table>
+</div></details>
+<details class="sec" id="s14"><summary>14. Timeline & Phasing</summary><div class="body"><ul>
+<li><strong>Phase 1 (MVP) — ✅ เสร็จแล้ว:</strong> 9 เครื่องมือ + lead/ticket + BFF+auto-tag+staff lookup</li>
+<li><strong>Phase 1.5 (comment รอบ 26/7 + 31/7 + แก้ไขความปลอดภัย 1/8) — ✅ เสร็จแล้ว:</strong> IA 4 หมวด · mapping สินค้าตามปัญหา 26 SKU · รายงาน Part 1/Part 2 · ระบบจดจำลูกค้า+LINE bot · admin/RBAC เต็มรูป · เนื้อหาตั้งครรภ์/ให้นมบุตร · ทดสอบความเครียด · ปิดช่องแผนเต็มหลุดออกเว็บ · ปรับความอ่านง่าย (type scale/contrast)</li>
+<li><strong>Phase 2 (backlog):</strong> LIFF เต็มรูป · เชื่อม GFC lab-booking+โค้ดส่วนลด · AI แปลผลรูปอาหาร · dashboard analytics เต็มรูป</li>
+</ul>
+</div></details>
+
+
+<footer class="note">Mommunjai PRD v2.0 · สร้างจาก docs/PRD.md อัตโนมัติ · 2026-08-01</footer>
 </div>
 <script>
-  const MD = "# PRD \u2014 Mommunjai (\u0e41\u0e2d\u0e1b\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c by Baby & Mom / \u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22)\n\n> \u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e0a\u0e31\u0e19 1.0 \u00b7 2026-07-20 \u00b7 \u0e1c\u0e39\u0e49\u0e40\u0e02\u0e35\u0e22\u0e19: PM/BA/SA (Angiris) \u00b7 \u0e2a\u0e16\u0e32\u0e19\u0e30: **Draft \u0e1e\u0e23\u0e49\u0e2d\u0e21 review**\n> \u0e2d\u0e48\u0e32\u0e19\u0e04\u0e39\u0e48\u0e01\u0e31\u0e1a [ARCHITECTURE.md](ARCHITECTURE.md) \u00b7 [DATA-MODEL.md](DATA-MODEL.md)\n> \u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23\u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e0a\u0e31\u0e19\u0e14\u0e39\u0e07\u0e48\u0e32\u0e22 (\u0e41\u0e1a\u0e48\u0e07 section \u0e1e\u0e31\u0e1a\u0e44\u0e14\u0e49) \u0e17\u0e35\u0e48 [PRD.html](PRD.html)\n\n---\n\n## \u0e2a\u0e32\u0e23\u0e1a\u0e31\u0e0d\n- [0. \u0e1a\u0e17\u0e2a\u0e23\u0e38\u0e1b\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23](#0-\u0e1a\u0e17\u0e2a\u0e23\u0e38\u0e1b\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23)\n- [1. Problem Statement](#1-problem-statement)\n- [2. Goals & Success Metrics](#2-goals--success-metrics)\n- [3. Non-Goals](#3-non-goals)\n- [4. Personas & User Stories](#4-personas--user-stories)\n- [5. \u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\u0e23\u0e30\u0e1a\u0e1a & Module Map](#5-\u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\u0e23\u0e30\u0e1a\u0e1a--module-map)\n- [6. Requirements \u0e23\u0e32\u0e22\u0e42\u0e21\u0e14\u0e39\u0e25 (M1\u2013M8)](#6-requirements-\u0e23\u0e32\u0e22\u0e42\u0e21\u0e14\u0e39\u0e25)\n- [7. Brand CI & Design System](#7-brand-ci--design-system)\n- [8. Widget Embed Spec](#8-widget-embed-spec)\n- [9. Non-Functional Requirements (NFR)](#9-non-functional-requirements-nfr)\n- [10. Analytics & Event Tracking](#10-analytics--event-tracking)\n- [11. Open Questions](#11-open-questions)\n- [12. Timeline & Phasing](#12-timeline--phasing)\n\n---\n\n## 0. \u0e1a\u0e17\u0e2a\u0e23\u0e38\u0e1b\u0e1c\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e2b\u0e32\u0e23\n**Mommunjai** = \u0e0a\u0e38\u0e14\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e1f\u0e23\u0e35\u0e1a\u0e19\u0e40\u0e27\u0e47\u0e1a (mobile-first, \u0e1d\u0e31\u0e07\u0e40\u0e1b\u0e47\u0e19 widget \u0e44\u0e14\u0e49) \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07/\u0e04\u0e39\u0e48\u0e23\u0e31\u0e01\u0e17\u0e35\u0e48 **\u0e2d\u0e22\u0e32\u0e01\u0e21\u0e35\u0e25\u0e39\u0e01 / \u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c / \u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01** \u0e20\u0e32\u0e22\u0e43\u0e15\u0e49\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c Baby & Mom (\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22)\n\u0e40\u0e1b\u0e49\u0e32\u0e04\u0e37\u0e2d **\u0e2b\u0e32 lead \u0e43\u0e2b\u0e21\u0e48** \u0e40\u0e02\u0e49\u0e32\u0e23\u0e30\u0e1a\u0e1a\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c (LINE OA/\u0e40\u0e1e\u0e08/\u0e40\u0e27\u0e47\u0e1a) \u0e41\u0e25\u0e30 **\u0e1c\u0e39\u0e01\u0e43\u0e08\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32\u0e40\u0e14\u0e34\u0e21** \u0e42\u0e14\u0e22\u0e43\u0e2b\u0e49\u0e04\u0e38\u0e13\u0e04\u0e48\u0e32\u0e08\u0e23\u0e34\u0e07\u0e01\u0e48\u0e2d\u0e19 (\u0e04\u0e33\u0e19\u0e27\u0e13 + \u0e04\u0e27\u0e32\u0e21\u0e23\u0e39\u0e49\u0e15\u0e32\u0e21\u0e04\u0e31\u0e21\u0e20\u0e35\u0e23\u0e4c\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22) \u0e41\u0e25\u0e49\u0e27\u0e40\u0e01\u0e47\u0e1a lead \u0e1c\u0e48\u0e32\u0e19\u0e41\u0e1a\u0e1a\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21 \u2192 consent \u2192 **\u0e2d\u0e2d\u0e01\u0e40\u0e25\u0e02 Ticket** \u2192 **\u0e23\u0e30\u0e1a\u0e1a Tag** \u2192 \u0e17\u0e35\u0e21\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22\u0e23\u0e31\u0e1a\u0e0a\u0e48\u0e27\u0e07\u0e04\u0e38\u0e22\u0e15\u0e48\u0e2d\u0e43\u0e19 LINE OA \u0e44\u0e14\u0e49\u0e15\u0e23\u0e07\u0e08\u0e38\u0e14\n- **\u0e2a\u0e41\u0e15\u0e01:** Next.js (App Router) + Tailwind + Supabase \u2192 Vercel \u00b7 \u0e2a\u0e16\u0e32\u0e1b\u0e31\u0e15\u0e22\u0e4c **BFF** (Backend-for-Frontend)\n- **8 \u0e42\u0e21\u0e14\u0e39\u0e25:** Shell/Brand \u00b7 4 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e04\u0e33\u0e19\u0e27\u0e13 (\u0e44\u0e02\u0e48\u0e15\u0e01/\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23/\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19) \u00b7 \u0e41\u0e19\u0e30\u0e19\u0e33\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19 \u00b7 Lead+Ticket \u00b7 Tagging+BFF\n- **\u0e42\u0e21\u0e40\u0e14\u0e25\u0e07\u0e32\u0e19:** \u0e1e\u0e31\u0e12\u0e19\u0e32\u0e43\u0e2b\u0e49\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c Baby & Mom\n\n---\n\n## 1. Problem Statement\n\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07\u0e17\u0e35\u0e48\u0e1e\u0e22\u0e32\u0e22\u0e32\u0e21\u0e21\u0e35\u0e25\u0e39\u0e01 \u0e42\u0e14\u0e22\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e01\u0e25\u0e38\u0e48\u0e21\u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01/PCOS \u0e40\u0e08\u0e2d\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e27\u0e17\u0e35\u0e48 **\u0e01\u0e23\u0e30\u0e08\u0e31\u0e14\u0e01\u0e23\u0e30\u0e08\u0e32\u0e22 \u0e19\u0e48\u0e32\u0e01\u0e25\u0e31\u0e27 \u0e41\u0e25\u0e30\u0e02\u0e32\u0e22\u0e02\u0e2d\u0e07\u0e40\u0e01\u0e34\u0e19\u0e08\u0e23\u0e34\u0e07** \u0e17\u0e33\u0e43\u0e2b\u0e49\u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e43\u0e08\u0e22\u0e32\u0e01\u0e41\u0e25\u0e30\u0e23\u0e39\u0e49\u0e2a\u0e36\u0e01\u0e42\u0e14\u0e14\u0e40\u0e14\u0e35\u0e48\u0e22\u0e27 \u0e02\u0e13\u0e30\u0e40\u0e14\u0e35\u0e22\u0e27\u0e01\u0e31\u0e19\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c Baby & Mom \u0e21\u0e35\u0e04\u0e27\u0e32\u0e21\u0e23\u0e39\u0e49 (\u0e04\u0e31\u0e21\u0e20\u0e35\u0e23\u0e4c\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22) \u0e41\u0e25\u0e30\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e2d\u0e22\u0e39\u0e48\u0e41\u0e25\u0e49\u0e27 \u0e41\u0e15\u0e48 **\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e14\u0e34\u0e08\u0e34\u0e17\u0e31\u0e25\u0e17\u0e35\u0e48\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e04\u0e19\u0e41\u0e1b\u0e25\u0e01\u0e2b\u0e19\u0e49\u0e32 \u2192 lead \u0e17\u0e35\u0e48\u0e23\u0e30\u0e1a\u0e38\u0e15\u0e31\u0e27\u0e15\u0e19\u0e44\u0e14\u0e49** \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e1b\u0e47\u0e19\u0e23\u0e30\u0e1a\u0e1a \u0e17\u0e33\u0e43\u0e2b\u0e49\u0e40\u0e2a\u0e35\u0e22\u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e1c\u0e39\u0e49\u0e2a\u0e19\u0e43\u0e08\u0e40\u0e1b\u0e47\u0e19\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32 \u0e41\u0e25\u0e30\u0e14\u0e39\u0e41\u0e25\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32\u0e40\u0e14\u0e34\u0e21\u0e44\u0e14\u0e49\u0e44\u0e21\u0e48\u0e17\u0e31\u0e48\u0e27\u0e16\u0e36\u0e07\n> \u0e15\u0e49\u0e19\u0e17\u0e38\u0e19\u0e02\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e44\u0e21\u0e48\u0e17\u0e33: lead \u0e2b\u0e25\u0e38\u0e14\u0e21\u0e37\u0e2d \u00b7 \u0e17\u0e35\u0e21\u0e15\u0e2d\u0e1a\u0e41\u0e0a\u0e15\u0e0b\u0e49\u0e33 \u0e46 \u0e42\u0e14\u0e22\u0e44\u0e21\u0e48\u0e23\u0e39\u0e49\u0e1a\u0e23\u0e34\u0e1a\u0e17\u0e04\u0e19\u0e16\u0e32\u0e21 \u00b7 \u0e41\u0e02\u0e48\u0e07\u0e01\u0e31\u0e1a\u0e40\u0e1e\u0e08\u0e04\u0e39\u0e48\u0e41\u0e02\u0e48\u0e07\u0e17\u0e35\u0e48\u0e21\u0e35\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\n\n## 2. Goals & Success Metrics\n### \u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22 (outcomes)\n| # | \u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22 | \u0e15\u0e31\u0e27\u0e27\u0e31\u0e14 | \u0e40\u0e1b\u0e49\u0e32 (90 \u0e27\u0e31\u0e19\u0e41\u0e23\u0e01) |\n|---|---|---|---|\n| G1 | \u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e1c\u0e39\u0e49\u0e40\u0e02\u0e49\u0e32\u0e0a\u0e21 \u2192 lead \u0e17\u0e35\u0e48\u0e23\u0e30\u0e1a\u0e38\u0e15\u0e31\u0e27\u0e15\u0e19 (\u0e21\u0e35 ticket) | conversion rate (\u0e40\u0e02\u0e49\u0e32\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u2192\u0e44\u0e14\u0e49 ticket) | \u2265 12% |\n| G2 | \u0e14\u0e36\u0e07\u0e40\u0e02\u0e49\u0e32 LINE OA | % \u0e02\u0e2d\u0e07 ticket \u0e17\u0e35\u0e48\u0e01\u0e14/\u0e41\u0e08\u0e49\u0e07\u0e43\u0e19 LINE OA | \u2265 60% \u0e02\u0e2d\u0e07 ticket |\n| G3 | \u0e17\u0e35\u0e21\u0e04\u0e38\u0e22\u0e15\u0e48\u0e2d\u0e44\u0e14\u0e49\u0e15\u0e23\u0e07\u0e08\u0e38\u0e14 (retention/\u0e1b\u0e34\u0e14\u0e01\u0e32\u0e23\u0e02\u0e32\u0e22) | \u0e40\u0e27\u0e25\u0e32\u0e40\u0e09\u0e25\u0e35\u0e48\u0e22\u0e17\u0e35\u0e48\u0e17\u0e35\u0e21\u0e43\u0e0a\u0e49\u0e23\u0e30\u0e1a\u0e38\u0e15\u0e31\u0e27\u0e15\u0e19\u0e25\u0e39\u0e01\u0e04\u0e49\u0e32 | < 30 \u0e27\u0e34\u0e19\u0e32\u0e17\u0e35/\u0e40\u0e04\u0e2a |\n| G4 | \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e21\u0e35\u0e04\u0e38\u0e13\u0e04\u0e48\u0e32\u0e08\u0e23\u0e34\u0e07 (\u0e43\u0e0a\u0e49\u0e0b\u0e49\u0e33) | \u0e2a\u0e31\u0e14\u0e2a\u0e48\u0e27\u0e19\u0e1c\u0e39\u0e49\u0e01\u0e25\u0e31\u0e1a\u0e21\u0e32\u0e43\u0e0a\u0e49 \u2265 2 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d | \u2265 25% |\n| G5 | \u0e1d\u0e31\u0e07 widget \u0e1a\u0e19\u0e40\u0e27\u0e47\u0e1a/\u0e41\u0e25\u0e19\u0e14\u0e34\u0e49\u0e07\u0e44\u0e14\u0e49 | # \u0e40\u0e27\u0e47\u0e1a/\u0e2b\u0e19\u0e49\u0e32\u0e17\u0e35\u0e48\u0e1d\u0e31\u0e07 widget | \u2265 3 \u0e08\u0e38\u0e14 |\n\n### Leading indicators (\u0e40\u0e2b\u0e47\u0e19\u0e40\u0e23\u0e47\u0e27)\nadoption (\u0e04\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\u0e43\u0e0a\u0e49\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d/\u0e27\u0e31\u0e19) \u00b7 completion (\u0e17\u0e33\u0e41\u0e1a\u0e1a\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21\u0e08\u0e1a) \u00b7 error rate \u00b7 time-to-result\n### Lagging indicators (\u0e40\u0e2b\u0e47\u0e19\u0e0a\u0e49\u0e32)\nretention \u00b7 # lead\u2192\u0e1b\u0e34\u0e14\u0e01\u0e32\u0e23\u0e02\u0e32\u0e22 \u00b7 \u0e22\u0e2d\u0e14\u0e02\u0e32\u0e22\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e17\u0e35\u0e48\u0e1c\u0e39\u0e01\u0e01\u0e31\u0e1a\u0e1c\u0e25\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d (OvaAll/Ferty)\n\n## 3. Non-Goals (\u0e40\u0e1f\u0e2a 1)\n| Non-goal | \u0e40\u0e2b\u0e15\u0e38\u0e1c\u0e25 |\n|---|---|\n| \u0e15\u0e30\u0e01\u0e23\u0e49\u0e32/\u0e0a\u0e33\u0e23\u0e30\u0e40\u0e07\u0e34\u0e19\u0e43\u0e19\u0e41\u0e2d\u0e1b | \u0e43\u0e0a\u0e49\u0e0a\u0e48\u0e2d\u0e07\u0e17\u0e32\u0e07\u0e02\u0e32\u0e22\u0e40\u0e14\u0e34\u0e21 (LINE/\u0e40\u0e27\u0e47\u0e1a) \u2014 \u0e25\u0e14\u0e04\u0e27\u0e32\u0e21\u0e0b\u0e31\u0e1a\u0e0b\u0e49\u0e2d\u0e19/PCI |\n| \u0e23\u0e30\u0e1a\u0e1a login \u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e17\u0e31\u0e48\u0e27\u0e44\u0e1b | \u0e43\u0e0a\u0e49 **ticket** \u0e41\u0e17\u0e19 \u2014 \u0e25\u0e14\u0e41\u0e23\u0e07\u0e40\u0e2a\u0e35\u0e22\u0e14\u0e17\u0e32\u0e19, \u0e25\u0e14\u0e20\u0e32\u0e23\u0e30 PDPA |\n| \u0e2b\u0e19\u0e49\u0e32 admin \u0e40\u0e15\u0e47\u0e21\u0e23\u0e39\u0e1b + \u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21 LINE Messaging API \u0e15\u0e23\u0e07 (bot/rich menu \u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34) | \u0e40\u0e1f\u0e2a 2 \u2014 \u0e40\u0e1f\u0e2a 1 \u0e21\u0e35\u0e2b\u0e19\u0e49\u0e32 staff \u0e04\u0e49\u0e19 ticket \u0e41\u0e1a\u0e1a\u0e07\u0e48\u0e32\u0e22\u0e1e\u0e2d |\n| \u0e01\u0e25\u0e38\u0e48\u0e21\u0e2b\u0e25\u0e31\u0e07\u0e04\u0e25\u0e2d\u0e14/\u0e43\u0e2b\u0e49\u0e19\u0e21/\u0e1c\u0e25\u0e34\u0e15\u0e20\u0e31\u0e13\u0e11\u0e4c\u0e17\u0e32\u0e23\u0e01 | \u0e15\u0e34\u0e14 \u0e1e.\u0e23.\u0e1a.\u0e19\u0e21\u0e1c\u0e07 \u2014 \u0e40\u0e1f\u0e2a\u0e2b\u0e25\u0e31\u0e07 |\n| \u0e41\u0e0a\u0e15\u0e1a\u0e2d\u0e15 AI / \u0e04\u0e2d\u0e21\u0e21\u0e39\u0e19\u0e34\u0e15\u0e35\u0e49 / \u0e2a\u0e01\u0e34\u0e19\u0e41\u0e04\u0e23\u0e4c-\u0e41\u0e2e\u0e23\u0e4c\u0e41\u0e04\u0e23\u0e4c | \u0e19\u0e2d\u0e01\u0e42\u0e1f\u0e01\u0e31\u0e2a lead-gen \u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c |\n| Native app (iOS/Android) | \u0e40\u0e27\u0e47\u0e1a + widget \u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e25\u0e38\u0e21\u0e1e\u0e2d\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a lead-gen |\n\n## 4. Personas & User Stories\n### Personas\n- **P1 \u2014 \"\u0e2b\u0e21\u0e34\u0e27\" \u0e1c\u0e39\u0e49\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c\u0e17\u0e31\u0e48\u0e27\u0e44\u0e1b** (30\u201338 \u0e1b\u0e35) \u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19\u0e21\u0e35\u0e25\u0e39\u0e01 \u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01/\u0e01\u0e34\u0e19\u0e2d\u0e30\u0e44\u0e23\u0e14\u0e35 \u00b7 \u0e43\u0e0a\u0e49\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d \u00b7 \u0e2d\u0e22\u0e32\u0e01\u0e44\u0e14\u0e49\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\n- **P2 \u2014 \"\u0e41\u0e19\u0e19\" \u0e01\u0e25\u0e38\u0e48\u0e21\u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01/PCOS** (35\u201343 \u0e1b\u0e35) \u0e40\u0e04\u0e22\u0e1c\u0e34\u0e14\u0e2b\u0e27\u0e31\u0e07 \u0e01\u0e33\u0e25\u0e31\u0e07\u0e08\u0e30\u0e17\u0e33/\u0e40\u0e1e\u0e34\u0e48\u0e07\u0e17\u0e33 IUI/IVF/ICSI \u00b7 \u0e2d\u0e48\u0e2d\u0e19\u0e44\u0e2b\u0e27 \u00b7 \u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e01\u0e33\u0e25\u0e31\u0e07\u0e43\u0e08+\u0e04\u0e27\u0e32\u0e21\u0e41\u0e21\u0e48\u0e19\u0e22\u0e33\n- **P3 \u2014 \"\u0e04\u0e38\u0e13\u0e1e\u0e48\u0e2d\" \u0e1d\u0e48\u0e32\u0e22\u0e0a\u0e32\u0e22** \u0e15\u0e49\u0e2d\u0e07\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2a\u0e40\u0e1b\u0e34\u0e23\u0e4c\u0e21 \u00b7 \u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e34\u0e19\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19\u0e40\u0e17\u0e48\u0e32\u0e44\u0e23\n- **P4 \u2014 \"\u0e1e\u0e35\u0e48\u0e17\u0e35\u0e21\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22\" (staff)** \u0e23\u0e31\u0e1a lead \u0e15\u0e48\u0e2d\u0e43\u0e19 LINE OA \u00b7 \u0e15\u0e49\u0e2d\u0e07\u0e23\u0e39\u0e49\u0e17\u0e31\u0e19\u0e17\u0e35\u0e27\u0e48\u0e32\u0e04\u0e19\u0e19\u0e35\u0e49\u0e04\u0e37\u0e2d\u0e43\u0e04\u0e23 \u0e2a\u0e40\u0e15\u0e08\u0e44\u0e2b\u0e19 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e38\u0e22\u0e43\u0e2b\u0e49\u0e15\u0e23\u0e07\n- **P5 \u2014 \"\u0e41\u0e2d\u0e14\u0e21\u0e34\u0e19\u0e40\u0e27\u0e47\u0e1a\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\"** \u0e40\u0e2d\u0e32\u0e42\u0e04\u0e49\u0e14 widget \u0e44\u0e1b\u0e41\u0e1b\u0e30\u0e1a\u0e19\u0e40\u0e27\u0e47\u0e1a/\u0e41\u0e25\u0e19\u0e14\u0e34\u0e49\u0e07\n\n### User Stories (\u0e40\u0e23\u0e35\u0e22\u0e07\u0e15\u0e32\u0e21\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e33\u0e04\u0e31\u0e0d)\n1. **P1/P2:** \u0e43\u0e19\u0e10\u0e32\u0e19\u0e30\u0e1c\u0e39\u0e49\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e0a\u0e48\u0e27\u0e07\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01\u0e02\u0e2d\u0e07\u0e09\u0e31\u0e19 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19\u0e21\u0e35\u0e25\u0e39\u0e01\u0e44\u0e14\u0e49\u0e41\u0e21\u0e48\u0e19\u0e02\u0e36\u0e49\u0e19\n2. **P1/P2:** \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e27\u0e48\u0e32\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e34\u0e19\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e40\u0e17\u0e48\u0e32\u0e44\u0e23\u0e15\u0e48\u0e2d\u0e27\u0e31\u0e19 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e44\u0e02\u0e48\u0e43\u0e2b\u0e49\u0e2a\u0e21\u0e1a\u0e39\u0e23\u0e13\u0e4c\n3. **P1/P2:** \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e27\u0e48\u0e32\u0e04\u0e27\u0e23\u0e01\u0e34\u0e19\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19\u0e15\u0e31\u0e27\u0e44\u0e2b\u0e19\u0e02\u0e2d\u0e07\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e14\u0e32\n4. **P2:** \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e44\u0e14\u0e49\u0e41\u0e1c\u0e19\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e15\u0e31\u0e27 + \u0e04\u0e38\u0e22\u0e01\u0e31\u0e1a\u0e17\u0e35\u0e21\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e21\u0e31\u0e48\u0e19\u0e43\u0e08\u0e01\u0e48\u0e2d\u0e19/\u0e2b\u0e25\u0e31\u0e07\u0e17\u0e33\u0e40\u0e14\u0e47\u0e01\u0e2b\u0e25\u0e2d\u0e14\u0e41\u0e01\u0e49\u0e27\n5. **P4:** \u0e43\u0e19\u0e10\u0e32\u0e19\u0e30\u0e17\u0e35\u0e21\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22 \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e04\u0e49\u0e19\u0e40\u0e25\u0e02 ticket \u0e41\u0e25\u0e49\u0e27\u0e40\u0e2b\u0e47\u0e19\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c+\u0e1c\u0e25+tag \u0e17\u0e31\u0e19\u0e17\u0e35 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e38\u0e22\u0e43\u0e2b\u0e49\u0e15\u0e23\u0e07\u0e41\u0e25\u0e30\u0e1b\u0e34\u0e14\u0e01\u0e32\u0e23\u0e02\u0e32\u0e22\n6. **P3:** \u0e43\u0e19\u0e10\u0e32\u0e19\u0e30\u0e04\u0e38\u0e13\u0e1e\u0e48\u0e2d \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e23\u0e39\u0e49\u0e27\u0e34\u0e18\u0e35\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2a\u0e40\u0e1b\u0e34\u0e23\u0e4c\u0e21 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e0a\u0e48\u0e27\u0e22\u0e20\u0e23\u0e23\u0e22\u0e32\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e42\u0e2d\u0e01\u0e32\u0e2a\n7. **P5:** \u0e43\u0e19\u0e10\u0e32\u0e19\u0e30\u0e41\u0e2d\u0e14\u0e21\u0e34\u0e19\u0e40\u0e27\u0e47\u0e1a \u0e09\u0e31\u0e19\u0e2d\u0e22\u0e32\u0e01\u0e01\u0e47\u0e2d\u0e1b\u0e42\u0e04\u0e49\u0e14\u0e2a\u0e31\u0e49\u0e19 \u0e46 \u0e44\u0e1b\u0e41\u0e1b\u0e30 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e43\u0e2b\u0e49\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e42\u0e1c\u0e25\u0e48\u0e1a\u0e19\u0e40\u0e27\u0e47\u0e1a\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\n8. **Edge/empty/error:** \u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e01\u0e23\u0e2d\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e44\u0e21\u0e48\u0e04\u0e23\u0e1a/\u0e23\u0e2d\u0e1a\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e44\u0e21\u0e48\u0e1b\u0e01\u0e15\u0e34/\u0e1b\u0e0f\u0e34\u0e40\u0e2a\u0e18 consent \u2192 \u0e23\u0e30\u0e1a\u0e1a\u0e15\u0e49\u0e2d\u0e07\u0e08\u0e31\u0e14\u0e01\u0e32\u0e23\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e2a\u0e38\u0e20\u0e32\u0e1e\u0e41\u0e25\u0e30\u0e1b\u0e25\u0e2d\u0e14\u0e20\u0e31\u0e22\n\n---\n\n## 5. \u0e20\u0e32\u0e1e\u0e23\u0e27\u0e21\u0e23\u0e30\u0e1a\u0e1a & Module Map\n| Module | \u0e0a\u0e37\u0e48\u0e2d | P | \u0e2a\u0e23\u0e38\u0e1b |\n|---|---|---|---|\n| **M1** | App Shell + Brand + Design System | P0 | \u0e42\u0e04\u0e23\u0e07\u0e41\u0e2d\u0e1b, nav, glass UI, responsive, i18n(TH), widget host |\n| **M2** | Ovulation Calculator (\u0e19\u0e31\u0e1a\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01) | P0 | \u0e04\u0e33\u0e19\u0e27\u0e13\u0e0a\u0e48\u0e27\u0e07\u0e44\u0e02\u0e48\u0e15\u0e01/\u0e27\u0e31\u0e19\u0e21\u0e35\u0e42\u0e2d\u0e01\u0e32\u0e2a \u0e08\u0e32\u0e01\u0e23\u0e2d\u0e1a\u0e40\u0e14\u0e37\u0e2d\u0e19 |\n| **M3** | Protein Calculator (\u0e04\u0e33\u0e19\u0e27\u0e13\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19) | P0 | \u0e40\u0e1b\u0e49\u0e32\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e27\u0e31\u0e19 \u0e15\u0e32\u0e21\u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01+\u0e2a\u0e40\u0e15\u0e08 \u2192 \u0e41\u0e1b\u0e25\u0e07\u0e2d\u0e32\u0e2b\u0e32\u0e23/Ferty |\n| **M4** | Nutrient Checklist (\u0e04\u0e33\u0e19\u0e27\u0e13\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23) | P0 | \u0e40\u0e17\u0e35\u0e22\u0e1a\u0e01\u0e32\u0e23\u0e01\u0e34\u0e19\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49\u0e01\u0e31\u0e1a\u0e04\u0e31\u0e21\u0e20\u0e35\u0e23\u0e4c 3 \u0e40\u0e2a\u0e32 + \u0e02\u0e2d\u0e07\u0e15\u0e49\u0e2d\u0e07\u0e07\u0e14 |\n| **M5** | Sleep Calculator (\u0e04\u0e33\u0e19\u0e27\u0e13\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19) | P0 | \u0e40\u0e27\u0e25\u0e32\u0e19\u0e2d\u0e19/\u0e15\u0e37\u0e48\u0e19\u0e15\u0e32\u0e21\u0e23\u0e2d\u0e1a 90 \u0e19\u0e32\u0e17\u0e35 + \u0e01\u0e0e\u0e01\u0e48\u0e2d\u0e19 4 \u0e17\u0e38\u0e48\u0e21 |\n| **M6** | Vitamin Recommender (\u0e41\u0e19\u0e30\u0e19\u0e33\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22) | P0 | \u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c \u2192 **\u0e0a\u0e38\u0e14\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22\u0e04\u0e23\u0e1a 19 \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23** \u0e41\u0e1a\u0e48\u0e07 4 \u0e01\u0e25\u0e38\u0e48\u0e21 (\u0e41\u0e01\u0e19\u0e2b\u0e25\u0e31\u0e01/\u0e40\u0e2a\u0e23\u0e34\u0e21\u0e15\u0e32\u0e21\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c/\u0e42\u0e20\u0e0a\u0e19\u0e32\u0e01\u0e32\u0e23/\u0e43\u0e0a\u0e49\u0e20\u0e32\u0e22\u0e19\u0e2d\u0e01) + **Safety Matrix \u0e01\u0e23\u0e2d\u0e07\u0e15\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e07\u0e0a\u0e35\u0e27\u0e34\u0e15** |\n| **M7** | Lead Capture + Consent + Ticket | P0 | \u0e41\u0e1a\u0e1a\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21 \u2192 consent(PDPA) \u2192 Supabase \u2192 gen ticket |\n| **M8** | Tagging + BFF API + Staff Lookup | P0 | auto/manual tag \u00b7 BFF endpoints \u00b7 \u0e2b\u0e19\u0e49\u0e32\u0e04\u0e49\u0e19 ticket (\u0e17\u0e35\u0e21) |\n\n> \u0e17\u0e38\u0e01\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e04\u0e33\u0e19\u0e27\u0e13 (M2\u2013M6) \u0e41\u0e0a\u0e23\u0e4c \"\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\" (\u0e2a\u0e40\u0e15\u0e08/\u0e2d\u0e32\u0e22\u0e38/\u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01/PCOS/\u0e41\u0e1c\u0e19\u0e17\u0e33\u0e40\u0e14\u0e47\u0e01\u0e2b\u0e25\u0e2d\u0e14\u0e41\u0e01\u0e49\u0e27) \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e2a\u0e48\u0e07\u0e15\u0e48\u0e2d\u0e40\u0e02\u0e49\u0e32 M7 \u0e44\u0e14\u0e49\u0e44\u0e23\u0e49\u0e23\u0e2d\u0e22\u0e15\u0e48\u0e2d\n\n---\n\n## 6. Requirements \u0e23\u0e32\u0e22\u0e42\u0e21\u0e14\u0e39\u0e25\n\n### M1 \u2014 App Shell + Brand + Design System (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e42\u0e04\u0e23\u0e07\u0e2b\u0e25\u0e31\u0e01\u0e02\u0e2d\u0e07\u0e41\u0e2d\u0e1b: \u0e2b\u0e19\u0e49\u0e32 Home \u0e17\u0e35\u0e48\u0e23\u0e27\u0e21 6 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e40\u0e1b\u0e47\u0e19\u0e01\u0e32\u0e23\u0e4c\u0e14, \u0e41\u0e16\u0e1a\u0e19\u0e33\u0e17\u0e32\u0e07, \u0e23\u0e30\u0e1a\u0e1a\u0e14\u0e35\u0e44\u0e0b\u0e19\u0e4c glass, \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a desktop+mobile, \u0e20\u0e32\u0e29\u0e32\u0e44\u0e17\u0e22, \u0e41\u0e25\u0e30\u0e40\u0e1b\u0e47\u0e19 \"host\" \u0e43\u0e2b\u0e49 widget \u0e41\u0e15\u0e48\u0e25\u0e30\u0e15\u0e31\u0e27\u0e17\u0e33\u0e07\u0e32\u0e19\u0e40\u0e14\u0e35\u0e48\u0e22\u0e27 \u0e46 \u0e44\u0e14\u0e49\n**\u0e04\u0e30\u0e41\u0e19\u0e19\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e40\u0e2d\u0e07\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e17\u0e33\u0e41\u0e1a\u0e1a\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\u0e40\u0e1e\u0e34\u0e48\u0e21 (\u0e41\u0e01\u0e49 2026-07-27 \u0e23\u0e2d\u0e1a 2)**\n- \u0e25\u0e34\u0e07\u0e01\u0e4c \"\u0e17\u0e33\u0e41\u0e1a\u0e1a\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\" **\u0e40\u0e1b\u0e34\u0e14\u0e41\u0e17\u0e47\u0e1a\u0e43\u0e2b\u0e21\u0e48** \u2014 \u0e44\u0e21\u0e48\u0e07\u0e31\u0e49\u0e19\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e2b\u0e25\u0e38\u0e14\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19 (\u0e41\u0e25\u0e30\u0e40\u0e25\u0e02\u0e15\u0e31\u0e4b\u0e27) \u0e17\u0e35\u0e48\u0e40\u0e1e\u0e34\u0e48\u0e07\u0e44\u0e14\u0e49\u0e21\u0e32\n- \u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e1d\u0e31\u0e48\u0e07\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e22\u0e49\u0e32\u0e22\u0e08\u0e32\u0e01 `sessionStorage` \u2192 **`localStorage`** \u0e40\u0e1e\u0e23\u0e32\u0e30 sessionStorage \u0e41\u0e22\u0e01\u0e15\u0e32\u0e21\u0e41\u0e17\u0e47\u0e1a \u0e41\u0e17\u0e47\u0e1a\u0e43\u0e2b\u0e21\u0e48\u0e40\u0e02\u0e35\u0e22\u0e19\u0e41\u0e25\u0e49\u0e27\u0e41\u0e17\u0e47\u0e1a\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19\u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e32\u0e07\u0e40\u0e2b\u0e47\u0e19 \u00b7 \u0e1c\u0e25\u0e1e\u0e25\u0e2d\u0e22\u0e44\u0e14\u0e49: \u0e01\u0e25\u0e31\u0e1a\u0e21\u0e32\u0e27\u0e31\u0e19\u0e2b\u0e25\u0e31\u0e07\u0e1c\u0e25\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e22\u0e31\u0e07\u0e2d\u0e22\u0e39\u0e48\n- \u0e2b\u0e19\u0e49\u0e32\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19\u0e1f\u0e31\u0e07 event `storage` \u2192 **\u0e17\u0e33\u0e41\u0e1a\u0e1a\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\u0e43\u0e19\u0e2d\u0e35\u0e01\u0e41\u0e17\u0e47\u0e1a\u0e40\u0e2a\u0e23\u0e47\u0e08 \u0e04\u0e30\u0e41\u0e19\u0e19\u0e02\u0e22\u0e31\u0e1a\u0e40\u0e2d\u0e07\u0e17\u0e31\u0e19\u0e17\u0e35** (\u0e21\u0e35\u0e1b\u0e38\u0e48\u0e21 \"\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e04\u0e30\u0e41\u0e19\u0e19\" \u0e40\u0e1b\u0e47\u0e19\u0e17\u0e32\u0e07\u0e2a\u0e33\u0e23\u0e2d\u0e07)\n- \u0e41\u0e22\u0e01 `computePillars()` \u0e2d\u0e2d\u0e01\u0e21\u0e32\u0e40\u0e1b\u0e47\u0e19 pure function \u0e43\u0e0a\u0e49\u0e23\u0e48\u0e27\u0e21\u0e01\u0e31\u0e19\u0e17\u0e31\u0e49\u0e07\u0e15\u0e2d\u0e19\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19\u0e41\u0e25\u0e30\u0e15\u0e2d\u0e19\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e2a\u0e14\n- \u26a0\ufe0f \u0e22\u0e31\u0e07\u0e40\u0e1b\u0e47\u0e19 client-only \u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e02\u0e36\u0e49\u0e19\u0e40\u0e0b\u0e34\u0e23\u0e4c\u0e1f\u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e01\u0e48\u0e2d\u0e19\u0e01\u0e14\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21\n\n**\ud83d\udc1b \u0e41\u0e01\u0e49\u0e1a\u0e31\u0e4a\u0e01\u0e04\u0e30\u0e41\u0e19\u0e19\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19 (2026-07-27)**\n- \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19\u0e21\u0e35 2 \u0e42\u0e2b\u0e21\u0e14: **A = \u0e41\u0e19\u0e30\u0e19\u0e33\u0e40\u0e27\u0e25\u0e32\u0e40\u0e02\u0e49\u0e32\u0e19\u0e2d\u0e19** (\u0e04\u0e37\u0e19\u0e41\u0e04\u0e48\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e40\u0e27\u0e25\u0e32) \u00b7 **B = \u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19\u0e08\u0e23\u0e34\u0e07**\n- \u0e40\u0e14\u0e34\u0e21\u0e42\u0e2b\u0e21\u0e14 A \u0e01\u0e47\u0e44\u0e14\u0e49\u0e04\u0e30\u0e41\u0e19\u0e19 **48%** \u0e17\u0e31\u0e49\u0e07\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\u0e2d\u0e30\u0e44\u0e23\u0e40\u0e25\u0e22 (\u0e40\u0e1e\u0e23\u0e32\u0e30\u0e42\u0e04\u0e49\u0e14\u0e40\u0e0a\u0e47\u0e01\u0e41\u0e04\u0e48\u0e27\u0e48\u0e32\u0e21\u0e35\u0e1c\u0e25\u0e25\u0e31\u0e1e\u0e18\u0e4c\u0e44\u0e2b\u0e21)\n- \u0e15\u0e2d\u0e19\u0e19\u0e35\u0e49: \u0e42\u0e2b\u0e21\u0e14 A \u2192 \"\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\" (\u0e44\u0e21\u0e48\u0e43\u0e2b\u0e49\u0e04\u0e30\u0e41\u0e19\u0e19) \u00b7 \u0e42\u0e2b\u0e21\u0e14 B \u2192 \u0e43\u0e2b\u0e49\u0e04\u0e30\u0e41\u0e19\u0e19\u0e15\u0e32\u0e21\u0e40\u0e01\u0e13\u0e11\u0e4c\n\n**\u0e01\u0e32\u0e23\u0e41\u0e2a\u0e14\u0e07\u0e40\u0e2a\u0e32\u0e04\u0e30\u0e41\u0e19\u0e19\u0e17\u0e35\u0e48\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19 (\u0e41\u0e01\u0e49 2026-07-27)**\n- \u0e04\u0e30\u0e41\u0e19\u0e19\u0e41\u0e15\u0e48\u0e25\u0e30\u0e40\u0e2a\u0e32\u0e21\u0e32\u0e08\u0e32\u0e01\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d: **\u0e04\u0e38\u0e13\u0e20\u0e32\u0e1e\u0e44\u0e02\u0e48/\u0e2d\u0e2a\u0e38\u0e08\u0e34 \u00b7 \u0e42\u0e20\u0e0a\u0e19\u0e32\u0e01\u0e32\u0e23\u0e23\u0e27\u0e21 \u00b7 \u0e2a\u0e21\u0e14\u0e38\u0e25\u0e2e\u0e2d\u0e23\u0e4c\u0e42\u0e21\u0e19** \u2190 `\u0e40\u0e0a\u0e47\u0e01\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23` \u00b7 **\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19** \u2190 `\u0e04\u0e33\u0e19\u0e27\u0e13\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19`\n- \u0e40\u0e14\u0e34\u0e21 \"\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\" \u0e01\u0e31\u0e1a \"\u0e44\u0e14\u0e49 0% \u0e08\u0e23\u0e34\u0e07\" \u0e41\u0e2a\u0e14\u0e07\u0e40\u0e2b\u0e21\u0e37\u0e2d\u0e19\u0e01\u0e31\u0e19\u0e2b\u0e21\u0e14 (\u0e41\u0e16\u0e1a\u0e27\u0e48\u0e32\u0e07) \u2192 \u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e41\u0e22\u0e01\u0e44\u0e21\u0e48\u0e2d\u0e2d\u0e01\u0e41\u0e25\u0e30\u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e32\u0e07\u0e44\u0e1b\u0e17\u0e33\u0e15\u0e48\u0e2d\n- \u0e15\u0e2d\u0e19\u0e19\u0e35\u0e49: \u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19 = **\u0e41\u0e16\u0e1a\u0e40\u0e2a\u0e49\u0e19\u0e1b\u0e23\u0e30\u0e27\u0e48\u0e32\u0e07 + \u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21 \"\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\" + \u0e25\u0e34\u0e07\u0e01\u0e4c \"\u0e17\u0e33\u0e41\u0e1a\u0e1a\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19 \u2026\u2192\"** \u00b7 \u0e44\u0e14\u0e49 0% \u0e08\u0e23\u0e34\u0e07 = \u0e41\u0e16\u0e1a\u0e17\u0e36\u0e1a + \u0e40\u0e25\u0e02 0%\n- \u0e40\u0e1e\u0e34\u0e48\u0e21\u0e1a\u0e23\u0e23\u0e17\u0e31\u0e14\u0e1a\u0e2d\u0e01\u0e04\u0e27\u0e32\u0e21\u0e04\u0e23\u0e1a\u0e16\u0e49\u0e27\u0e19: \"\u0e04\u0e30\u0e41\u0e19\u0e19\u0e19\u0e35\u0e49\u0e04\u0e34\u0e14\u0e08\u0e32\u0e01 **N \u0e43\u0e19 4 \u0e2a\u0e48\u0e27\u0e19** \u0e17\u0e35\u0e48\u0e1b\u0e23\u0e30\u0e40\u0e21\u0e34\u0e19\u0e41\u0e25\u0e49\u0e27\" + \u0e25\u0e34\u0e07\u0e01\u0e4c \"\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e41\u0e1c\u0e19\u0e43\u0e2b\u0e21\u0e48\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07\" (\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19\u0e40\u0e1b\u0e47\u0e19 snapshot \u0e44\u0e21\u0e48\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e40\u0e2d\u0e07)\n- \u0e15\u0e31\u0e14\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e0b\u0e49\u0e33\u0e43\u0e19 \"\u0e08\u0e38\u0e14\u0e17\u0e35\u0e48\u0e40\u0e2a\u0e23\u0e34\u0e21\u0e44\u0e14\u0e49\" \u0e17\u0e35\u0e48\u0e40\u0e04\u0e22\u0e0a\u0e27\u0e19\u0e44\u0e1b\u0e17\u0e33\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e2d\u0e2d\u0e01\n\n**\u0e04\u0e33\u0e17\u0e35\u0e48\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e15\u0e32\u0e21\u0e40\u0e1e\u0e28 (\u0e1d\u0e48\u0e32\u0e22\u0e0a\u0e32\u0e22)**\n| \u0e08\u0e38\u0e14 | \u0e2b\u0e0d\u0e34\u0e07 | \u0e1d\u0e48\u0e32\u0e22\u0e0a\u0e32\u0e22 |\n|---|---|---|\n| \u0e40\u0e2a\u0e32\u0e04\u0e30\u0e41\u0e19\u0e19\u0e41\u0e23\u0e01\u0e43\u0e19\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19 | \u0e04\u0e38\u0e13\u0e20\u0e32\u0e1e\u0e44\u0e02\u0e48 | **\u0e04\u0e38\u0e13\u0e20\u0e32\u0e1e\u0e2d\u0e2a\u0e38\u0e08\u0e34** |\n| \u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2b\u0e15\u0e38\u0e43\u0e15\u0e49\u0e40\u0e2a\u0e32 | \u0e08\u0e32\u0e01\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e44\u0e02\u0e48\u0e17\u0e35\u0e48\u0e04\u0e38\u0e13\u0e01\u0e34\u0e19 | \u0e08\u0e32\u0e01\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2d\u0e2a\u0e38\u0e08\u0e34\u0e17\u0e35\u0e48\u0e04\u0e38\u0e13\u0e01\u0e34\u0e19 |\n| \u0e08\u0e38\u0e14\u0e41\u0e02\u0e47\u0e07\u0e40\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19 | \u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e44\u0e02\u0e48 | \u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2d\u0e2a\u0e38\u0e08\u0e34 |\n| \u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19\u0e17\u0e35\u0e48\u0e41\u0e19\u0e30\u0e19\u0e33\u0e40\u0e15\u0e34\u0e21 | Ferty | **Ferta** |\n| \u0e0a\u0e48\u0e27\u0e07\u0e21\u0e35\u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e2a\u0e39\u0e07 | \u0e23\u0e2d\u0e1a\u0e16\u0e31\u0e14\u0e44\u0e1b | \u0e23\u0e2d\u0e1a\u0e16\u0e31\u0e14\u0e44\u0e1b **(\u0e02\u0e2d\u0e07\u0e04\u0e39\u0e48\u0e04\u0e38\u0e13)** |\n| \u0e04\u0e33\u0e16\u0e32\u0e21 PCOS \u0e43\u0e19 /plan | \u0e16\u0e32\u0e21 | **\u0e44\u0e21\u0e48\u0e16\u0e32\u0e21** (\u0e41\u0e25\u0e30\u0e25\u0e49\u0e32\u0e07\u0e04\u0e48\u0e32\u0e16\u0e49\u0e32\u0e40\u0e04\u0e22\u0e15\u0e34\u0e4a\u0e01\u0e44\u0e27\u0e49) |\n| \u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22\u0e2b\u0e19\u0e49\u0e32 ART | \u0e1a\u0e33\u0e23\u0e38\u0e07\u0e44\u0e02\u0e48/\u0e1c\u0e19\u0e31\u0e07\u0e21\u0e14\u0e25\u0e39\u0e01 | \u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2d\u0e2a\u0e38\u0e08\u0e34 \u0e43\u0e2b\u0e49\u0e40\u0e02\u0e49\u0e32\u0e01\u0e31\u0e1a\u0e08\u0e31\u0e07\u0e2b\u0e27\u0e30\u0e01\u0e32\u0e23\u0e23\u0e31\u0e01\u0e29\u0e32\u0e02\u0e2d\u0e07\u0e04\u0e39\u0e48 |\n| \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e19\u0e31\u0e1a\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01 | \u0e43\u0e0a\u0e49\u0e02\u0e2d\u0e07\u0e15\u0e31\u0e27\u0e40\u0e2d\u0e07 | **\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e2b\u0e49\u0e17\u0e38\u0e01\u0e04\u0e19\u0e43\u0e0a\u0e49 \u2014 \u0e23\u0e30\u0e1a\u0e38\u0e0a\u0e31\u0e14\u0e27\u0e48\u0e32 \"\u0e01\u0e23\u0e2d\u0e01\u0e41\u0e17\u0e19\u0e04\u0e39\u0e48\u0e44\u0e14\u0e49\"** (\u0e15\u0e31\u0e14\u0e2a\u0e34\u0e19\u0e43\u0e08 2026-07-27: \u0e44\u0e21\u0e48\u0e0b\u0e48\u0e2d\u0e19\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e08\u0e32\u0e01\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22 \u0e40\u0e1e\u0e23\u0e32\u0e30\u0e01\u0e32\u0e23\u0e27\u0e32\u0e07\u0e41\u0e1c\u0e19\u0e23\u0e48\u0e27\u0e21\u0e01\u0e31\u0e19\u0e04\u0e37\u0e2d\u0e2a\u0e34\u0e48\u0e07\u0e17\u0e35\u0e48\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23) |\n\n**Acceptance Criteria**\n- [ ] Home \u0e41\u0e2a\u0e14\u0e07 6 \u0e01\u0e32\u0e23\u0e4c\u0e14\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d (\u0e44\u0e02\u0e48\u0e15\u0e01/\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19/\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23/\u0e19\u0e2d\u0e19/\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19/\u0e23\u0e31\u0e1a\u0e41\u0e1c\u0e19\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e04\u0e38\u0e13) + hero \u0e42\u0e17\u0e19\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22\n- [ ] Responsive: \u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d (\u2264480px) 1 \u0e04\u0e2d\u0e25\u0e31\u0e21\u0e19\u0e4c, \u0e41\u0e17\u0e47\u0e1a\u0e40\u0e25\u0e47\u0e15 2, \u0e40\u0e14\u0e2a\u0e01\u0e4c\u0e17\u0e47\u0e2d\u0e1b 3 \u00b7 \u0e17\u0e38\u0e01\u0e1b\u0e38\u0e48\u0e21\u0e41\u0e15\u0e30\u0e07\u0e48\u0e32\u0e22 \u226544px\n- [ ] Design system glass: \u0e01\u0e32\u0e23\u0e4c\u0e14\u0e42\u0e1b\u0e23\u0e48\u0e07\u0e41\u0e2a\u0e07, \u0e21\u0e38\u0e21\u0e42\u0e04\u0e49\u0e07, \u0e40\u0e07\u0e32\u0e19\u0e38\u0e48\u0e21, \u0e1e\u0e37\u0e49\u0e19\u0e2b\u0e25\u0e31\u0e07 gradient \u0e15\u0e32\u0e21 CI (\u00a77) \u00b7 dark/light (\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22 light \u0e40\u0e1b\u0e4a\u0e30)\n- [ ] \u0e21\u0e35 layout \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e42\u0e2b\u0e21\u0e14 `?embed=1` (\u0e0b\u0e48\u0e2d\u0e19 nav/footer \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e1d\u0e31\u0e07 widget) \u2014 \u0e14\u0e39 \u00a78\n- [ ] disclaimer \u0e41\u0e1e\u0e17\u0e22\u0e4c\u0e2d\u0e22\u0e39\u0e48\u0e17\u0e49\u0e32\u0e22\u0e17\u0e38\u0e01\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d (\u0e21\u0e32\u0e08\u0e32\u0e01 config \u0e40\u0e14\u0e35\u0e22\u0e27)\n- [ ] \u0e42\u0e2b\u0e25\u0e14\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01 < 2.5s (4G), LCP < 2.5s\n**Technical notes:** Next.js App Router, Tailwind, shared `<ToolShell>` component, config \u0e42\u0e17\u0e19/disclaimer \u0e23\u0e27\u0e21\u0e28\u0e39\u0e19\u0e22\u0e4c, no PII \u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32 tool \u0e08\u0e19\u0e01\u0e27\u0e48\u0e32\u0e08\u0e30\u0e16\u0e36\u0e07 M7\n\n### M2 \u2014 Ovulation Calculator / \u0e19\u0e31\u0e1a\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01 (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e01\u0e23\u0e2d\u0e01\u0e27\u0e31\u0e19\u0e41\u0e23\u0e01\u0e02\u0e2d\u0e07\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14 + \u0e04\u0e27\u0e32\u0e21\u0e22\u0e32\u0e27\u0e23\u0e2d\u0e1a (\u0e40\u0e09\u0e25\u0e35\u0e48\u0e22) \u2192 \u0e04\u0e33\u0e19\u0e27\u0e13 **\u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01\u0e42\u0e14\u0e22\u0e1b\u0e23\u0e30\u0e21\u0e32\u0e13**, **fertile window (\u0e0a\u0e48\u0e27\u0e07\u0e21\u0e35\u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e2a\u0e39\u0e07)**, \u0e41\u0e25\u0e30\u0e23\u0e2d\u0e1a\u0e16\u0e31\u0e14\u0e44\u0e1b\n**\u0e2a\u0e39\u0e15\u0e23 (client-side):**\n- \u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01 \u2248 \u0e27\u0e31\u0e19\u0e41\u0e23\u0e01\u0e23\u0e2d\u0e1a\u0e16\u0e31\u0e14\u0e44\u0e1b \u2212 14 (luteal phase \u0e04\u0e07\u0e17\u0e35\u0e48 ~14 \u0e27\u0e31\u0e19)\n- fertile window = \u0e44\u0e02\u0e48\u0e15\u0e01 \u22125 \u0e16\u0e36\u0e07 +1 \u0e27\u0e31\u0e19\n- \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e23\u0e2d\u0e1a 21\u201335 \u0e27\u0e31\u0e19; \u0e16\u0e49\u0e32\u0e01\u0e23\u0e2d\u0e01\u0e19\u0e2d\u0e01\u0e0a\u0e48\u0e27\u0e07/\u0e44\u0e21\u0e48\u0e23\u0e39\u0e49 \u2192 \u0e40\u0e15\u0e37\u0e2d\u0e19\u0e27\u0e48\u0e32\u0e1c\u0e25\u0e2d\u0e32\u0e08\u0e04\u0e25\u0e32\u0e14\u0e40\u0e04\u0e25\u0e37\u0e48\u0e2d\u0e19 + \u0e41\u0e19\u0e30\u0e1b\u0e23\u0e36\u0e01\u0e29\u0e32\u0e41\u0e1e\u0e17\u0e22\u0e4c (\u0e42\u0e14\u0e22\u0e40\u0e09\u0e1e\u0e32\u0e30 PCOS \u0e23\u0e2d\u0e1a\u0e44\u0e21\u0e48\u0e2a\u0e21\u0e48\u0e33\u0e40\u0e2a\u0e21\u0e2d)\n**Acceptance Criteria**\n- [ ] Input: \u0e27\u0e31\u0e19\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14 (date picker), \u0e04\u0e27\u0e32\u0e21\u0e22\u0e32\u0e27\u0e23\u0e2d\u0e1a (default 28, 21\u201335), (optional) \u0e23\u0e30\u0e22\u0e30 luteal\n- [ ] \u0e41\u0e2a\u0e14\u0e07: \u0e27\u0e31\u0e19\u0e44\u0e02\u0e48\u0e15\u0e01, fertile window (\u0e0a\u0e48\u0e27\u0e07\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48), \u0e27\u0e31\u0e19\u0e21\u0e35\u0e42\u0e2d\u0e01\u0e32\u0e2a\u0e2a\u0e39\u0e07\u0e2a\u0e38\u0e14, \u0e1b\u0e0f\u0e34\u0e17\u0e34\u0e19\u0e44\u0e2e\u0e44\u0e25\u0e15\u0e4c 1\u20132 \u0e40\u0e14\u0e37\u0e2d\u0e19\u0e02\u0e49\u0e32\u0e07\u0e2b\u0e19\u0e49\u0e32\n- [ ] **Disclaimer \u0e40\u0e14\u0e48\u0e19: \"\u0e43\u0e0a\u0e49\u0e04\u0e38\u0e21\u0e01\u0e33\u0e40\u0e19\u0e34\u0e14\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\" + \"\u0e1c\u0e25\u0e42\u0e14\u0e22\u0e1b\u0e23\u0e30\u0e21\u0e32\u0e13 \u0e44\u0e21\u0e48\u0e41\u0e17\u0e19\u0e01\u0e32\u0e23\u0e15\u0e23\u0e27\u0e08/\u0e04\u0e33\u0e27\u0e34\u0e19\u0e34\u0e08\u0e09\u0e31\u0e22\u0e41\u0e1e\u0e17\u0e22\u0e4c\"**\n- [ ] \u0e40\u0e04\u0e2a PCOS/\u0e23\u0e2d\u0e1a\u0e44\u0e21\u0e48\u0e1b\u0e01\u0e15\u0e34: \u0e41\u0e2a\u0e14\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2b\u0e15\u0e38\u0e1e\u0e34\u0e40\u0e28\u0e29 + CTA \u0e23\u0e31\u0e1a\u0e41\u0e1c\u0e19\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e04\u0e38\u0e13 (\u2192M7)\n- [ ] Empty/invalid: validation \u0e2a\u0e38\u0e20\u0e32\u0e1e, \u0e44\u0e21\u0e48 crash\n- [ ] \u0e1c\u0e25\u0e25\u0e31\u0e1e\u0e18\u0e4c\u0e2a\u0e48\u0e07\u0e15\u0e48\u0e2d\u0e40\u0e02\u0e49\u0e32\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e01\u0e25\u0e32\u0e07 (\u0e40\u0e01\u0e47\u0e1a client) \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e43\u0e0a\u0e49\u0e17\u0e35\u0e48 M7\n**Negative cases:** \u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e2d\u0e19\u0e32\u0e04\u0e15, \u0e23\u0e2d\u0e1a <21 \u0e2b\u0e23\u0e37\u0e2d >35, \u0e40\u0e27\u0e49\u0e19\u0e27\u0e48\u0e32\u0e07 \u2192 error message \u0e0a\u0e31\u0e14\u0e40\u0e08\u0e19\n\n### M3 \u2014 Protein Calculator / \u0e04\u0e33\u0e19\u0e27\u0e13\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19 (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e04\u0e33\u0e19\u0e27\u0e13 **\u0e40\u0e1b\u0e49\u0e32\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19\u0e15\u0e48\u0e2d\u0e27\u0e31\u0e19** \u0e08\u0e32\u0e01\u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01 + \u0e2a\u0e40\u0e15\u0e08 \u0e41\u0e25\u0e49\u0e27\u0e41\u0e1b\u0e25\u0e07\u0e40\u0e1b\u0e47\u0e19\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e08\u0e23\u0e34\u0e07/\u0e08\u0e33\u0e19\u0e27\u0e19\u0e0b\u0e2d\u0e07 Ferty (\u0e15\u0e32\u0e21 nutrition-protocol.md \u00a71)\n**\u0e2a\u0e39\u0e15\u0e23:** \u0e40\u0e1b\u0e49\u0e32(\u0e01\u0e23\u0e31\u0e21/\u0e27\u0e31\u0e19) = \u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01(\u0e01\u0e01.) \u00d7 \u0e04\u0e48\u0e32\u0e15\u0e48\u0e2d\u0e01\u0e01. \u0e15\u0e32\u0e21\u0e2a\u0e40\u0e15\u0e08\n| \u0e2a\u0e40\u0e15\u0e08 | \u0e04\u0e48\u0e32\u0e15\u0e48\u0e2d\u0e01\u0e01. |\n|---|---|\n| \u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c/\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e44\u0e02\u0e48 | **1.2\u20131.5** (\u0e40\u0e04\u0e32\u0e30 2026-07-25 \u2014 \u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e48\u0e32\u0e04\u0e25\u0e34\u0e19\u0e34\u0e01 ~1.2 \u0e16\u0e36\u0e07\u0e2a\u0e39\u0e15\u0e23\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c 1.5) |\n| \u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c | 1.1\u20131.3 |\n| \u0e43\u0e2b\u0e49\u0e19\u0e21 | ~1.3 |\n| \u0e0a\u0e32\u0e22 \u0e1a\u0e33\u0e23\u0e38\u0e07\u0e2a\u0e40\u0e1b\u0e34\u0e23\u0e4c\u0e21 | 1.2\u20131.6 |\n**Acceptance Criteria**\n- [ ] Input: \u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01(\u0e01\u0e01.), \u0e2a\u0e40\u0e15\u0e08 (dropdown) \u00b7 \u0e41\u0e2a\u0e14\u0e07\u0e40\u0e1b\u0e49\u0e32\u0e40\u0e1b\u0e47\u0e19\u0e0a\u0e48\u0e27\u0e07 (min\u2013max \u0e01\u0e23\u0e31\u0e21/\u0e27\u0e31\u0e19)\n- [ ] \u0e41\u0e1b\u0e25\u0e07\u0e40\u0e1b\u0e47\u0e19 \"\u2248 \u0e44\u0e02\u0e48\u0e01\u0e35\u0e48\u0e1f\u0e2d\u0e07 / \u0e1b\u0e25\u0e32\u00b7\u0e2d\u0e01\u0e44\u0e01\u0e48\u0e01\u0e35\u0e48\u0e01\u0e23\u0e31\u0e21 / Ferty \u0e01\u0e35\u0e48\u0e0b\u0e2d\u0e07\" (\u0e44\u0e02\u0e48\u0e15\u0e49\u0e21 ~6.5g, \u0e2d\u0e01\u0e44\u0e01\u0e48 100g ~30g, \u0e1b\u0e25\u0e32 100g ~20g, Ferty 1 \u0e0b\u0e2d\u0e07 ~25g)\n- [ ] tie-in \u0e19\u0e38\u0e48\u0e21: \"\u0e16\u0e49\u0e32\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e44\u0e21\u0e48\u0e16\u0e36\u0e07\u0e40\u0e1b\u0e49\u0e32 \u0e40\u0e15\u0e34\u0e21\u0e14\u0e49\u0e27\u0e22\u0e42\u0e1b\u0e23\u0e15\u0e35\u0e19\u0e40\u0e1f\u0e2d\u0e23\u0e4c\u0e15\u0e35\u0e49\" (\u2192 product-catalog)\n- [ ] \u0e41\u0e2a\u0e14\u0e07\u0e17\u0e35\u0e48\u0e21\u0e32\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02 (\u0e2d\u0e49\u0e32\u0e07\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22/\u0e42\u0e20\u0e0a\u0e19\u0e32\u0e01\u0e32\u0e23) + disclaimer\n- [ ] Validation: \u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01 30\u2013150 \u0e01\u0e01., \u0e19\u0e2d\u0e01\u0e0a\u0e48\u0e27\u0e07 \u2192 \u0e40\u0e15\u0e37\u0e2d\u0e19\n**Negative:** \u0e19\u0e49\u0e33\u0e2b\u0e19\u0e31\u0e01 0/\u0e15\u0e34\u0e14\u0e25\u0e1a/\u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23 \u2192 error\n\n### M4 \u2014 Nutrient Checklist / \u0e04\u0e33\u0e19\u0e27\u0e13\u0e2a\u0e32\u0e23\u0e2d\u0e32\u0e2b\u0e32\u0e23 (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e15\u0e34\u0e4a\u0e01\u0e27\u0e48\u0e32\u0e27\u0e31\u0e19\u0e19\u0e35\u0e49\u0e01\u0e34\u0e19\u0e2d\u0e30\u0e44\u0e23\u0e1a\u0e49\u0e32\u0e07\u0e08\u0e32\u0e01\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e04\u0e31\u0e21\u0e20\u0e35\u0e23\u0e4c \u2192 \u0e23\u0e30\u0e1a\u0e1a\u0e2a\u0e23\u0e38\u0e1b \"\u0e04\u0e23\u0e1a/\u0e02\u0e32\u0e14\u0e2d\u0e30\u0e44\u0e23\" \u0e15\u0e32\u0e21 **3 \u0e40\u0e2a\u0e32 (\u0e04\u0e38\u0e13\u0e20\u0e32\u0e1e\u0e44\u0e02\u0e48 \u00b7 \u0e1c\u0e19\u0e31\u0e07\u0e21\u0e14\u0e25\u0e39\u0e01 \u00b7 \u0e2a\u0e21\u0e14\u0e38\u0e25\u0e2e\u0e2d\u0e23\u0e4c\u0e42\u0e21\u0e19)** + \u0e40\u0e0a\u0e47\u0e01\u0e25\u0e34\u0e2a\u0e15\u0e4c **\u0e02\u0e2d\u0e07\u0e15\u0e49\u0e2d\u0e07\u0e07\u0e14**\n**Acceptance Criteria**\n- [ ] \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e01\u0e34\u0e19 (\u0e15\u0e34\u0e4a\u0e01): \u0e44\u0e02\u0e48\u0e15\u0e49\u0e21 2 \u0e1f\u0e2d\u0e07, \u0e1b\u0e25\u0e32 1 \u0e15\u0e31\u0e27, \u0e2d\u0e30\u0e42\u0e27\u0e04\u0e32\u0e42\u0e14+\u0e19\u0e49\u0e33\u0e1c\u0e36\u0e49\u0e07\u0e0a\u0e31\u0e19\u0e42\u0e23\u0e07, \u0e02\u0e49\u0e32\u0e27\u0e01\u0e25\u0e49\u0e2d\u0e07, \u0e1c\u0e31\u0e01\u0e2a\u0e14, \u0e19\u0e49\u0e33 2\u20133L, \u0e1c\u0e07\u0e1c\u0e31\u0e01\u0e40\u0e1e\u0e35\u0e22\u0e27\u0e40\u0e23\u0e14/\u0e01\u0e23\u0e35\u0e19, \u0e19\u0e49\u0e33\u0e21\u0e30\u0e01\u0e23\u0e39\u0e14\n- [ ] \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e07\u0e14 (\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e16\u0e49\u0e32\u0e40\u0e1c\u0e25\u0e2d): \u0e19\u0e49\u0e33\u0e15\u0e32\u0e25, \u0e19\u0e49\u0e33\u0e40\u0e22\u0e47\u0e19, \u0e0a\u0e32/\u0e01\u0e32\u0e41\u0e1f/\u0e04\u0e32\u0e40\u0e1f\u0e2d\u0e35\u0e19, \u0e44\u0e02\u0e21\u0e31\u0e19\u0e17\u0e23\u0e32\u0e19\u0e2a\u0e4c, \u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e41\u0e1b\u0e23\u0e23\u0e39\u0e1b\n- [ ] \u0e1c\u0e25\u0e25\u0e31\u0e1e\u0e18\u0e4c: progress \u0e15\u0e48\u0e2d\u0e40\u0e2a\u0e32 + \u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e40\u0e15\u0e34\u0e21 (\u0e2d\u0e32\u0e2b\u0e32\u0e23\u0e01\u0e48\u0e2d\u0e19 \u0e41\u0e25\u0e49\u0e27\u0e04\u0e48\u0e2d\u0e22\u0e1c\u0e07\u0e1c\u0e31\u0e01/\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19) + disclaimer\n- [ ] tie-in \u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e17\u0e35\u0e48\u0e02\u0e32\u0e14 (\u0e40\u0e0a\u0e48\u0e19 \u0e02\u0e32\u0e14\u0e1c\u0e31\u0e01\u2192Pure Green/Red) \u0e41\u0e1a\u0e1a\u0e44\u0e21\u0e48\u0e22\u0e31\u0e14\u0e40\u0e22\u0e35\u0e22\u0e14\n- [ ] Empty state: \u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e15\u0e34\u0e4a\u0e01\u0e2d\u0e30\u0e44\u0e23 \u2192 \u0e0a\u0e27\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\n\n### M5 \u2014 Sleep Calculator / \u0e04\u0e33\u0e19\u0e27\u0e13\u0e01\u0e32\u0e23\u0e19\u0e2d\u0e19 (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** 2 \u0e42\u0e2b\u0e21\u0e14 (A) \u0e04\u0e33\u0e19\u0e27\u0e13\u0e40\u0e27\u0e25\u0e32\u0e40\u0e02\u0e49\u0e32\u0e19\u0e2d\u0e19/\u0e15\u0e37\u0e48\u0e19\u0e15\u0e32\u0e21\u0e23\u0e2d\u0e1a\u0e2b\u0e25\u0e31\u0e1a 90 \u0e19\u0e32\u0e17\u0e35 (B) \u0e01\u0e23\u0e2d\u0e01\u0e40\u0e27\u0e25\u0e32\u0e19\u0e2d\u0e19\u0e08\u0e23\u0e34\u0e07 \u2192 \u0e43\u0e2b\u0e49\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e40\u0e17\u0e35\u0e22\u0e1a\u0e40\u0e1b\u0e49\u0e32 \"\u0e01\u0e48\u0e2d\u0e19 4 \u0e17\u0e38\u0e48\u0e21 + 7\u20139 \u0e0a\u0e21.\" \u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e40\u0e2b\u0e15\u0e38\u0e1c\u0e25\u0e40\u0e0a\u0e34\u0e07\u0e2e\u0e2d\u0e23\u0e4c\u0e42\u0e21\u0e19\n**Acceptance Criteria**\n- [ ] \u0e42\u0e2b\u0e21\u0e14 A: \u0e40\u0e25\u0e37\u0e2d\u0e01\u0e40\u0e27\u0e25\u0e32\u0e15\u0e37\u0e48\u0e19 \u2192 \u0e40\u0e2a\u0e19\u0e2d\u0e40\u0e27\u0e25\u0e32\u0e40\u0e02\u0e49\u0e32\u0e19\u0e2d\u0e19 (5\u20136 \u0e23\u0e2d\u0e1a = 7.5\u20139 \u0e0a\u0e21.) \u0e2b\u0e23\u0e37\u0e2d\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e40\u0e27\u0e25\u0e32\u0e19\u0e2d\u0e19 \u2192 \u0e40\u0e27\u0e25\u0e32\u0e15\u0e37\u0e48\u0e19\u0e17\u0e35\u0e48\u0e40\u0e2b\u0e21\u0e32\u0e30\n- [ ] \u0e42\u0e2b\u0e21\u0e14 B: \u0e01\u0e23\u0e2d\u0e01\u0e40\u0e27\u0e25\u0e32\u0e19\u0e2d\u0e19-\u0e15\u0e37\u0e48\u0e19\u0e08\u0e23\u0e34\u0e07 \u2192 \u0e04\u0e33\u0e19\u0e27\u0e13\u0e0a\u0e31\u0e48\u0e27\u0e42\u0e21\u0e07 + \u0e2a\u0e16\u0e32\u0e19\u0e30 (\u0e14\u0e35/\u0e04\u0e27\u0e23\u0e1b\u0e23\u0e31\u0e1a) + **\u0e40\u0e15\u0e37\u0e2d\u0e19\u0e16\u0e49\u0e32\u0e40\u0e02\u0e49\u0e32\u0e19\u0e2d\u0e19\u0e2b\u0e25\u0e31\u0e07 22:00**\n- [ ] \u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22\u0e2a\u0e31\u0e49\u0e19 \u0e46 \u0e27\u0e48\u0e32\u0e19\u0e2d\u0e19\u0e14\u0e35\u0e0a\u0e48\u0e27\u0e22\u0e2e\u0e2d\u0e23\u0e4c\u0e42\u0e21\u0e19\u0e40\u0e08\u0e23\u0e34\u0e0d\u0e1e\u0e31\u0e19\u0e18\u0e38\u0e4c\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e44\u0e23 + disclaimer\n- [ ] tie-in \u0e19\u0e38\u0e48\u0e21: \u0e19\u0e2d\u0e19\u0e22\u0e32\u0e01 \u2192 Night Shot/A.O.S\n- [ ] Validation \u0e40\u0e27\u0e25\u0e32, \u0e02\u0e49\u0e32\u0e21\u0e40\u0e17\u0e35\u0e48\u0e22\u0e07\u0e04\u0e37\u0e19\u0e44\u0e14\u0e49\n\n### M6 \u2014 Vitamin Recommender / \u0e41\u0e19\u0e30\u0e19\u0e33\u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22 (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e16\u0e32\u0e21\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e2a\u0e31\u0e49\u0e19 \u0e46 (\u0e2a\u0e40\u0e15\u0e08, PCOS?, \u0e41\u0e1c\u0e19\u0e17\u0e33 IUI/IVF/ICSI?, \u0e0a\u0e32\u0e22/\u0e2b\u0e0d\u0e34\u0e07) \u2192 map \u0e40\u0e1b\u0e47\u0e19\u0e0a\u0e38\u0e14\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e41\u0e19\u0e30\u0e19\u0e33\u0e08\u0e23\u0e34\u0e07 (nutrition-protocol.md \u00a74)\n**\u0e01\u0e15\u0e34\u0e01\u0e32 map**\n| \u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c | \u0e41\u0e19\u0e30\u0e19\u0e33\u0e2b\u0e25\u0e31\u0e01 |\n|---|---|\n| **\u0e41\u0e01\u0e19\u0e2b\u0e25\u0e31\u0e01 (\u0e17\u0e38\u0e01\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e2b\u0e0d\u0e34\u0e07)** | OvaAll + Ferty + Colla Telo + Ferti 9 Oil |\n| PCOS | \u0e41\u0e01\u0e19\u0e2b\u0e25\u0e31\u0e01 **+ PCO-VIT** + \u0e40\u0e19\u0e49\u0e19\u0e07\u0e14\u0e2b\u0e27\u0e32\u0e19 |\n| \u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01 / \u0e01\u0e48\u0e2d\u0e19\u0e17\u0e33 IUI-IVF-ICSI | \u0e41\u0e01\u0e19\u0e2b\u0e25\u0e31\u0e01 **+ A.O.S** + \u0e04\u0e33\u0e40\u0e15\u0e37\u0e2d\u0e19 \"\u0e1b\u0e23\u0e36\u0e01\u0e29\u0e32\u0e41\u0e1e\u0e17\u0e22\u0e4c\u0e01\u0e48\u0e2d\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\u0e17\u0e38\u0e01\u0e15\u0e31\u0e27\" + \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2b\u0e22\u0e38\u0e14\u0e2b\u0e25\u0e31\u0e07\u0e43\u0e2a\u0e48\u0e15\u0e31\u0e27\u0e2d\u0e48\u0e2d\u0e19 |\n| \u0e40\u0e2a\u0e23\u0e34\u0e21\u0e15\u0e32\u0e21\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c (\u0e17\u0e38\u0e01\u0e04\u0e19) | Varginaree + Night Shot |\n| \u0e42\u0e20\u0e0a\u0e19\u0e32\u0e01\u0e32\u0e23\u0e40\u0e2a\u0e23\u0e34\u0e21 (11 \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23) | Phyto Crystal C \u00b7 Pure Seed \u00b7 Good Grain \u00b7 Pure Black \u00b7 Pure Red \u00b7 Pure Green \u00b7 \u0e19\u0e49\u0e33\u0e21\u0e30\u0e01\u0e23\u0e39\u0e14 Shot \u00b7 \u0e19\u0e49\u0e33\u0e21\u0e30\u0e01\u0e23\u0e39\u0e14 70% \u00b7 Gold Ginger & \u0e02\u0e34\u0e07\u0e14\u0e33 \u00b7 Ferty Probiotics \u00b7 \u0e14\u0e2d\u0e01\u0e04\u0e33\u0e1d\u0e2d\u0e22 |\n| \u0e43\u0e0a\u0e49\u0e20\u0e32\u0e22\u0e19\u0e2d\u0e01 | \u0e41\u0e1e\u0e47\u0e04\u0e19\u0e49\u0e33\u0e21\u0e31\u0e19\u0e25\u0e30\u0e2b\u0e38\u0e48\u0e07 (**\u0e2b\u0e49\u0e32\u0e21\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e30\u0e17\u0e32\u0e19**) |\n| \u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c | \u0e15\u0e31\u0e14 A.O.S \u00b7 \u0e19\u0e49\u0e33\u0e21\u0e30\u0e01\u0e23\u0e39\u0e14 Shot \u00b7 Pure Green \u00b7 Varginaree \u00b7 \u0e14\u0e2d\u0e01\u0e04\u0e33\u0e1d\u0e2d\u0e22 \u00b7 \u0e19\u0e49\u0e33\u0e21\u0e31\u0e19\u0e25\u0e30\u0e2b\u0e38\u0e48\u0e07 \u0e2d\u0e2d\u0e01\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34 |\n| \u0e43\u0e2b\u0e49\u0e19\u0e21 | \u0e15\u0e31\u0e14 Varginaree \u0e2d\u0e2d\u0e01\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34 |\n| \u0e0a\u0e32\u0e22 | **M-Z All + Ferta + Pure Seed** (\u0e17\u0e38\u0e01\u0e15\u0e31\u0e27\u0e15\u0e49\u0e2d\u0e07\u0e21\u0e35\u0e27\u0e34\u0e18\u0e35\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e30\u0e17\u0e32\u0e19\u0e17\u0e35\u0e48\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19 \u00b7 Motila1 \u0e16\u0e2d\u0e14\u0e2d\u0e2d\u0e01\u0e0a\u0e31\u0e48\u0e27\u0e04\u0e23\u0e32\u0e27\u0e08\u0e19\u0e01\u0e27\u0e48\u0e32\u0e08\u0e30\u0e44\u0e14\u0e49 dosage \u2014 2026-07-27) |\n**Acceptance Criteria**\n- [ ] Flow \u0e04\u0e33\u0e16\u0e32\u0e21 3\u20135 \u0e02\u0e49\u0e2d (\u0e17\u0e35\u0e25\u0e30\u0e02\u0e49\u0e2d, \u0e01\u0e49\u0e32\u0e27\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e2b\u0e47\u0e19\u0e0a\u0e31\u0e14)\n- [ ] \u0e1c\u0e25: 1\u20133 \u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e2b\u0e25\u0e31\u0e01 + \u0e40\u0e2b\u0e15\u0e38\u0e1c\u0e25 + \u0e2d\u0e07\u0e04\u0e4c\u0e1b\u0e23\u0e30\u0e01\u0e2d\u0e1a (\u0e40\u0e0a\u0e48\u0e19 OvaAll: \u0e42\u0e1f\u0e25\u0e34\u0e01400/CoQ10 30/\u0e19\u0e49\u0e33\u0e21\u0e31\u0e19\u0e1b\u0e25\u0e32500/\u0e21\u0e31\u0e25\u0e15\u0e34) + \u0e27\u0e34\u0e18\u0e35\u0e01\u0e34\u0e19\n- [ ] **\u0e2b\u0e49\u0e32\u0e21\u0e40\u0e04\u0e25\u0e21\u0e23\u0e31\u0e01\u0e29\u0e32** \u00b7 \u0e43\u0e0a\u0e49 \"\u0e0a\u0e48\u0e27\u0e22\u0e1a\u0e33\u0e23\u0e38\u0e07/\u0e40\u0e15\u0e23\u0e35\u0e22\u0e21\u0e1e\u0e23\u0e49\u0e2d\u0e21\" + disclaimer\n- [ ] CTA \u2192 \u0e23\u0e31\u0e1a\u0e41\u0e1c\u0e19\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e04\u0e38\u0e13 (M7) + \u0e25\u0e34\u0e07\u0e01\u0e4c LINE OA\n- [ ] \u0e1c\u0e25\u0e1c\u0e39\u0e01\u0e40\u0e02\u0e49\u0e32\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e01\u0e25\u0e32\u0e07 \u2192 prefill M7\n\n### M7 \u2014 Lead Capture + Consent + Ticket (P0) \u2b50\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e2b\u0e31\u0e27\u0e43\u0e08 lead-gen \u2014 \u0e23\u0e27\u0e21\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c\u0e08\u0e32\u0e01\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d + \u0e41\u0e1a\u0e1a\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21\u0e40\u0e2a\u0e23\u0e34\u0e21 \u2192 \u0e02\u0e2d consent \u2192 \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 Supabase \u2192 **\u0e2d\u0e2d\u0e01\u0e40\u0e25\u0e02 ticket** \u0e43\u0e2b\u0e49\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e44\u0e1b\u0e41\u0e08\u0e49\u0e07\u0e43\u0e19 LINE OA\n**Acceptance Criteria**\n- [ ] \u0e41\u0e1a\u0e1a\u0e2a\u0e2d\u0e1a\u0e16\u0e32\u0e21: \u0e0a\u0e37\u0e48\u0e2d\u0e40\u0e25\u0e48\u0e19, \u0e0a\u0e48\u0e2d\u0e07\u0e17\u0e32\u0e07\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d (LINE/\u0e40\u0e1a\u0e2d\u0e23\u0e4c \u2014 \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22 1), \u0e2a\u0e40\u0e15\u0e08, \u0e2d\u0e32\u0e22\u0e38(\u0e0a\u0e48\u0e27\u0e07), PCOS?, \u0e41\u0e1c\u0e19\u0e17\u0e33\u0e40\u0e14\u0e47\u0e01\u0e2b\u0e25\u0e2d\u0e14\u0e41\u0e01\u0e49\u0e27?, \u0e04\u0e27\u0e32\u0e21\u0e2a\u0e19\u0e43\u0e08\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32, \u0e2a\u0e23\u0e38\u0e1b\u0e1c\u0e25\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e17\u0e35\u0e48\u0e17\u0e33\n- [ ] **Consent (PDPA \u0e21.26):** checkbox \u0e44\u0e21\u0e48\u0e15\u0e34\u0e4a\u0e01\u0e21\u0e32\u0e01\u0e48\u0e2d\u0e19 + \u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21\u0e40\u0e01\u0e47\u0e1a \"\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e38\u0e02\u0e20\u0e32\u0e1e\" + \u0e27\u0e31\u0e15\u0e16\u0e38\u0e1b\u0e23\u0e30\u0e2a\u0e07\u0e04\u0e4c (\u0e43\u0e2b\u0e49\u0e17\u0e35\u0e21\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d\u0e1c\u0e48\u0e32\u0e19 LINE OA) + \u0e25\u0e34\u0e07\u0e01\u0e4c privacy policy \u00b7 **\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49\u0e16\u0e49\u0e32\u0e44\u0e21\u0e48\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21**\n- [ ] \u0e40\u0e01\u0e47\u0e1a consent (\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21+timestamp+\u0e40\u0e27\u0e2d\u0e23\u0e4c\u0e0a\u0e31\u0e19) \u0e40\u0e1b\u0e47\u0e19\u0e2b\u0e25\u0e31\u0e01\u0e10\u0e32\u0e19\n- [ ] gen **ticket code** \u0e2a\u0e31\u0e49\u0e19 \u0e2d\u0e48\u0e32\u0e19\u0e07\u0e48\u0e32\u0e22 \u0e44\u0e21\u0e48\u0e0b\u0e49\u0e33 (\u0e40\u0e0a\u0e48\u0e19 `MJ-4X7K2P`) \u00b7 \u0e42\u0e0a\u0e27\u0e4c\u0e2b\u0e19\u0e49\u0e32 success + \u0e1b\u0e38\u0e48\u0e21 \"\u0e40\u0e1b\u0e34\u0e14 LINE OA\" + \u0e04\u0e31\u0e14\u0e25\u0e2d\u0e01\u0e23\u0e2b\u0e31\u0e2a\n- [ ] \u0e1c\u0e48\u0e32\u0e19 **BFF** (\u0e44\u0e21\u0e48\u0e40\u0e23\u0e35\u0e22\u0e01 Supabase \u0e15\u0e23\u0e07\u0e08\u0e32\u0e01 client \u2014 key \u0e2d\u0e22\u0e39\u0e48 server)\n- [ ] rate-limit / anti-spam \u0e01\u0e31\u0e19\u0e22\u0e34\u0e07\u0e16\u0e35\u0e48\n- [ ] error: \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e25\u0e49\u0e21\u0e40\u0e2b\u0e25\u0e27 \u2192 \u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e38\u0e20\u0e32\u0e1e + retry, \u0e44\u0e21\u0e48\u0e2b\u0e25\u0e2d\u0e01\u0e27\u0e48\u0e32\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08\n- [ ] \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e16\u0e2d\u0e19\u0e22\u0e34\u0e19\u0e22\u0e2d\u0e21/\u0e02\u0e2d\u0e25\u0e1a (\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22\u0e21\u0e35\u0e0a\u0e48\u0e2d\u0e07\u0e17\u0e32\u0e07/\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e15\u0e34\u0e14\u0e15\u0e48\u0e2d\u0e43\u0e19\u0e2b\u0e19\u0e49\u0e32 privacy)\n\n### M8 \u2014 Tagging + BFF API + Staff Lookup (P0)\n**\u0e04\u0e33\u0e2d\u0e18\u0e34\u0e1a\u0e32\u0e22:** \u0e23\u0e30\u0e1a\u0e1a tag (auto \u0e08\u0e32\u0e01\u0e04\u0e33\u0e15\u0e2d\u0e1a + \u0e40\u0e1e\u0e34\u0e48\u0e21\u0e21\u0e37\u0e2d) + \u0e0a\u0e38\u0e14 BFF API + \u0e2b\u0e19\u0e49\u0e32\u0e43\u0e2b\u0e49\u0e17\u0e35\u0e21\u0e04\u0e49\u0e19 ticket \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e14\u0e39\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c/tag\n**Auto-tag rules (\u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07):** PCOS\u2192`#PCOS` \u00b7 \u0e41\u0e1c\u0e19 ICSI\u2192`#ICSI` \u00b7 \u0e2a\u0e40\u0e15\u0e08\u0e0a\u0e32\u0e22\u2192`#\u0e1a\u0e33\u0e23\u0e38\u0e07\u0e0a\u0e32\u0e22` \u00b7 \u0e2a\u0e19\u0e43\u0e08 OvaAll\u2192`#\u0e2a\u0e19\u0e43\u0e08-OvaAll` \u00b7 \u0e17\u0e33\u0e04\u0e23\u0e1a 4 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u2192`#engaged`\n**Acceptance Criteria**\n- [ ] BFF endpoints: `POST /api/lead` (\u0e2a\u0e23\u0e49\u0e32\u0e07 lead+ticket+auto-tag), `GET /api/ticket/:code` (staff, \u0e15\u0e49\u0e2d\u0e07\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e15\u0e31\u0e27\u0e15\u0e19), `POST /api/ticket/:code/tags` (\u0e40\u0e1e\u0e34\u0e48\u0e21/\u0e25\u0e1a tag)\n- [ ] \u0e2b\u0e19\u0e49\u0e32 `/staff` (gate \u0e14\u0e49\u0e27\u0e22\u0e23\u0e2b\u0e31\u0e2a/PIN \u0e40\u0e1f\u0e2a 1): \u0e04\u0e49\u0e19 ticket \u2192 \u0e40\u0e2b\u0e47\u0e19\u0e42\u0e1b\u0e23\u0e44\u0e1f\u0e25\u0e4c+\u0e1c\u0e25\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d+tag \u00b7 \u0e40\u0e1e\u0e34\u0e48\u0e21 tag \u0e21\u0e37\u0e2d\u0e44\u0e14\u0e49\n- [ ] auto-tag \u0e17\u0e33\u0e07\u0e32\u0e19\u0e15\u0e2d\u0e19\u0e2a\u0e23\u0e49\u0e32\u0e07 lead \u00b7 \u0e41\u0e01\u0e49 rule \u0e44\u0e14\u0e49\u0e08\u0e32\u0e01 config\n- [ ] \u0e17\u0e38\u0e01 endpoint \u0e15\u0e23\u0e27\u0e08 input + \u0e44\u0e21\u0e48\u0e23\u0e31\u0e48\u0e27 PII \u0e40\u0e01\u0e34\u0e19\u0e08\u0e33\u0e40\u0e1b\u0e47\u0e19 \u00b7 log \u0e01\u0e32\u0e23\u0e40\u0e02\u0e49\u0e32\u0e16\u0e36\u0e07 (audit \u0e40\u0e1a\u0e37\u0e49\u0e2d\u0e07\u0e15\u0e49\u0e19)\n- [ ] (\u0e40\u0e1f\u0e2a 2 hook) \u0e40\u0e1c\u0e37\u0e48\u0e2d webhook \u0e2a\u0e48\u0e07\u0e40\u0e02\u0e49\u0e32 LINE OA \u2014 \u0e2d\u0e2d\u0e01\u0e41\u0e1a\u0e1a API \u0e43\u0e2b\u0e49\u0e15\u0e48\u0e2d\u0e22\u0e2d\u0e14\u0e44\u0e14\u0e49\n\n---\n\n## 7. Brand CI & Design System\n> \u2705 **\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15 2026-07-24 \u2014 \u0e43\u0e0a\u0e49 CI \u0e08\u0e23\u0e34\u0e07\u0e41\u0e25\u0e49\u0e27** (\u0e08\u0e32\u0e01 brand guideline + mockup \u0e40\u0e27\u0e47\u0e1a\u0e43\u0e2b\u0e21\u0e48) \u00b7 \u0e23\u0e32\u0e22\u0e25\u0e30\u0e40\u0e2d\u0e35\u0e22\u0e14\u0e40\u0e15\u0e47\u0e21: BRAND.md + [DESIGN.md](DESIGN.md) \u00a72, \u00a72.5, \u00a79 \u00b7 \u2705 \u0e15\u0e34\u0e14\u0e15\u0e31\u0e49\u0e07 **\u0e42\u0e25\u0e42\u0e01\u0e49\u0e17\u0e32\u0e07\u0e01\u0e32\u0e23** \u0e41\u0e25\u0e49\u0e27 (2026-07-26)\n- **Palette (CI \u0e08\u0e23\u0e34\u0e07):** **PRIMARY \u0e40\u0e02\u0e35\u0e22\u0e27 `#1BC0BA`** \u00b7 **SECONDARY \u0e0a\u0e21\u0e1e\u0e39 `#F978B3`** \u00b7 \u0e14\u0e33 `#000000` / \u0e02\u0e32\u0e27 \u00b7 \u0e04\u0e23\u0e35\u0e21/\u0e1e\u0e37\u0e49\u0e19 `#FFF8FB` \u00b7 \u0e17\u0e2d\u0e07 accent `#E7B84B` \u00b7 ink `#3D3D4D`\n  - + \u0e2a\u0e35 5 sub-brand stage: PRIME \u0e21\u0e34\u0e19\u0e15\u0e4c \u00b7 FERTI \u0e21\u0e48\u0e27\u0e07 \u00b7 PREG \u0e1f\u0e49\u0e32 \u00b7 REVIVE \u0e1e\u0e35\u0e0a \u00b7 BLOOM \u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e07\n  - \u26d4 \u0e40\u0e25\u0e34\u0e01\u0e43\u0e0a\u0e49 starter \u0e40\u0e14\u0e34\u0e21 (rose `#E8A0BF` / teal `#5FB3B3`) \u2014 \u0e40\u0e1b\u0e47\u0e19\u0e04\u0e48\u0e32\u0e17\u0e35\u0e48\u0e40\u0e14\u0e32\u0e44\u0e27\u0e49\u0e15\u0e2d\u0e19\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e44\u0e01\u0e14\u0e4c\n- **\u0e01\u0e0e\u0e1a\u0e17\u0e1a\u0e32\u0e17\u0e2a\u0e35:** teal = \u0e1b\u0e38\u0e48\u0e21\u0e2b\u0e25\u0e31\u0e01/\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02/\u0e25\u0e34\u0e07\u0e01\u0e4c \u00b7 pink = accent + error (\u0e15\u0e32\u0e23\u0e32\u0e07 DESIGN.md \u00a72.5)\n- **Glassmorphism:** \u0e01\u0e32\u0e23\u0e4c\u0e14 `rgba(255,255,255,.6)` + `backdrop-blur` + border \u0e02\u0e32\u0e27\u0e42\u0e1b\u0e23\u0e48\u0e07 + \u0e40\u0e07\u0e32\u0e19\u0e38\u0e48\u0e21 \u00b7 \u0e1e\u0e37\u0e49\u0e19\u0e2b\u0e25\u0e31\u0e07 gradient **\u0e21\u0e34\u0e19\u0e15\u0e4c\u2192\u0e0a\u0e21\u0e1e\u0e39** \u00b7 \u0e1b\u0e38\u0e48\u0e21 **pill** \u00b7 feature card **teal gradient**\n- **Typography:** **Poppins** (\u0e2d\u0e31\u0e07\u0e01\u0e24\u0e29/\u0e2b\u0e31\u0e27\u0e40\u0e23\u0e37\u0e48\u0e2d\u0e07/\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02) + **Prompt** (\u0e44\u0e17\u0e22) \u2014 \u0e17\u0e31\u0e49\u0e07\u0e04\u0e39\u0e48 Google Fonts (SIL OFL)\n- **Logo:** \u2705 **\u0e42\u0e25\u0e42\u0e01\u0e49\u0e17\u0e32\u0e07\u0e01\u0e32\u0e23\u0e02\u0e2d\u0e07\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c** \u2014 symbol (\u0e41\u0e21\u0e48\u0e2d\u0e38\u0e49\u0e21\u0e25\u0e39\u0e01 \u0e40\u0e02\u0e35\u0e22\u0e27+\u0e0a\u0e21\u0e1e\u0e39) + wordmark `baby&mom+` \u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23\u0e14\u0e33 \u00b7 \u0e43\u0e0a\u0e49\u0e1c\u0e48\u0e32\u0e19 `components/wordmark.tsx` (`public/logo.png` / `logo-white.png` \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e1e\u0e37\u0e49\u0e19 teal) \u00b7 favicon+app icon \u0e08\u0e32\u0e01 symbol\n- **\u0e42\u0e17\u0e19\u0e20\u0e32\u0e1e/\u0e2d\u0e35\u0e42\u0e21\u0e08\u0e34:** \u0e2d\u0e1a\u0e2d\u0e38\u0e48\u0e19 \u0e43\u0e2b\u0e49\u0e01\u0e33\u0e25\u0e31\u0e07\u0e43\u0e08 \u00b7 \u0e40\u0e25\u0e35\u0e48\u0e22\u0e07\u0e20\u0e32\u0e1e\u0e17\u0e32\u0e23\u0e01\u0e16\u0e35\u0e48\u0e40\u0e01\u0e34\u0e19\u0e08\u0e19\u0e01\u0e14\u0e14\u0e31\u0e19\u0e01\u0e25\u0e38\u0e48\u0e21\u0e21\u0e35\u0e1a\u0e38\u0e15\u0e23\u0e22\u0e32\u0e01\n- **Components:** ToolCard, ResultCard, StepProgress, ConsentBox, TicketBadge, ProductChip, Disclaimer \u2014 \u0e17\u0e33\u0e40\u0e1b\u0e47\u0e19 design system \u0e40\u0e14\u0e35\u0e22\u0e27\u0e43\u0e0a\u0e49\u0e0b\u0e49\u0e33\n- \u0e43\u0e0a\u0e49 **/ui-ux-pro-max** \u0e40\u0e1b\u0e47\u0e19\u0e41\u0e19\u0e27\u0e17\u0e32\u0e07\u0e14\u0e35\u0e44\u0e0b\u0e19\u0e4c (glass, spacing, a11y) \u0e15\u0e2d\u0e19 build\n\n## 8. Widget Embed Spec\n\u0e40\u0e1b\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e22: \u0e40\u0e2d\u0e32\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e44\u0e1b\u0e41\u0e1b\u0e30\u0e1a\u0e19\u0e40\u0e27\u0e47\u0e1a\u0e1b\u0e31\u0e08\u0e08\u0e38\u0e1a\u0e31\u0e19\u0e02\u0e2d\u0e07\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\u0e44\u0e14\u0e49\u0e14\u0e49\u0e27\u0e22\u0e42\u0e04\u0e49\u0e14\u0e2a\u0e31\u0e49\u0e19 \u0e46\n- **\u0e27\u0e34\u0e18\u0e35:** `<iframe src=\"https://<app>/tools/<tool>?embed=1\" ...>` + \u0e2a\u0e04\u0e23\u0e34\u0e1b\u0e15\u0e4c auto-resize (postMessage \u0e2a\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e39\u0e07) \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e44\u0e21\u0e48\u0e21\u0e35 scrollbar \u0e0b\u0e49\u0e2d\u0e19\n- \u0e42\u0e2b\u0e21\u0e14 `embed=1`: \u0e0b\u0e48\u0e2d\u0e19 global nav/footer, \u0e42\u0e1b\u0e23\u0e48\u0e07\u0e43\u0e2a\u0e1e\u0e37\u0e49\u0e19\u0e2b\u0e25\u0e31\u0e07\u0e44\u0e14\u0e49, \u0e18\u0e35\u0e21\u0e2a\u0e37\u0e1a\u0e17\u0e2d\u0e14\u0e08\u0e32\u0e01 query (`?theme=light`)\n- \u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07 snippet (\u0e43\u0e2b\u0e49\u0e41\u0e2d\u0e14\u0e21\u0e34\u0e19\u0e01\u0e47\u0e2d\u0e1b): iframe + `<script>` \u0e1f\u0e31\u0e07 `message` \u0e41\u0e25\u0e49\u0e27\u0e1b\u0e23\u0e31\u0e1a height\n- **Acceptance:** \u0e1d\u0e31\u0e07\u0e43\u0e19 HTML \u0e20\u0e32\u0e22\u0e19\u0e2d\u0e01\u0e41\u0e25\u0e49\u0e27\u0e17\u0e33\u0e07\u0e32\u0e19\u0e04\u0e23\u0e1a (\u0e04\u0e33\u0e19\u0e27\u0e13 + \u0e2a\u0e48\u0e07 lead \u0e1c\u0e48\u0e32\u0e19 BFF \u0e02\u0e49\u0e32\u0e21\u0e42\u0e14\u0e40\u0e21\u0e19\u0e44\u0e14\u0e49\u0e14\u0e49\u0e27\u0e22 CORS \u0e17\u0e35\u0e48\u0e04\u0e38\u0e21\u0e42\u0e14\u0e40\u0e21\u0e19 allowlist) \u00b7 responsive \u0e43\u0e19\u0e01\u0e23\u0e2d\u0e1a\u0e41\u0e04\u0e1a\n- **Security:** CORS allowlist \u0e42\u0e14\u0e40\u0e21\u0e19\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c\u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a POST /api/lead \u00b7 CSP frame-ancestors \u0e08\u0e33\u0e01\u0e31\u0e14\u0e42\u0e14\u0e40\u0e21\u0e19\u0e17\u0e35\u0e48\u0e1d\u0e31\u0e07\u0e44\u0e14\u0e49\n\n## 9. Non-Functional Requirements (NFR)\n| \u0e14\u0e49\u0e32\u0e19 | \u0e02\u0e49\u0e2d\u0e01\u0e33\u0e2b\u0e19\u0e14 |\n|---|---|\n| **Performance** | LCP < 2.5s, TTI < 3.5s (4G) \u00b7 \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e04\u0e33\u0e19\u0e27\u0e13\u0e15\u0e2d\u0e1a < 100ms (client) \u00b7 API p95 < 500ms |\n| **Responsive** | \u0e43\u0e0a\u0e49\u0e44\u0e14\u0e49 320\u20131440px+ \u00b7 \u0e17\u0e14\u0e2a\u0e2d\u0e1a iPhone SE, Pixel, iPad, desktop |\n| **Accessibility** | WCAG 2.1 AA \u0e40\u0e1a\u0e37\u0e49\u0e2d\u0e07\u0e15\u0e49\u0e19: contrast \u22654.5:1, keyboard nav, label \u0e04\u0e23\u0e1a, \u0e1b\u0e38\u0e48\u0e21 \u226544px, aria \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a step |\n| **Security** | BFF \u0e0b\u0e48\u0e2d\u0e19 service key \u00b7 input validation \u0e17\u0e38\u0e01 endpoint \u00b7 rate-limit \u00b7 CORS/CSP allowlist \u00b7 \u0e44\u0e21\u0e48\u0e21\u0e35 secret \u0e43\u0e19 client bundle |\n| **Privacy/PDPA** | consent \u0e01\u0e48\u0e2d\u0e19\u0e40\u0e01\u0e47\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2d\u0e48\u0e2d\u0e19\u0e44\u0e2b\u0e27 \u00b7 \u0e40\u0e01\u0e47\u0e1a\u0e40\u0e17\u0e48\u0e32\u0e17\u0e35\u0e48\u0e08\u0e33\u0e40\u0e1b\u0e47\u0e19 \u00b7 RLS \u0e17\u0e35\u0e48 Supabase \u00b7 ticket \u0e2a\u0e38\u0e48\u0e21 \u00b7 flow \u0e02\u0e2d\u0e25\u0e1a |\n| **Reliability** | \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 lead \u0e15\u0e49\u0e2d\u0e07 atomic (lead+ticket+tags) \u00b7 \u0e25\u0e49\u0e21\u0e40\u0e2b\u0e25\u0e27\u0e44\u0e21\u0e48\u0e2b\u0e25\u0e2d\u0e01\u0e27\u0e48\u0e32\u0e2a\u0e33\u0e40\u0e23\u0e47\u0e08 \u00b7 idempotency \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a submit \u0e0b\u0e49\u0e33 |\n| **SEO/Share** | meta/OG \u0e15\u0e48\u0e2d\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d (\u0e2b\u0e19\u0e49\u0e32 full, \u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48 embed) \u0e40\u0e1e\u0e37\u0e48\u0e2d organic lead |\n| **i18n** | \u0e44\u0e17\u0e22\u0e40\u0e1b\u0e47\u0e19\u0e2b\u0e25\u0e31\u0e01 \u00b7 \u0e42\u0e04\u0e23\u0e07\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e20\u0e32\u0e29\u0e32 |\n| **Compliance content** | disclaimer \u0e17\u0e38\u0e01\u0e1c\u0e25 \u00b7 \u0e44\u0e21\u0e48\u0e21\u0e35\u0e04\u0e33\u0e40\u0e04\u0e25\u0e21\u0e23\u0e31\u0e01\u0e29\u0e32/\u0e01\u0e32\u0e23\u0e31\u0e19\u0e15\u0e35\u0e17\u0e49\u0e2d\u0e07 (\u0e15\u0e23\u0e27\u0e08\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34\u0e43\u0e19\u0e40\u0e17\u0e2a\u0e15\u0e4c) |\n\n## 10. Analytics & Event Tracking\n- events: `tool_open`, `tool_complete`, `lead_submit`, `consent_given`, `ticket_created`, `line_click`, `widget_view`\n- \u0e40\u0e01\u0e47\u0e1a\u0e41\u0e1a\u0e1a\u0e44\u0e21\u0e48\u0e1c\u0e39\u0e01 PII \u0e40\u0e01\u0e34\u0e19\u0e08\u0e33\u0e40\u0e1b\u0e47\u0e19 (\u0e43\u0e0a\u0e49 ticket id/anon id) \u00b7 \u0e43\u0e0a\u0e49\u0e17\u0e33 funnel G1\u2013G5\n- (\u0e40\u0e25\u0e37\u0e2d\u0e01) Vercel Analytics / \u0e40\u0e01\u0e47\u0e1a event \u0e25\u0e07 Supabase table `events`\n\n## 11. Open Questions\n| # | \u0e04\u0e33\u0e16\u0e32\u0e21 | \u0e43\u0e04\u0e23 | \u0e1a\u0e25\u0e47\u0e2d\u0e01? |\n|---|---|---|---|\n| Q1 | \u0e1a\u0e31\u0e0d\u0e0a\u0e35 Supabase/Vercel/GitHub \u0e40\u0e09\u0e1e\u0e32\u0e30\u0e02\u0e2d\u0e07\u0e41\u0e2d\u0e1b\u0e19\u0e35\u0e49 | \u0e15\u0e49\u0e19/\u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c | \u0e1a\u0e25\u0e47\u0e2d\u0e01 deploy |\n| Q2 | CI \u0e08\u0e23\u0e34\u0e07 (\u0e2a\u0e35/\u0e42\u0e25\u0e42\u0e01\u0e49/\u0e1f\u0e2d\u0e19\u0e15\u0e4c) + \u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c\u0e43\u0e0a\u0e49\u0e20\u0e32\u0e1e\u0e04\u0e23\u0e39\u0e01\u0e49\u0e2d\u0e22/\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32 | \u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c/Gabriel | \u0e1a\u0e25\u0e47\u0e2d\u0e01\u0e07\u0e32\u0e19\u0e20\u0e32\u0e1e \u0e44\u0e21\u0e48\u0e1a\u0e25\u0e47\u0e2d\u0e01 dev |\n| Q3 | \u0e2b\u0e19\u0e49\u0e32 staff \u0e40\u0e1f\u0e2a 1: PIN-gate \u0e1e\u0e2d \u0e2b\u0e23\u0e37\u0e2d\u0e02\u0e2d auth \u0e08\u0e23\u0e34\u0e07? | \u0e15\u0e49\u0e19 | \u0e44\u0e21\u0e48\u0e1a\u0e25\u0e47\u0e2d\u0e01 (\u0e40\u0e23\u0e34\u0e48\u0e21 PIN) |\n| Q4 | \u0e2a\u0e16\u0e32\u0e19\u0e30 \u0e2d\u0e22./\u0e06\u0e2d. \u0e02\u0e2d\u0e07\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32\u0e17\u0e35\u0e48\u0e08\u0e30\u0e41\u0e19\u0e30\u0e19\u0e33 | \u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c/legal | \u0e1a\u0e25\u0e47\u0e2d\u0e01\u0e04\u0e2d\u0e19\u0e40\u0e17\u0e19\u0e15\u0e4c\u0e02\u0e32\u0e22 |\n| Q5 | data controller/\u0e19\u0e42\u0e22\u0e1a\u0e32\u0e22\u0e40\u0e01\u0e47\u0e1a-\u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 (PDPA) | \u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c/legal | \u0e15\u0e49\u0e2d\u0e07\u0e44\u0e14\u0e49\u0e01\u0e48\u0e2d\u0e19 launch |\n| Q6 | LINE OA: \u0e40\u0e1f\u0e2a 1 \u0e41\u0e04\u0e48 deep link \u0e2b\u0e23\u0e37\u0e2d\u0e17\u0e33 webhook \u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21? | \u0e15\u0e49\u0e19 | \u0e44\u0e21\u0e48\u0e1a\u0e25\u0e47\u0e2d\u0e01 (\u0e40\u0e23\u0e34\u0e48\u0e21 deep link) |\n| Q7 | \u0e42\u0e14\u0e40\u0e21\u0e19 widget \u0e17\u0e35\u0e48\u0e08\u0e30\u0e2d\u0e19\u0e38\u0e0d\u0e32\u0e15\u0e1d\u0e31\u0e07 (CORS allowlist) | \u0e41\u0e1a\u0e23\u0e19\u0e14\u0e4c | \u0e01\u0e48\u0e2d\u0e19\u0e40\u0e1b\u0e34\u0e14 widget |\n\n## 12. Timeline & Phasing\n- **Phase 1 (MVP):** M1 + M2\u2013M6 (\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d + \u0e27\u0e34\u0e15\u0e32\u0e21\u0e34\u0e19) + M7 (lead/ticket) + M8 (BFF+auto-tag+staff lookup \u0e41\u0e1a\u0e1a PIN) \u2192 **\u0e19\u0e35\u0e48\u0e04\u0e37\u0e2d\u0e02\u0e2d\u0e1a\u0e40\u0e02\u0e15 build \u0e23\u0e2d\u0e1a\u0e19\u0e35\u0e49**\n- **Phase 2:** \u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21 LINE Messaging API (webhook/rich menu/bot), \u0e2b\u0e19\u0e49\u0e32 admin \u0e40\u0e15\u0e47\u0e21, dashboard analytics, \u0e01\u0e25\u0e38\u0e48\u0e21\u0e15\u0e31\u0e49\u0e07\u0e04\u0e23\u0e23\u0e20\u0e4c/\u0e2b\u0e25\u0e31\u0e07\u0e04\u0e25\u0e2d\u0e14 (\u0e17\u0e1a\u0e17\u0e27\u0e19 \u0e1e.\u0e23.\u0e1a.\u0e19\u0e21\u0e1c\u0e07)\n- **Dependencies:** Q1 (\u0e1a\u0e31\u0e0d\u0e0a\u0e35) \u0e01\u0e48\u0e2d\u0e19 deploy \u0e08\u0e23\u0e34\u0e07 \u00b7 Q2 (CI) \u0e01\u0e48\u0e2d\u0e19 finalize \u0e20\u0e32\u0e1e \u00b7 dev \u0e40\u0e23\u0e34\u0e48\u0e21\u0e44\u0e14\u0e49\u0e17\u0e31\u0e19\u0e17\u0e35\u0e14\u0e49\u0e27\u0e22 CI \u0e15\u0e31\u0e49\u0e07\u0e15\u0e49\u0e19\n";
-  mermaid.initialize({startOnLoad:false, theme:'base', themeVariables:{primaryColor:'#FDEBF1',primaryBorderColor:'#E8A0BF',lineColor:'#5FB3B3',fontFamily:'Prompt,sans-serif'}});
-  marked.setOptions({breaks:false, gfm:true});
-  // split markdown by top-level H2 into sections
-  const lines = MD.split('\n');
-  const sections = []; let cur=null;
-  for(const ln of lines){
-    if(/^##\s+/.test(ln)){ cur={title:ln.replace(/^##\s+/,'').trim(), buf:[]}; sections.push(cur); }
-    else if(cur){ cur.buf.push(ln); }
-    else { (sections._pre=sections._pre||[]).push(ln); }
-  }
-  const main=document.getElementById('main'), toc=document.getElementById('toc');
-  if(sections._pre){ const d=document.createElement('div'); d.innerHTML=marked.parse(sections._pre.join('\n')); main.appendChild(d); }
-  sections.forEach((s,i)=>{
-    const id='s'+i;
-    const det=document.createElement('details'); det.className='sec'; det.open = i<3; det.id=id;
-    const sum=document.createElement('summary'); sum.textContent=s.title; det.appendChild(sum);
-    const body=document.createElement('div'); body.className='body';
-    body.innerHTML=marked.parse(s.buf.join('\n'));
-    det.appendChild(body); main.appendChild(det);
-    const a=document.createElement('a'); a.href='#'+id; a.textContent=s.title;
-    a.onclick=e=>{det.open=true;}; toc.appendChild(a);
-  });
-  // render mermaid code blocks
-  document.querySelectorAll('pre code.language-mermaid').forEach((c,i)=>{
-    const div=document.createElement('div'); div.className='mermaid'; div.textContent=c.textContent;
-    c.closest('pre').replaceWith(div);
-  });
-  mermaid.run({querySelector:'.mermaid'});
+document.getElementById('expandAll').onclick = ()=>document.querySelectorAll('details.sec').forEach(d=>d.open=true);
+document.getElementById('collapseAll').onclick = ()=>document.querySelectorAll('details.sec').forEach(d=>d.open=false);
+document.querySelectorAll('nav.toc a').forEach(a=>{
+  a.addEventListener('click', ()=>{ const id=a.getAttribute('href').slice(1); const d=document.getElementById(id); if(d) d.open=true; });
+});
 </script>
-</body></html>
+</body>
+</html>
