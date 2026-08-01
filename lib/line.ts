@@ -1,6 +1,6 @@
 // LINE Messaging API helpers (server-only): signature verify, Flex builder, reply/push.
 import crypto from "node:crypto";
-import type { Report } from "./report";
+import { planMetrics, type Report } from "./report";
 
 export function verifyLineSignature(body: string, signature: string | null): boolean {
   const secret = process.env.LINE_CHANNEL_SECRET;
@@ -67,22 +67,9 @@ const metricRow = (label: string, value: string) => ({
  *    คำเตือน Safety Matrix กำกับครบ (การ์ดในแชทไม่มีที่พอใส่คำเตือน = ขายลอย ๆ)
  */
 export function reportFlex(report: Report, code: string) {
-  const p1 = report.part1;
-  const p2 = report.part2;
-
-  const metrics: any[] = [];
-  const protein = p2?.protein ?? report.protein;
-  if (protein) metrics.push(metricRow("โปรตีน", `${protein.min}–${protein.max} ก./วัน`));
-  const water = p1?.water ?? p2?.waterMl;
-  if (water) metrics.push(metricRow("น้ำดื่ม", `${water.minMl.toLocaleString()}–${water.maxMl.toLocaleString()} มล./วัน`));
-  if (p1?.sleep) metrics.push(metricRow("นอน", `${p1.sleep.recommendedMinHours}–${p1.sleep.recommendedMaxHours} ชม./คืน`));
-  if (p1?.exercise?.weeklyTarget) {
-    // เป้าออกกำลังกายฉบับเต็มยาวได้ถึง ~100 ตัวอักษร ("150–300 นาที/สัปดาห์ กิจกรรม
-    // ระดับปานกลาง หรือ 75–150 นาที/สัปดาห์ กิจกรรมระดับหนัก (ผสมกันได้)") ซึ่งกินการ์ด
-    // ไปครึ่งใบ — ในแชทเอาแค่ทางเลือกแรก ส่วนเงื่อนไขเต็มอยู่ในรายงานที่กดเข้าไปดู
-    const short = p1.exercise.weeklyTarget.split(" หรือ ")[0];
-    metrics.push(metricRow("ออกกำลังกาย", short));
-  }
+  // แถวตัวเลขใช้ตัวสร้างเดียวกับหน้า teaser (lib/report.ts § planMetrics)
+  // เขียนแยกกันเมื่อไหร่ 2 ที่จะแสดงตัวเลขไม่ตรงกันโดยไม่มีใครรู้
+  const metrics = planMetrics(report).map((m) => metricRow(m.label, m.value));
 
   const highlights: any[] = [];
   if (report.fertileWindow) {

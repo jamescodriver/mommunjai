@@ -165,11 +165,20 @@ export async function POST(req: NextRequest) {
   });
 
   const report = generateReport(reportProfileFromBody(body));
-  // R5/R6 — teaser/medium tiers never get the full report body back in this
-  // response. The full report is still generated + stored below exactly as
-  // before; only what /api/lead hands back to the browser changes.
   const tier = reportTier({ artPlan: profile.art_plan, infertilityIssues: profile.infertility_issues });
-  const reportPayload = tier === "full" ? { report } : { teaser: buildTeaser(report) };
+
+  // 🔒 แผนฉบับเต็มไม่ถูกส่งกลับมาที่เบราว์เซอร์ **ไม่ว่ากรณีใด** — ต้องผ่าน LINE เท่านั้น
+  //    (ต้นเคาะ 1 ส.ค. 2026 · กลับมติ R6 ที่เคยให้ tier "full" เห็นแผนเต็มทันทีในหน้า /plan)
+  //
+  //    เดิม: artPlan = "IVF-ICSI"/"เตรียมผนังมดลูก" → tier "full" → ตอบ { report } กลับไป
+  //    คนที่กำลังทำ IVF ซึ่งเป็นกลุ่มที่ตั้งใจดูแลตัวเองที่สุด จึงได้ของครบโดยไม่ต้องทักแอดมิน
+  //    = ปิดทางเก็บ lead กับกลุ่มที่มีค่าที่สุดของ funnel
+  //
+  //    ⚠️ ต้องปิดที่ API ไม่ใช่แค่ซ่อนใน UI — ถ้าแก้แค่หน้าจอ ตัวรายงานเต็มยังเดินทาง
+  //    มากับ response อยู่ดี เปิดแท็บ Network ก็อ่านได้ทั้งฉบับ (ไม่ได้ gate จริง)
+  //
+  //    `tier` ยังส่งกลับไปเหมือนเดิม เพราะ track()/แอดมินใช้ดูว่า lead รายนี้อยู่ชั้นไหน
+  const reportPayload = { teaser: buildTeaser(report) };
 
   // --- DEV fallback: no Supabase env → return generated ticket + report without persisting ---
   if (!hasSupabaseEnv()) {

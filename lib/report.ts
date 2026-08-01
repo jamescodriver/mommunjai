@@ -501,9 +501,39 @@ export function reportTier(p: { artPlan?: ArtPlan; infertilityIssues?: string[] 
 // R6 — teaser/medium responses never carry the full report body server-side.
 // Full generation/storage in `reports` is unchanged; this just picks what's safe
 // to hand back in /api/lead's JSON for a non-"full" tier.
+/** แถว "เป้าหมายต่อวัน" ที่คำนวณจากคำตอบของผู้ใช้เอง — ใช้ร่วมกันระหว่างหน้า teaser
+ *  กับการ์ด Flex ใน LINE เขียนที่เดียวเพื่อไม่ให้ 2 ที่แสดงตัวเลขไม่ตรงกัน
+ *
+ *  🔒 กฎ "ยังไม่ประเมิน ≠ 0" — แถวไหนคำนวณไม่ได้ (ไม่ได้กรอกน้ำหนัก ฯลฯ) ให้ **หายไป**
+ *     ห้ามเดาค่า ห้ามแสดง 0 · ฝั่งหน้าจอเช็คว่าอาร์เรย์ว่างแล้วชวนกรอกเพิ่มแทน */
+export interface PlanMetric {
+  key: "protein" | "water" | "sleep" | "exercise";
+  label: string;
+  value: string;
+}
+
+export function planMetrics(report: Report): PlanMetric[] {
+  const p1 = report.part1;
+  const p2 = report.part2;
+  const rows: PlanMetric[] = [];
+  const protein = p2?.protein ?? report.protein;
+  if (protein) rows.push({ key: "protein", label: "โปรตีน", value: `${protein.min}–${protein.max} ก./วัน` });
+  const water = p1?.water ?? p2?.waterMl;
+  if (water) rows.push({ key: "water", label: "น้ำดื่ม", value: `${water.minMl.toLocaleString()}–${water.maxMl.toLocaleString()} มล./วัน` });
+  if (p1?.sleep) rows.push({ key: "sleep", label: "นอน", value: `${p1.sleep.recommendedMinHours}–${p1.sleep.recommendedMaxHours} ชม./คืน` });
+  if (p1?.exercise?.weeklyTarget) {
+    // เป้าฉบับเต็มยาวได้ถึง ~100 ตัวอักษร — ในกรอบสรุปเอาแค่ทางเลือกแรก
+    rows.push({ key: "exercise", label: "ออกกำลังกาย", value: p1.exercise.weeklyTarget.split(" หรือ ")[0] });
+  }
+  return rows;
+}
+
 export interface TeaserSummary {
   nickname: string;
   scoreLabel: string;
+  /** R16 — เป้าหมายต่อวันที่คำนวณจากตัวผู้ใช้เอง (แทนบล็อก "จุดที่ควรเสริมก่อน" ที่เดิม
+   *  ขึ้นว่า "ยังไม่ได้ประเมิน" ลอย ๆ กับคนที่ยังไม่เคยทำเครื่องมือย่อย = คนส่วนใหญ่) */
+  metrics: PlanMetric[];
   weakestPillars: { label: string; note: string }[];
   recommendedProducts: { id: string; name: string; why: string }[];
   quickWinToday: string;
@@ -518,6 +548,7 @@ export function buildTeaser(report: Report): TeaserSummary {
   return {
     nickname: report.nickname,
     scoreLabel: report.scoreLabel,
+    metrics: planMetrics(report),
     weakestPillars: ordered.slice(0, 2).map((x) => ({ label: x.label, note: x.note })),
     recommendedProducts: report.vitamins.slice(0, 3).map((x) => ({ id: x.id, name: x.name, why: x.why })),
     quickWinToday: report.quickWinToday,

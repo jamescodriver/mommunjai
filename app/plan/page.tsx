@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { mergeProfile, readProfile, recordTool, setConsentChoice } from "@/lib/profile-store";
 import { CONSENT_TEXT, MEDICAL_DISCLAIMER } from "@/lib/disclaimer";
 import { Field } from "@/components/ui";
-import ReportView from "@/components/report-view";
-import type { Report, ReportTier, TeaserSummary } from "@/lib/report";
-import { STAGE_TITLE } from "@/lib/report";
+import MetricsBlock from "@/components/metrics-block";
+import type { ReportTier, TeaserSummary } from "@/lib/report";
+import { STAGE_TITLE, generateReport, buildTeaser } from "@/lib/report";
 import {
   ART_PLAN_VALUES, INFERTILITY_ISSUES, mapLegacyArtPlan, artPlanLabel,
   AGE_RANGES, EXERCISE_FREQS, MALE_BEHAVIORS, CONCEPTION_METHODS,
@@ -31,6 +31,22 @@ const STAGE_INTRO: Record<string, string> = {
   pregnant: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนดูแลครรภ์เฉพาะคุณให้ทันที ทั้งเรื่องโภชนาการ การนอน และการเคลื่อนไหวที่เหมาะกับไตรมาสของคุณ",
   lactating: "ตอบไม่กี่ข้อ แล้วเราจะทำแผนฟื้นฟูร่างกายหลังคลอดเฉพาะคุณให้ทันที ทั้งเรื่องโภชนาการ การนอน และการกลับมาเคลื่อนไหวอย่างปลอดภัย",
 };
+/** แปลงฟอร์มของหน้านี้เป็น input ของ generateReport — ใช้ตอนคำนวณซ้ำในเครื่อง (R16)
+ *  ชื่อฟิลด์ฝั่งฟอร์มเป็น snake_case ส่วน generateReport ใช้ camelCase */
+function reportProfileFrom(f: any) {
+  return {
+    nickname: f.nickname, stage: f.stage,
+    weightKg: f.weightKg ?? f.weight_kg, heightCm: f.height_cm,
+    ageRange: f.age_range, hasPcos: f.has_pcos, pcosStatus: f.pcos_status,
+    artPlan: f.art_plan, infertilityIssues: f.infertility_issues || [],
+    behaviors: f.behaviors || [], partnerBehaviors: f.partner_profile?.behaviors || [],
+    sleepBedtime: f.sleep_bedtime, sleepWaketime: f.sleep_waketime,
+    exerciseFreq: f.exercise_freq, hasGdm: !!f.has_gdm,
+    gestationalWeeks: f.gestational_weeks,
+    tools: readProfile().tools || {},
+  } as any;
+}
+
 const LINE_OA_URL = process.env.NEXT_PUBLIC_LINE_OA_URL || "https://lin.ee/fBa4xkz";
 
 export default function PlanPage() {
@@ -55,7 +71,7 @@ function PlanPageInner() {
   });
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ ticket: string; tier: ReportTier; report?: Report; teaser?: TeaserSummary } | null>(null);
+  const [result, setResult] = useState<{ ticket: string; tier: ReportTier; teaser?: TeaserSummary } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   // R7 fix — the category already chosen on the home page (?stage=) should only
   // skip the redundant "stage" picker screen, never the "intro" consent step.
@@ -180,6 +196,24 @@ function PlanPageInner() {
         : { ...f, partner_profile: { ...(f.partner_profile || {}), behaviors: next } };
     });
 
+  // R16 — ผู้ใช้เติมน้ำหนัก/ส่วนสูงจากหน้าสรุป → คำนวณใหม่ให้เห็นทันทีในเครื่อง
+  // (generateReport เป็น pure function ไม่มี dependency ฝั่งเซิร์ฟเวอร์ จึงเรียกตรงนี้ได้)
+  // แล้วค่อยยิงไปบันทึกเบื้องหลัง เพื่อให้แผนที่เขาเปิดจาก LINE ตรงกับที่เพิ่งเห็น
+  // ถ้าการบันทึกล้มเหลว ตัวเลขบนจอยังถูกต้องอยู่ — ไม่ทำให้ประสบการณ์พัง
+  const handleMeasure = async (weight_kg: number, height_cm?: number) => {
+    const merged = { ...form, weight_kg, weightKg: weight_kg, height_cm };
+    setForm(merged);
+    mergeProfile({ weightKg: weight_kg });
+    setResult((r) => (r ? { ...r, teaser: buildTeaser(generateReport(reportProfileFrom(merged))) } : r));
+    track("measure_filled", { code: result?.ticket, has_height: !!height_cm });
+    try {
+      await fetch("/api/lead/measure", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: result?.ticket, weight_kg, height_cm }),
+      });
+    } catch { /* บันทึกไม่ได้ก็ไม่เป็นไร จอแสดงค่าถูกต้องแล้ว */ }
+  };
+
   const submit = async () => {
     setErr(null);
     if (!form.nickname) return setErr("ขอชื่อเล่นสักนิดนะคะ");
@@ -199,30 +233,17 @@ function PlanPageInner() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
       track("lead_submit", { stage: payload.stage, has_pcos: !!payload.has_pcos, art_plan: payload.art_plan, tier: data.tier });
-      setResult({ ticket: data.ticket_code, tier: data.tier, report: data.report, teaser: data.teaser });
+      setResult({ ticket: data.ticket_code, tier: data.tier, teaser: data.teaser });
     } catch (e: any) { setErr(e.message); } finally { setLoading(false); }
   };
 
   // ---- reveal the result (peak-end moment) ----
   if (result) {
-    // R6 — only "full" tier renders the complete 90-day report inline; teaser/medium
-    // get a short summary + a prominent hand-off to LINE OA for the full plan.
-    if (result.tier === "full" && result.report) {
-      return (
-        <main>
-          <div className="mx-auto max-w-2xl px-4 pt-6 text-center">
-            <div className="glass-strong p-5">
-              <div className="text-3xl">🎉</div>
-              <p className="mt-1 text-sm">แผนของคุณพร้อมแล้ว! เก็บรหัสนี้ไปคุยต่อกับทีม Baby & Mom ใน LINE OA เพื่อรับคำแนะนำเฉพาะคุณ</p>
-              <div className="mx-auto my-3 w-fit rounded-2xl border-2 border-dashed border-teal bg-teal-soft px-6 py-2 text-2xl font-bold tracking-widest text-teal-deep">{result.ticket}</div>
-              <button className="btn-ghost" onClick={() => navigator.clipboard?.writeText(result.ticket)}>คัดลอกรหัส</button>
-            </div>
-          </div>
-          <ReportView report={result.report} code={result.ticket} />
-        </main>
-      );
-    }
-
+    // 🔒 ทุก tier เห็นสรุปสั้น + ทางไป LINE OA เหมือนกันหมด — ไม่มีใครเห็นแผนฉบับเต็ม
+    //    ในหน้านี้อีกแล้ว (ต้นเคาะ 1 ส.ค. 2026 · กลับมติ R6)
+    //    เดิม tier "full" (artPlan = IVF-ICSI / เตรียมผนังมดลูก) จะได้ ReportView เต็ม
+    //    ตรงนี้เลย → คนทำ IVF ซึ่งเป็นกลุ่มที่ตั้งใจที่สุด ไม่ต้องทักแอดมินก็ได้ของครบ
+    //    ตัวกั้นจริงอยู่ที่ /api/lead (ไม่ส่ง report กลับมาแล้ว) ตรงนี้เป็นแค่ฝั่งจอ
     const t = result.teaser;
     return (
       <main className="mx-auto w-full max-w-2xl space-y-4 p-4 pt-6 sm:p-6">
@@ -235,14 +256,11 @@ function PlanPageInner() {
 
         {t && (
           <>
-            <section className="glass p-5">
-              <h2 className="text-base font-semibold">จุดที่ควรเสริมก่อน 🌱</h2>
-              <ul className="mt-2 space-y-1 text-sm">
-                {t.weakestPillars.map((p, idx) => (
-                  <li key={idx}>• <b>{p.label}</b>{p.note ? `: ${p.note}` : ""}</li>
-                ))}
-              </ul>
-            </section>
+            {/* R16 — บล็อกนี้เดิมคือ "จุดที่ควรเสริมก่อน" ซึ่งขึ้นว่า "ยังไม่ได้ประเมิน"
+                ลอย ๆ กับทุกคนที่ไม่เคยทำเครื่องมือย่อยมาก่อน (= คนส่วนใหญ่ที่เข้าจากหน้าแรก)
+                หน้าที่ปิดการขายจึงว่างเปล่าพอดี · เปลี่ยนเป็นเป้าหมายต่อวันที่คำนวณจาก
+                คำตอบของเขาเอง และถ้ายังไม่ได้กรอกตัวเลข ให้กรอกตรงนี้แล้วคำนวณทันที */}
+            <MetricsBlock teaser={t} onFilled={handleMeasure} />
             <section className="glass p-5">
               <h2 className="text-base font-semibold">แนะนำเบื้องต้นสำหรับคุณ 💊</h2>
               <ul className="mt-2 space-y-1 text-sm">
