@@ -34,14 +34,14 @@ const TOOLS = [
 export default function Home() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
-      {/* Hero — echoes website "Where Science Meets Motherhood" (see docs/DESIGN.md §9) */}
+      {/* Hero — สโลแกนไทย "วิทยาศาสตร์ของความเป็นแม่" (ต้นสั่งเปลี่ยนจากอังกฤษ 1/8/2026 —
+          เดิม "Where Science Meets Motherhood" อิงเว็บแบรนด์ ดู docs/DESIGN.md §9) */}
       <section className="glass relative overflow-hidden p-6 text-center sm:p-10">
         <span className="pointer-events-none absolute -right-6 top-6 text-4xl text-rose/40">＋</span>
         <span className="pointer-events-none absolute left-6 bottom-6 text-2xl text-teal/40">＋</span>
         <Wordmark height={40} />
         <h1 className="mt-3 font-display text-2xl font-bold leading-tight sm:text-4xl">
-          Where <span className="text-teal">Science</span> Meets{" "}
-          <span className="text-rose">Motherhood</span>
+          <span className="text-teal">วิทยาศาสตร์</span>ของ<span className="text-rose">ความเป็นแม่</span>
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-ink/70">
           เครื่องมือฟรีช่วยเตรียมร่างกายให้พร้อมตั้งครรภ์ — ดูแลด้วยความรู้ที่มีวิทยาศาสตร์รองรับ
@@ -137,7 +137,7 @@ export default function Home() {
       {/* Brand footer band — echoes website teal footer */}
       <footer className="card-feature mt-10 text-center">
         <Wordmark height={30} white />
-        <p className="mt-1 text-sm text-white/90">Where Science Meets Motherhood</p>
+        <p className="mt-1 text-sm text-white/90">วิทยาศาสตร์ของความเป็นแม่</p>
         <p className="mx-auto mt-3 max-w-md text-xs text-white/80">
           ข้อมูลเพื่อการดูแลสุขภาพเบื้องต้น ไม่แทนคำวินิจฉัยของแพทย์
         </p>

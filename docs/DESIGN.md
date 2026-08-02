@@ -95,7 +95,8 @@ Glass: bg white/60 + backdrop-blur-md + border white/70
   - ⚠️ แก้ความเข้าใจเดิม: ตัวอักษร wordmark เป็น **สีดำ** ไม่ใช่เขียว/ชมพู (ตรงกับ BRAND.md §2.1 ที่ระบุ "ตัวอักษรโลโก้เป็นสีดำ")
   - ไฟล์: `public/logo.png` (สี) · `public/logo-white.png` (ขาวล้วน — ใช้บนพื้น teal/footer) · `app/icon.png` + `app/apple-icon.png` (favicon/app icon ตัด symbol เดี่ยว) · ต้นฉบับ `assets/brand/BAM-Logo-master.png`
   - เรียกใช้ผ่าน `<Wordmark height={40} />` หรือ `<Wordmark height={30} white />`
-- Tagline: **"Where Science Meets Motherhood"** (EN, Poppins) · sub "ยึดหลักวิทยาศาสตร์"
+- Tagline (เว็บแบรนด์ต้นฉบับ): **"Where Science Meets Motherhood"** (EN, Poppins) · sub "ยึดหลักวิทยาศาสตร์"
+  - ⚠️ **ในแอป Mommunjai ใช้ฉบับไทยแทนแล้ว** (ต้นสั่งเปลี่ยน 1 ส.ค. 2026): **"วิทยาศาสตร์ของความเป็นแม่"** — แก้ที่ `app/page.tsx` (hero h1 + footer) เท่านั้น ไม่ได้แก้เว็บแบรนด์ต้นฉบับ
 
 ### 9.2 สี (ยืนยัน + เพิ่มสี stage)
 - Primary **เขียว #1BC0BA** (top bar, ปุ่มหลัก, footer, feature card gradient) · Secondary **ชมพู #F978B3** (accent, active state, "+"/molecule)
