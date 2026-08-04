@@ -263,7 +263,7 @@ export default function LactationKnowledgeView({ data, code }: { data: Lactation
       </a>
 
       <p className="text-sm text-ink/80">⚠️ {MEDICAL_DISCLAIMER}</p>
-      <p className="text-xs text-ink/75">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
+      {/* R4 (0408) · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกตามที่ client ยืนยัน */}
     </div>
   );
 }

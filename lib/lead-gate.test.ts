@@ -88,7 +88,7 @@ describe("/api/lead — แผนฉบับเต็มต้องไม่�
     const { json } = await post({ ...base, stage: "infertility", art_plan: "IVF-ICSI" });
     expect(json.teaser.cautions.length).toBeGreaterThan(0);
     expect(json.teaser.recommendedProducts.length).toBeGreaterThan(0);
-    expect(json.teaser.quickWinToday).toBeTruthy();
+    // R4 (0408) · PDF-02/07 — quickWinToday ตัดออกจาก TeaserSummary ทั้งระบบแล้ว
   });
 });
 

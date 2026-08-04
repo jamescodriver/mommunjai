@@ -103,12 +103,8 @@ export function reportFlex(report: Report, code: string) {
     body.push({ type: "separator", margin: "lg" });
     body.push({ type: "box", layout: "vertical", spacing: "sm", margin: "lg", contents: highlights });
   }
-  if (report.quickWinToday) {
-    // quickWinToday ขึ้นต้นด้วย "วันนี้:" มาแล้วจาก generateReport — อย่าเติมคำนำหน้าซ้ำ
-    // (เคยได้ "💡 เริ่มวันนี้: วันนี้: กินไข่ต้ม 2 ฟอง…")
-    body.push({ type: "separator", margin: "lg" });
-    body.push({ type: "text", text: `💡 ${report.quickWinToday}`, size: "sm", color: BM_INK, wrap: true, margin: "lg" });
-  }
+  // R4 (0408) · PDF-02/07 — กล่อง "วันนี้ทำอะไร" (quickWinToday) ตัดออกจากการ์ดนี้ทั้งระบบ
+  // ตามที่ client ยืนยัน (ฟิลด์เองก็ถูกลบออกจาก Report แล้ว — ดู lib/report.ts)
 
   return {
     type: "flex",

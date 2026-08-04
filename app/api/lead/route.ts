@@ -9,7 +9,7 @@ import { PERSISTED_TOOLS } from "@/lib/persisted-tools";
 import {
   mapLegacyArtPlan, INFERTILITY_ISSUE_VALUES, MALE_BEHAVIOR_VALUES,
   EXERCISE_FREQ_VALUES, PCOS_STATUS_VALUES, CONCEPTION_METHODS,
-  type MaleBehavior, type PcosStatus, type ExerciseFreq,
+  type MaleBehavior, type PcosStatus, type ExerciseFreq, type ConceptionMethod,
 } from "@/lib/calc/vitamins";
 
 function sanitizeIssues(v: any): string[] {
@@ -78,6 +78,8 @@ function reportProfileFromBody(body: any) {
     // R10 — อายุครรภ์เป็นแกนของเนื้อหาความรู้ช่วงตั้งครรภ์ (ไตรมาส + กฎน้ำหัวปลี ≥16 สัปดาห์)
     // ใช้ช่วงเดียวกับที่ sanitize ตอนเขียนลง leads (1–45) เพื่อไม่ให้ 2 ที่หลุดจากกัน
     gestationalWeeks: sanitizeNum(body.gestational_weeks, 1, 45) ?? undefined,
+    // R4 (0408) · PDF-12 — ต้องส่งเข้า generateReport() ด้วย ไม่งั้นคำเตือน IUI/ICSI ใหม่จะไม่ทำงาน
+    conceptionMethod: sanitizeEnum<ConceptionMethod>(body.conception_method, CONCEPTION_METHODS) ?? undefined,
     tools: body.tools && typeof body.tools === "object" ? body.tools : {},
   };
 }

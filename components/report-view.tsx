@@ -246,30 +246,17 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           </Card>
 
           {/* ── ไขมันดี ────────────────────────────────────────────────────
-              🔒 กฎบังคับจาก GOOD-FAT-BY-CATEGORY-RESEARCH-BRIEF §6.3:
-              "ไขมันดีทั่วไป" (น้ำมันมะกอก/อะโวคาโด/ถั่ว) กับ "แหล่ง DHA จริง"
-              ต้องอยู่คนละบล็อกเสมอ — ถ้าเขียนรวมกันผู้ใช้จะเข้าใจว่ากินน้ำมันมะกอก
-              แล้วได้ DHA พอ (ผิด) ห้ามยุบ 2 กล่องนี้เป็นกล่องเดียว */}
+              R4 (0408) · PDF-03/08 — เอากล่อง "แหล่ง DHA จริง" + "ไขมันดีทั่วไปแต่ไม่ใช่
+              DHA" ออกตามที่ client ยืนยัน (เดิมเป็น safeguard กันเข้าใจผิดว่าน้ำมันมะกอก/
+              อะโวคาโดมี DHA ตาม GOOD-FAT-BY-CATEGORY-RESEARCH-BRIEF §6.3 — ข้อมูล dhaSources/
+              generalGoodFats/notDhaWarning ยังอยู่ใน lib/calc/goodfat.ts เผื่อทีมอยากเอากลับมา
+              ภายหลัง แค่ไม่ render ตรงนี้แล้ว) เหลือแค่เป้าหมาย/เหตุผล/ไขมันที่ควรจำกัด/
+              ข้อควรระวังเฉพาะหมวด · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกด้วย */}
           {p2?.goodFat && (
             <div className="rounded-xl bg-white/70 p-3">
               <div className="text-sm font-semibold text-teal-deep">ไขมันดี (EPA+DHA) 🐟</div>
               <p className="mt-1 text-sm">เป้าหมาย <b className="text-teal-deep">{p2.goodFat.targetLabel}</b></p>
               <p className="mt-1 text-sm text-ink/80">{p2.goodFat.why}</p>
-
-              <div className="mt-3 rounded-lg bg-teal-soft/60 p-2">
-                <div className="text-sm font-semibold text-teal-deep">✅ แหล่ง DHA จริง — มีแค่กลุ่มนี้</div>
-                <ul className="mt-1 list-disc pl-5 text-sm text-ink/80">
-                  {p2.goodFat.dhaSources.map((x, i) => <li key={i}>{x}</li>)}
-                </ul>
-              </div>
-
-              <div className="mt-2 rounded-lg bg-black/[0.04] p-2">
-                <div className="text-sm font-semibold">🥑 ไขมันดีทั่วไป — ดีต่อสุขภาพ แต่ <u>ไม่ใช่</u> แหล่ง DHA</div>
-                <ul className="mt-1 list-disc pl-5 text-sm text-ink/80">
-                  {p2.goodFat.generalGoodFats.map((x, i) => <li key={i}>{x}</li>)}
-                </ul>
-                <p className="mt-1 text-sm text-rose-deep">{p2.goodFat.notDhaWarning}</p>
-              </div>
 
               <div className="mt-2">
                 <div className="text-sm font-semibold">ไขมันที่ควรจำกัดสำหรับช่วงของคุณ</div>
@@ -285,8 +272,6 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
               )}
 
               <p className="mt-2 text-xs text-ink/75">ℹ️ {p2.goodFat.evidenceNote}</p>
-              {/* TC-15-05 — ตัวเลขต้อง trace กลับหาแหล่งอ้างอิงได้ ห้ามมีตัวเลขลอย */}
-              <p className="mt-1 text-xs text-ink/75">ที่มาของตัวเลข: {p2.goodFat.source} · สรุปหลักฐานเต็ม: {p2.goodFat.brief}</p>
             </div>
           )}
 
@@ -314,7 +299,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
                   </tbody>
                 </table>
               </div>
-              <p className="mt-1 text-xs text-ink/75">ที่มา: {p2.proteinFoodsSource}</p>
+              {/* R4 (0408) · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกตามที่ client ยืนยัน */}
             </div>
           )}
 
@@ -326,7 +311,7 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           {p2?.fruits && p2.fruits.length > 0 && (
             <Card title="ผลไม้แนะนำ 🍌">
               <ul className="list-disc pl-5 text-sm">{p2.fruits.map((x, i) => <li key={i}>{x}</li>)}</ul>
-              {p2.foodSourceNote && <p className="mt-2 text-xs text-ink/75">{p2.foodSourceNote}</p>}
+              {/* R4 (0408) · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกตามที่ client ยืนยัน */}
             </Card>
           )}
         </div>

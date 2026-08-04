@@ -19,10 +19,18 @@ describe("stepsFor — ขั้นตอนที่แต่ละ stage ต�
     expect(steps("lactating")).not.toContain("art");
   });
 
-  it("TC-05-02 — stage ที่เหลือยังเจอคำถามนี้เหมือนเดิม", () => {
-    for (const s of ["infertility", "pregnant", "male"]) {
-      expect(steps(s), s).toContain("art");
-    }
+  it("TC-05-02 — เหลือเฉพาะ 'มีบุตรยาก' ที่ยังเจอคำถามนี้", () => {
+    expect(steps("infertility")).toContain("art");
+  });
+
+  // R4 (0408) · PDF-06 — "ฝ่ายชาย" ตัดคำถาม ART ออกด้วย (client ยืนยัน "ต้องไม่มีส่วนนี้")
+  it("PDF-06 (0408) — 'ฝ่ายชาย' ไม่เจอคำถามกระบวนการทางการแพทย์อีกแล้ว", () => {
+    expect(steps("male")).not.toContain("art");
+  });
+
+  // R4 (0408) · PDF-13 — "ตั้งครรภ์แล้ว" ตัดคำถาม ART ที่ซ้ำกับ "conception" ออกด้วย
+  it("PDF-13 (0408) — 'ตั้งครรภ์แล้ว' ไม่เจอคำถามกระบวนการทางการแพทย์อีกแล้ว (ซ้ำกับ conception)", () => {
+    expect(steps("pregnant")).not.toContain("art");
   });
 
   it("'issues' โผล่เฉพาะ infertility", () => {
@@ -108,7 +116,15 @@ describe("sanitizeForStage — ไม่ได้ถาม = ไม่มีค�
     const preg: any = sanitizeForStage(stale, stepsFor("pregnant", true, []));
     expect(preg.gestational_weeks).toBe(20);
     expect(preg.has_gdm).toBe(true);
-    expect(preg.art_plan).toBe("IVF-ICSI"); // pregnant ยังเจอคำถามนี้อยู่
+    // R4 (0408) · PDF-13 — pregnant ไม่เจอขั้น art อีกแล้ว ค่าที่ค้างมาต้องถูกล้างเป็น "ยัง"
+    // (เหมือน prep/lactating/male) ไม่ใช่คงค่าเดิมไว้อีกต่อไป
+    expect(preg.art_plan).toBe("ยัง");
+  });
+
+  it("PDF-13 (0408) — ตั้งครรภ์แล้ว: art_plan ที่ค้างมาต้องถูกล้าง (ไม่งั้น tier กระโดดเป็น full)", () => {
+    const out = sanitizeForStage(stale, stepsFor("pregnant", true, []));
+    expect(out.art_plan).toBe("ยัง");
+    expect(reportTier({ artPlan: out.art_plan as any })).toBe("teaser");
   });
 
   it("ไม่แตะฟิลด์อื่นที่ไม่เกี่ยวกับขั้นตอน", () => {

@@ -89,7 +89,8 @@ export async function POST(req: NextRequest) {
       behaviors: merged.behaviors || [], partnerBehaviors: merged.partner_profile?.behaviors || [],
       sleepBedtime: merged.sleep_bedtime ?? undefined, sleepWaketime: merged.sleep_waketime ?? undefined,
       exerciseFreq: merged.exercise_freq ?? undefined, hasGdm: !!merged.has_gdm,
-      gestationalWeeks: merged.gestational_weeks ?? undefined, tools,
+      gestationalWeeks: merged.gestational_weeks ?? undefined,
+      conceptionMethod: merged.conception_method ?? undefined, tools,
     });
     await sb.from("reports").update({ score: report.score, payload: report }).eq("code", code);
     await sb.from("events").insert({ lead_id: lead.id, name: "measure_filled", props: Object.keys(patch) });

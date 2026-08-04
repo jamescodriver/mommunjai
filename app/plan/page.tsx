@@ -9,7 +9,7 @@ import MetricsBlock from "@/components/metrics-block";
 import type { ReportTier, TeaserSummary } from "@/lib/report";
 import { STAGE_TITLE, generateReport, buildTeaser } from "@/lib/report";
 import {
-  ART_PLAN_VALUES, INFERTILITY_ISSUES, mapLegacyArtPlan, artPlanLabel,
+  INFERTILITY_ISSUES, mapLegacyArtPlan, artPlanLabel,
   AGE_RANGES, EXERCISE_FREQS, MALE_BEHAVIORS, CONCEPTION_METHODS,
 } from "@/lib/calc/vitamins";
 import { track } from "@/lib/track";
@@ -42,7 +42,7 @@ function reportProfileFrom(f: any) {
     behaviors: f.behaviors || [], partnerBehaviors: f.partner_profile?.behaviors || [],
     sleepBedtime: f.sleep_bedtime, sleepWaketime: f.sleep_waketime,
     exerciseFreq: f.exercise_freq, hasGdm: !!f.has_gdm,
-    gestationalWeeks: f.gestational_weeks,
+    gestationalWeeks: f.gestational_weeks, conceptionMethod: f.conception_method,
     tools: readProfile().tools || {},
   } as any;
 }
@@ -70,6 +70,12 @@ function PlanPageInner() {
     pcos_status: "no", behaviors: [], partner_profile: { behaviors: [] }, has_gdm: false,
   });
   const [consent, setConsent] = useState(false);
+  // R4 (0408) · PDF-10 — ขั้น "art" (ตอนนี้เจอเฉพาะ stage มีบุตรยาก — ดู lib/plan-steps.ts)
+  // แยกเป็น 2 หน้าจอย่อยในตัว: บนสุด 3 ปุ่ม (ยัง/IUI/IVF-ICSI) → เลือก IVF-ICSI แล้วค่อย
+  // ถามต่อว่าบำรุงไข่หรือเตรียมผนังมดลูก ค่าสุดท้ายที่บันทึกยังเป็น 1 ใน 5 ค่าของ
+  // ART_PLAN_VALUES เดิมเป๊ะ (ทับ "IVF-ICSI" ด้วยคำตอบย่อยเสมอ — ไม่มีทางเก็บ "IVF-ICSI"
+  // ดิบ ๆ จาก UI นี้ได้อีกต่อไป ตามที่ client ยืนยัน) — state นี้ไม่ต้องส่งเข้า /api/lead
+  const [artSub, setArtSub] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ ticket: string; tier: ReportTier; teaser?: TeaserSummary } | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -269,9 +275,6 @@ function PlanPageInner() {
                 ))}
               </ul>
             </section>
-            <section className="glass-strong p-5 text-center">
-              <p className="text-sm font-medium">{t.quickWinToday}</p>
-            </section>
           </>
         )}
 
@@ -416,8 +419,11 @@ function PlanPageInner() {
 
             {/* R4 · TC-04-04/05 — PCOS แยก 2 ช่อง (เลือกได้ทีละอัน)
                 "ไม่แน่ใจ" จะไม่ได้ PCO-VIT แต่ได้ข้อความชวนไปตรวจยืนยันแทน
-                R2 — stage "มีบุตรยาก" ใช้เช็กลิสต์ข้างบนแทนช่องนี้ */}
-            {form.stage !== "male" && form.stage !== "infertility" && (
+                R2 — stage "มีบุตรยาก" ใช้เช็กลิสต์ข้างบนแทนช่องนี้
+                R4 (0408) · PDF-11/17 — "ตั้งครรภ์แล้ว" และ "ให้นมบุตร" ตัดคำถามนี้ออกด้วย
+                ตามที่ client ยืนยัน (ต้นเหตุ/ผลข้างเคียงเดียวกันทั้ง 2 stage — ดู RTM)
+                เหลือแค่ stage "เตรียมตั้งครรภ์" ที่ยังถามคำถามนี้ */}
+            {form.stage === "prep" && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">ภาวะ PCOS (ถุงน้ำรังไข่)</p>
                 <label className="flex items-center gap-2 text-sm">
@@ -526,22 +532,48 @@ function PlanPageInner() {
           </div>
         )}
 
-        {step === "art" && (
+        {/* R4 (0408) · PDF-10 — ขั้นนี้เจอเฉพาะ stage มีบุตรยาก (ดู lib/plan-steps.ts) จึง
+            ตัด subtext เฉพาะฝ่ายชายออกได้ (ฝ่ายชายไม่เจอขั้นนี้แล้ว — ดู PDF-06) */}
+        {step === "art" && !artSub && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">เข้าสู่กระบวนการทางการแพทย์ไหมคะ?</h2>
-            <p className="text-xs text-ink/50">
-              {form.stage === "male"
-                ? "ถามเพื่อจัดแผนบำรุงอสุจิให้เข้ากับจังหวะการรักษาของคู่ (ถ้ามี)"
-                : "ถามเพื่อจัดแผนบำรุงไข่/ผนังมดลูกให้เข้ากับจังหวะการรักษา (ถ้ามี)"}
-            </p>
+            <p className="text-xs text-ink/50">ถามเพื่อจัดแผนบำรุงไข่/ผนังมดลูกให้เข้ากับจังหวะการรักษา (ถ้ามี)</p>
             <div className="grid grid-cols-1 gap-2 text-sm">
-              {ART_PLAN_VALUES.map((v) => (
-                // R8 · TC-08-02 — เปลี่ยนแค่ป้ายที่แสดง ค่าที่เก็บยังเป็น v เดิม
-                <button key={v} onClick={() => set("art_plan", v)} className={`rounded-xl border px-2 py-2 ${form.art_plan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{artPlanLabel(v)}</button>
+              {(["ยัง", "IUI", "IVF-ICSI"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => (v === "IVF-ICSI" ? setArtSub(true) : set("art_plan", v))}
+                  className={`rounded-xl border px-2 py-2 ${form.art_plan === v && !artSub ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}
+                >
+                  {artPlanLabel(v)}
+                </button>
               ))}
             </div>
             <p className="rounded-lg bg-teal/10 p-2 text-xs text-teal-deep">อีกขั้นเดียว เราจะสร้างแผน 90 วันของคุณให้เลยค่ะ ✨</p>
             <div className="flex gap-2"><button className="btn-ghost flex-1" onClick={back}>ย้อน</button><button className="btn-primary flex-1" onClick={next}>ขั้นสุดท้าย</button></div>
+          </div>
+        )}
+
+        {step === "art" && artSub && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">เตรียมผนังมดลูก หรือ บำรุงไข่คะ?</h2>
+            <p className="text-xs text-ink/50">เลือกสิ่งที่ตรงกับจังหวะการรักษาตอนนี้ เพื่อให้เราจัดแผนบำรุงให้ตรงจุด</p>
+            <div className="grid grid-cols-1 gap-2 text-sm">
+              {(["บำรุงไข่", "เตรียมผนังมดลูก"] as const).map((v) => (
+                <button key={v} onClick={() => set("art_plan", v)} className={`rounded-xl border px-2 py-2 ${form.art_plan === v ? "border-teal bg-teal-soft" : "border-black/10 bg-white/60"}`}>{artPlanLabel(v)}</button>
+              ))}
+            </div>
+            <p className="rounded-lg bg-teal/10 p-2 text-xs text-teal-deep">อีกขั้นเดียว เราจะสร้างแผน 90 วันของคุณให้เลยค่ะ ✨</p>
+            <div className="flex gap-2">
+              <button className="btn-ghost flex-1" onClick={() => setArtSub(false)}>ย้อน</button>
+              <button
+                className="btn-primary flex-1"
+                onClick={next}
+                disabled={form.art_plan !== "บำรุงไข่" && form.art_plan !== "เตรียมผนังมดลูก"}
+              >
+                ขั้นสุดท้าย
+              </button>
+            </div>
           </div>
         )}
 

@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Report — App Mommunjai R4 (4 ส.ค. 69)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --gray:#9CA3AF; --gray-deep:#5B6472; --gray-soft:#EEF1F4;
+  --ok:#22C55E; --ok-deep:#16A34A; --info:#3B82F6; --info-deep:#1D4ED8;
+  --bad:#DC2626; --bad-deep:#991B1B;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;background:var(--bg)}
+.font-d{font-family:'Poppins','Prompt',sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+header.top{background:linear-gradient(120deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:18px;box-shadow:0 8px 24px rgba(21,156,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins;font-size:21px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.85}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center}
+.stat .n{font-family:Poppins;font-size:22px;font-weight:600}
+.stat .l{font-size:11.5px;color:#6B7280;margin-top:2px}
+.stat.total .n{color:var(--ink)}
+.stat.pass .n{color:var(--ok-deep)}
+.stat.code .n{color:var(--info-deep)}
+.stat.blocked .n{color:var(--bad-deep)}
+
+.note{background:#fff;border:1.5px solid var(--info);border-radius:16px;padding:16px 18px;margin-bottom:16px;font-size:12.8px}
+.note h2{margin:0 0 8px;font-size:13.5px;font-family:Poppins;font-weight:600;color:var(--info-deep)}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.search{flex:1;min-width:200px}
+.search input{width:100%;font-family:inherit;font-size:13px;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;padding:9px 16px;border-radius:999px;white-space:nowrap;
+  background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(27,192,186,.3)}
+.btn.small{padding:6px 12px;font-size:12px;box-shadow:none}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#4B5563;transition:.15s;user-select:none}
+.chip[data-on="1"]{color:#fff;border-color:transparent}
+.chip.st-pass[data-on="1"]{background:var(--ok)}
+.chip.st-code[data-on="1"]{background:var(--info)}
+.chip.st-blocked[data-on="1"]{background:var(--bad)}
+
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+thead th{background:var(--teal-soft);color:var(--teal-deep);font-family:Poppins;font-size:11.5px;font-weight:600;text-align:left;padding:11px 12px;white-space:nowrap}
+tbody tr.row{border-top:1px solid var(--line);cursor:pointer}
+tbody tr.row:hover{background:#FAFDFD}
+tbody td{padding:11px 12px;font-size:12.8px;vertical-align:top}
+.tc-id{font-family:Poppins;font-size:12px;font-weight:600;color:var(--teal-deep);background:var(--teal-soft);padding:2px 9px;border-radius:8px;white-space:nowrap}
+.scen{max-width:360px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:#fff;white-space:nowrap}
+.badge.st-pass{background:var(--ok-deep)}
+.badge.st-code{background:var(--info-deep)}
+.badge.st-blocked{background:var(--bad-deep)}
+.caret{color:#9CA3AF;font-size:11px;margin-right:4px;display:inline-block;transition:.15s}
+tr.row.open .caret{transform:rotate(90deg)}
+
+tr.detail td{background:#FAFBFC;border-top:none;padding:14px 16px 18px}
+tr.detail.hidden{display:none}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dcol h4{margin:0 0 6px;font-size:11.5px;font-family:Poppins;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.3px}
+.dcol blockquote{margin:0 0 12px;padding:9px 12px;background:#fff;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;font-size:12.5px;color:#4B5563;white-space:pre-line}
+.dcol .expect{background:var(--teal-soft);border-left-color:var(--teal-deep)}
+.dcol .actual{background:var(--ok-deep);background:#EFFCF3;border-left-color:var(--ok-deep);white-space:pre-line}
+.dcol .evidence{background:var(--gray-soft);border-left-color:var(--gray-deep);white-space:pre-line;font-size:12px}
+.dcol .warn{background:var(--gold-soft);border-left-color:var(--gold-deep)}
+.followbox{width:100%;min-height:50px;font-family:inherit;font-size:12.5px;padding:8px 12px;border-radius:10px;
+  border:1.5px solid var(--line);resize:vertical}
+.followbox:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.savedmark{font-size:11px;color:var(--teal-deep);opacity:0;transition:opacity .3s;margin-top:4px}
+.savedmark.show{opacity:1}
+.empty{text-align:center;padding:40px;color:#9CA3AF;font-size:13px}
+footer.foot{margin-top:18px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media(max-width:760px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .dgrid{grid-template-columns:1fr}
+  table,thead,tbody,tr,td,th{display:block}
+  thead tr{display:none}
+  tbody tr.row{padding:10px 4px}
+  tbody td{padding:3px 6px}
+  .scen{max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>🧪 Test Report — App Mommunjai R4 (4 ส.ค. 69)</h1>
+    <p>ทดสอบตามที่ต้น confirm ในเอกสาร RTM (rtm-0408.html) — 16/17 ข้อ implement แล้ว (PDF-05 ยังบล็อกรออาร์ตเวิร์ก) · คลิกแถวเพื่อดูรายละเอียด + หลักฐานการทดสอบ</p>
+    <div class="src">อ้างอิงสเปกฉบับเต็ม: <code>docs/PRD-UPDATE-R4-0408.md</code> · Regression: vitest 339/339 ผ่าน · tsc clean · build สำเร็จ</div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="note">
+    <h2>ℹ️ ความหมายของสถานะ 3 แบบ</h2>
+    <b>🟢 ผ่าน (ทดสอบในเบราว์เซอร์จริง)</b> — คลิกทดสอบผ่านหน้าเว็บจริงแล้ว เห็นผลด้วยตาตรงตามที่ confirm ไว้<br>
+    <b>🔵 ผ่าน code review + build</b> — จุดที่แก้อยู่ใน "รายงานฉบับเต็ม" ซึ่งต้องมี ticket ที่ผูก Supabase จริงถึงจะเปิดดูได้ — เครื่องมือทดสอบรอบนี้ไม่มี Supabase ต่อ จึงตรวจโค้ด + unit test + build สำเร็จแทน แนะนำให้ทีมเปิดดูจริงอีกรอบผ่าน ticket จริงบน staging<br>
+    <b>🔴 ยังไม่ทำ</b> — บล็อกตามที่ต้นแจ้ง (รอ asset จากแบรนด์)
+  </div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="search"><input id="search" type="text" placeholder="ค้นหา PDF-xx หรือคำในสถานการณ์ทดสอบ…"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn small" id="exportBtn">⬇️ Export .md</button>
+      </div>
+    </div>
+    <div class="chiprow" style="margin-top:12px" id="stChips"></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>สถานการณ์ทดสอบ</th><th>สถานะ</th></tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none">ไม่มีรายการที่ตรงตัวกรอง</div>
+
+  <footer class="foot">คอมเมนต์รีวิวบันทึกอัตโนมัติในเบราว์เซอร์นี้ — กด "Export .md" เมื่อพร้อมส่งให้ทีม</footer>
+</div>
+
+<script>
+var DATA = [
+{id:"PDF-01",scenario:"เปิด /plan?stage=infertility กรอกจนจบ ดูรายการ \"แนะนำเบื้องต้นสำหรับคุณ\"",
+ expect:"โชว์ครบ 4 ตัว: Ferty, OvaAll, น้ำมะกรูด, Ferti9 Oil",
+ actual:"โชว์ครบ 4 ตัวตรงตามคาด: Ferty โปรตีนเฟอร์ตี้ / OvaAll วิตามินโอวาออลล์ / น้ำมะกรูด Shot 100% / Ferti 9 Oil เฟอร์ติ ไนน์ ออยล์",
+ evidence:"ticket ทดสอบ: MJ-NDVHT5 (เบราว์เซอร์จริง, localhost dev)",
+ status:"pass"},
+
+{id:"PDF-02",scenario:"หลังส่งแบบสอบถามครบ (ทุก stage) ดูหน้าเทสเซอร์ท้ายสุด",
+ expect:"ไม่มีกล่อง \"วันนี้ทำอะไร\" อีกต่อไป — จบที่คำเตือนหลังรายการสินค้าเลย",
+ actual:"ยืนยันแล้วทั้ง stage ฝ่ายชายและมีบุตรยาก — กล่องหายไปจริง ไม่มีข้อความ \"วันนี้: ...\" หลงเหลือ",
+ evidence:"ticket ทดสอบ: MJ-NPRZSS (ฝ่ายชาย), MJ-NDVHT5 (มีบุตรยาก)",
+ status:"pass"},
+
+{id:"PDF-03",scenario:"เปิดรายงานฉบับเต็ม (/r/[code], tier full) ดูส่วน \"ไขมันดี (EPA+DHA)\"",
+ expect:"ไม่มีกล่อง \"แหล่ง DHA จริง\" และ \"ไขมันดีทั่วไปแต่ไม่ใช่ DHA\" อีกต่อไป เหลือแค่เป้าหมาย/เหตุผล/ไขมันที่ควรจำกัด",
+ expectNote:"⚠️ ส่วนนี้เดิมเป็น safeguard ด้าน compliance กันเข้าใจผิดเรื่องแหล่ง DHA — ต้น confirm ตัดออกแล้วในเอกสาร RTM",
+ actual:"โค้ดลบ 2 แผงย่อยออกจาก components/report-view.tsx แล้ว โครงสร้าง JSX ถูกต้อง (build ผ่าน) — ยังไม่เปิดดูผ่านเบราว์เซอร์จริงเพราะต้องมี Supabase",
+ evidence:"code review: components/report-view.tsx ส่วน Section 2 \"โภชนาการของคุณ\" · npm run build สำเร็จ",
+ status:"code"},
+
+{id:"PDF-04",scenario:"เปิดรายงานฉบับเต็ม + หน้าความรู้ครรภ์/ให้นม ดูทุกจุดที่มีคำว่า \"ที่มา\"",
+ expect:"ไม่มี path ไฟล์ .md โผล่ให้ลูกค้าเห็นอีกเลยสักจุด",
+ actual:"สแกนทั้งระบบพบ 5 จุด (มากกว่าที่ภาพตัวอย่างชี้มา 2 จุด) — ลบครบทั้ง 5 จุดแล้ว: food-reference.ts x2, goodfat.ts x1 (ลบพร้อม PDF-03), pregnancy.ts x1, lactation.ts x1",
+ evidence:"code review: grep '\\.md' ทั่ว lib/calc + components ก่อน/หลังแก้ · npm run build สำเร็จ",
+ status:"code"},
+
+{id:"PDF-05",scenario:"เปิดรายงานฉบับเต็ม กด \"ดูตัวอย่างจานอาหาร\"",
+ expect:"เห็นภาพประกอบจานอาหารจริง แทน pie chart",
+ actual:"ยังไม่ทำ — ต้นตอบ \"รอภาพอาหารมาใส่ให้อีกที\" pie chart เดิมยังอยู่ครบ ไม่มีการเปลี่ยนแปลงโค้ดส่วนนี้",
+ evidence:"—",
+ status:"blocked"},
+
+{id:"PDF-06",scenario:"เปิด /plan?stage=male กรอกจนจบขั้น \"เล่าเรื่องสุขภาพ\"",
+ expect:"ข้ามจากขั้นสุขภาพไปขั้น \"รับแผนของคุณ\" (contact) ทันที ไม่เจอคำถาม ART",
+ actual:"ยืนยันแล้ว — หลังขั้นสุขภาพ ระบบข้ามไป \"ขั้นตอนสุดท้าย! รับแผนของคุณได้เลย\" ทันที ไม่มีคำถาม \"เข้าสู่กระบวนการทางการแพทย์\" โผล่มาเลย",
+ evidence:"เบราว์เซอร์จริง (localhost dev) — เดินครบทุกขั้นจนได้ ticket MJ-NPRZSS",
+ status:"pass"},
+
+{id:"PDF-07",scenario:"ตัวอย่างที่ 2 ของ PDF-02 (คนละ stage/ผลลัพธ์) — เปิดหน้าเทสเซอร์ยืนยันซ้ำ",
+ expect:"เหมือน PDF-02",
+ actual:"เหมือน PDF-02 — โค้ดจุดเดียวกัน ยืนยันซ้ำผ่านทั้ง 2 stage ที่ทดสอบ",
+ evidence:"เหมือน PDF-02",
+ status:"pass"},
+
+{id:"PDF-08",scenario:"ตัวอย่างที่ 2 ของ PDF-03 (คนละตัวอย่าง) — เปิดรายงานฉบับเต็มยืนยันซ้ำ",
+ expect:"เหมือน PDF-03",
+ actual:"เหมือน PDF-03 — โค้ดจุดเดียวกัน",
+ evidence:"เหมือน PDF-03",
+ status:"code"},
+
+{id:"PDF-09",scenario:"ทดสอบผ่าน unit test: recommendVitamins() ทุก stage (prep/infertility/pregnant/lactating/male) + sleepSignal ต่างค่า",
+ expect:"sleepSignal=\"bad\" → มี Night Shot ทุก stage / sleepSignal=\"ok\" หรือไม่ระบุ → ไม่มี Night Shot",
+ actual:"อัปเดต 4/08 ตามคำตอบต้น (\"ถ้ามีการประเมินการนอน ให้แนะนำแบบนี้เลย\") — ขยายจาก prep-only เป็นทุก stage แล้ว ผ่านครบทั้ง 5 stage × 3 กรณี (bad/ok/ไม่ระบุ) — Night Shot ไม่มี stop rule ในแคตตาล็อก จึงปลอดภัยแม้ตั้งครรภ์/ให้นม",
+ evidence:"lib/calc/calc.test.ts — \"PDF-09 (0408) — Night Shot โผล่เฉพาะเมื่อสัญญาณการนอนไม่ดี (ทุก stage)\"",
+ status:"pass"},
+
+{id:"PDF-10",scenario:"เปิด /plan?stage=infertility เดินจนถึงขั้น ART แล้วเลือก IVF-ICSI",
+ expect:"เห็น 3 ปุ่มบน (ยัง/IUI/IVF-ICSI) ก่อน แล้วเลือก IVF-ICSI ถึงเห็นหน้าจอถามต่อ บำรุงไข่/เตรียมผนังมดลูก",
+ actual:"ยืนยันแล้ว — หน้าแรกโชว์ 3 ปุ่มตามคาด กด IVF-ICSI แล้วเปลี่ยนเป็นหน้าจอ \"เตรียมผนังมดลูก หรือ บำรุงไข่คะ?\" ทันที เลือกแล้วกด \"ขั้นสุดท้าย\" ไปต่อได้ปกติ",
+ evidence:"เบราว์เซอร์จริง — เดินครบจนได้ ticket MJ-NDVHT5 (เลือกเตรียมผนังมดลูก ได้ tier full + คำเตือนชุดเตรียมผนังมดลูกถูกต้อง)",
+ status:"pass"},
+
+{id:"PDF-11",scenario:"เปิด /plan?stage=pregnant เดินถึงขั้น \"เล่าเรื่องสุขภาพ\"",
+ expect:"ไม่มีคำถาม \"ภาวะ PCOS\" อีกต่อไป",
+ actual:"ยืนยันแล้ว — ขั้นสุขภาพของคนท้องมีแค่ ช่วงอายุ/น้ำหนัก/ส่วนสูง/เวลานอน/ออกกำลังกาย/อายุครรภ์/เบาหวานขณะตั้งครรภ์ ไม่มี PCOS เลย",
+ evidence:"เบราว์เซอร์จริง (localhost dev)",
+ status:"pass"},
+
+{id:"PDF-12",scenario:"เปิด /plan?stage=pregnant เลือก \"ท้องด้วย IUI\" กรอกจนจบ ดูคำเตือนในหน้าเทสเซอร์",
+ expect:"มี 3 ตัวเลือก: ท้องธรรมชาติ / ท้องด้วย IUI / ท้องด้วย ICSI — และ (อัปเดต 4/08 \"แนะนำตามจริง\") มีคำเตือนให้ประสานแพทย์มีบุตรยากกับแพทย์ฝากครรภ์ เมื่อเลือก IUI/ICSI",
+ actual:"ยืนยันครบทั้ง 2 ส่วน — เห็น 3 ตัวเลือกตามลำดับที่คาด และหลังส่งฟอร์มด้วย \"ท้องด้วย IUI\" หน้าเทสเซอร์โชว์คำเตือนใหม่: \"การตั้งครรภ์จาก IUI/ICSI มักอยู่ในการดูแลต่อเนื่องของแพทย์ผู้เชี่ยวชาญด้านมีบุตรยากในช่วงแรก...\" ตรวจแล้วว่า ท้องธรรมชาติ/ไม่ระบุวิธี/stage อื่น ไม่ได้คำเตือนนี้ (ไม่ใช่การเพิ่มสินค้าหรือสรรพคุณใหม่ เป็นคำเตือนด้านการดูแล/ประสานแพทย์เท่านั้น)",
+ evidence:"เบราว์เซอร์จริง — เดินครบจนได้ ticket MJ-PA3XHH · lib/phase2.test.ts — \"PDF-12 (0408) — ท้องด้วย IUI/ICSI ได้คำเตือนให้ประสานแพทย์มีบุตรยาก\"",
+ status:"pass"},
+
+{id:"PDF-13",scenario:"เปิด /plan?stage=pregnant เดินต่อจากขั้น \"ท้องนี้ตั้งครรภ์ด้วยวิธีไหน\"",
+ expect:"ข้ามไปขั้น \"รับแผนของคุณ\" (contact) ทันที ไม่เจอคำถาม ART ซ้ำ",
+ actual:"ยืนยันแล้ว — เลือก \"ท้องด้วย IUI\" แล้วกด \"ต่อไป\" ระบบข้ามไปหน้า \"ขั้นตอนสุดท้าย!\" ทันที ไม่มีคำถาม \"เข้าสู่กระบวนการทางการแพทย์\" โผล่มาอีกเลย",
+ evidence:"เบราว์เซอร์จริง (localhost dev)",
+ status:"pass"},
+
+{id:"PDF-14",scenario:"เปิด /plan?stage=pregnant กรอกจนจบ ดูรายการ \"แนะนำเบื้องต้นสำหรับคุณ\"",
+ expect:"โชว์ Ferty Probiotics ด้วย ไม่ใช่แค่ 3 ตัวเดิม",
+ actual:"แก้ต้นเหตุร่วมกับ PDF-01 แล้ว (ขยาย cap เป็น 4 + ย้าย goatmilk ไปท้าย) — ชุดสินค้าคนท้องตอนนี้คือ ferty/ferti9oil/probiotics/goatmilk ครบ 4 ตัวพอดี ไม่มีตัวไหนโดนตัดอีก (ยืนยันด้วย unit test buildTeaser cap ที่ 4)",
+ evidence:"lib/phase2.test.ts — \"caps recommended products at 4\" · โค้ดตรวจ STAGE_CORE_PREGNANT",
+ status:"pass"},
+
+{id:"PDF-15",scenario:"เปิดหน้าความรู้ครรภ์ (/r/[code] tier full, stage pregnant) กดหัวข้อ \"พัฒนาการลูก\"",
+ expect:"เห็นครบทั้ง 3 ไตรมาส ไม่ใช่แค่ไตรมาสเดียว",
+ actual:"โค้ดเปลี่ยนจากเลือกแสดงไตรมาสเดียวเป็นแสดง data.allDevelopment ครบ 3 ไตรมาสเสมอ พร้อมไฮไลต์ไตรมาสปัจจุบัน (build ผ่าน) — ยังไม่เปิดดูผ่านเบราว์เซอร์จริงเพราะต้องมี Supabase",
+ evidence:"code review: components/knowledge-pregnancy.tsx · npm run build สำเร็จ",
+ status:"code"},
+
+{id:"PDF-16",scenario:"เปิดตารางแนะนำสินค้าในรายงานฉบับเต็ม stage ตั้งครรภ์/ให้นม",
+ expect:"นมแพะคัดเกรด Goats Milk อยู่ลำดับสุดท้าย ไม่ใช่ลำดับแรก",
+ actual:"แก้ STAGE_CORE_PREGNANT/STAGE_CORE_LACTATING แล้ว (goatmilk ย้ายไปท้าย array ทั้งคู่) — ตารางในรายงานฉบับเต็มอ่านลำดับจาก array นี้ตรง ๆ (build ผ่าน) — ยังไม่เปิดดูตารางเต็มผ่านเบราว์เซอร์จริงเพราะต้องมี Supabase แต่ยืนยันผลด้านการเรียงลำดับในรายการก่อนเข้า LINE ได้แล้วผ่าน PDF-01/14",
+ evidence:"code review: lib/calc/vitamins.ts",
+ status:"code"},
+
+{id:"PDF-17",scenario:"เปิด /plan?stage=lactating เดินถึงขั้น \"เล่าเรื่องสุขภาพ\"",
+ expect:"ไม่มีคำถาม \"ภาวะ PCOS\" อีกต่อไป",
+ actual:"ยืนยันแล้ว — ขั้นสุขภาพของให้นมบุตรไม่มี PCOS เหมือนกัน",
+ evidence:"เบราว์เซอร์จริง (localhost dev)",
+ status:"pass"},
+];
+
+var STATUS_ORDER = ["pass","code","blocked"];
+var STATUS_LABEL = {pass:"🟢 ผ่าน (เบราว์เซอร์จริง)",code:"🔵 ผ่าน code review",blocked:"🔴 ยังไม่ทำ"};
+
+var LS_KEY = "mmj_test_0408_comments";
+function loadComments(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }catch(e){ return {}; } }
+function saveComments(o){ localStorage.setItem(LS_KEY, JSON.stringify(o)); }
+var comments = loadComments();
+
+var state = { statusOn: {}, search: "", openRows: {} };
+STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+
+function renderStats(){
+  var counts = {total:DATA.length, pass:0, code:0, blocked:0};
+  DATA.forEach(function(d){ counts[d.status]++; });
+  document.getElementById("stats").innerHTML = [
+    ["total","ทั้งหมด",counts.total],
+    ["pass","ผ่าน (เบราว์เซอร์จริง)",counts.pass],
+    ["code","ผ่าน code review",counts.code],
+    ["blocked","ยังไม่ทำ",counts.blocked],
+  ].map(function(s){ return '<div class="stat '+s[0]+'"><div class="n">'+s[2]+'</div><div class="l">'+s[1]+'</div></div>'; }).join("");
+}
+
+function renderChips(){
+  var el = document.getElementById("stChips");
+  el.innerHTML = STATUS_ORDER.map(function(k){
+    return '<button class="chip st-'+k+'" data-key="'+k+'" data-on="'+(state.statusOn[k]?1:0)+'">'+STATUS_LABEL[k]+'</button>';
+  }).join("");
+  document.querySelectorAll(".chip").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.statusOn[btn.getAttribute("data-key")] = !state.statusOn[btn.getAttribute("data-key")];
+      renderChips(); renderRows();
+    });
+  });
+}
+
+function getFiltered(){
+  var q = state.search.trim().toLowerCase();
+  return DATA.filter(function(d){
+    if(!state.statusOn[d.status]) return false;
+    if(q && (d.id+" "+d.scenario+" "+d.expect+" "+d.actual).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+}
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderRows(){
+  var list = getFiltered();
+  var tbody = document.getElementById("tbody");
+  document.getElementById("emptyMsg").style.display = list.length ? "none" : "block";
+  tbody.innerHTML = list.map(function(d){
+    var open = !!state.openRows[d.id];
+    var savedComment = comments[d.id] || "";
+    return (
+      '<tr class="row'+(open?' open':'')+'" data-id="'+d.id+'">'+
+        '<td><span class="caret">▶</span><span class="tc-id">'+d.id+'</span></td>'+
+        '<td class="scen">'+esc(d.scenario)+'</td>'+
+        '<td><span class="badge st-'+d.status+'">'+esc(STATUS_LABEL[d.status])+'</span></td>'+
+      '</tr>'+
+      '<tr class="detail'+(open?'':' hidden')+'" data-detail-for="'+d.id+'"><td colspan="3">'+
+        '<div class="dgrid">'+
+          '<div class="dcol">'+
+            '<h4>สถานการณ์ทดสอบ</h4>'+
+            '<blockquote>'+esc(d.scenario)+'</blockquote>'+
+            '<h4>ผลที่คาดหวัง</h4>'+
+            '<blockquote class="expect">'+esc(d.expect)+'</blockquote>'+
+            (d.expectNote ? '<blockquote class="warn">'+esc(d.expectNote)+'</blockquote>' : '')+
+          '</div>'+
+          '<div class="dcol">'+
+            '<h4>ผลจริง</h4>'+
+            '<blockquote class="actual">'+esc(d.actual)+'</blockquote>'+
+            '<h4>หลักฐาน</h4>'+
+            '<blockquote class="evidence">'+esc(d.evidence)+'</blockquote>'+
+            '<h4 style="margin-top:12px">คอมเมนต์รีวิวของต้น</h4>'+
+            '<textarea class="followbox" data-comment-for="'+d.id+'" placeholder="พิมพ์โน้ต/คำถามเพิ่มเติมตรงนี้ — บันทึกอัตโนมัติ">'+esc(savedComment)+'</textarea>'+
+            '<div class="savedmark" data-mark-for="'+d.id+'">✓ บันทึกแล้ว</div>'+
+          '</div>'+
+        '</div>'+
+      '</td></tr>'
+    );
+  }).join("");
+
+  tbody.querySelectorAll("tr.row").forEach(function(tr){
+    tr.addEventListener("click", function(){
+      var id = tr.getAttribute("data-id");
+      state.openRows[id] = !state.openRows[id];
+      renderRows();
+    });
+  });
+  tbody.querySelectorAll("textarea.followbox").forEach(function(ta){
+    ta.addEventListener("click", function(e){ e.stopPropagation(); });
+    var timer = null;
+    ta.addEventListener("input", function(){
+      var id = ta.getAttribute("data-comment-for");
+      comments[id] = ta.value;
+      saveComments(comments);
+      var mark = tbody.querySelector('[data-mark-for="'+id+'"]');
+      if(mark){ mark.classList.add("show"); clearTimeout(timer); timer = setTimeout(function(){ mark.classList.remove("show"); }, 1400); }
+    });
+  });
+}
+
+document.getElementById("search").addEventListener("input", function(e){ state.search = e.target.value; renderRows(); });
+
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var lines = [];
+  lines.push("# Test Report — App Mommunjai R4 (4 ส.ค. 69)");
+  lines.push("");
+  lines.push("> Export จาก test-report-0408.html เมื่อ " + new Date().toISOString().slice(0,10));
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+  DATA.forEach(function(d){
+    lines.push("## " + d.id);
+    lines.push("");
+    lines.push("**สถานการณ์ทดสอบ:** " + d.scenario);
+    lines.push("");
+    lines.push("**ผลที่คาดหวัง:** " + d.expect);
+    if(d.expectNote){ lines.push(""); lines.push("**หมายเหตุ:** " + d.expectNote); }
+    lines.push("");
+    lines.push("**ผลจริง:** " + d.actual);
+    lines.push("");
+    lines.push("**หลักฐาน:** " + d.evidence);
+    lines.push("");
+    lines.push("**สถานะ:** " + STATUS_LABEL[d.status]);
+    lines.push("");
+    var c = comments[d.id];
+    lines.push("**คอมเมนต์ของต้น:** " + (c && c.trim() ? c.trim() : "_(ไม่มี)_"));
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  });
+  var blob = new Blob([lines.join("\n")], {type:"text/markdown;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "test-report-0408-comments.md";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+renderStats();
+renderChips();
+renderRows();
+</script>
+</body>
+</html>

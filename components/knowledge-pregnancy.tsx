@@ -88,11 +88,18 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
         ))}
       </div>
 
-      {/* ── 1. พัฒนาการลูกตามไตรมาส ── */}
+      {/* ── 1. พัฒนาการลูกตามไตรมาส ──
+          R4 (0408) · PDF-15 — โชว์ครบทั้ง 3 ไตรมาสเสมอ (ข้อมูลมีอยู่แล้วครบ ปัญหาเดิมคือ
+          เดี้ยงถ้ากรอกอายุครรภ์ไว้จะเห็นแค่ไตรมาสเดียว) ไฮไลต์ไตรมาสปัจจุบันของผู้ใช้
+          ด้วย tone="teal" + ป้าย "ไตรมาสของคุณ" เมื่อรู้อายุครรภ์ */}
       {topic === "development" && (
         <div className="space-y-3">
-          {(data.development ? [data.development] : data.allDevelopment).map((d) => (
-            <Box key={d.trimester} title={`${d.label} (${d.weeksLabel})`}>
+          {data.allDevelopment.map((d) => (
+            <Box
+              key={d.trimester}
+              tone={data.trimester === d.trimester ? "teal" : "plain"}
+              title={`${d.label} (${d.weeksLabel})${data.trimester === d.trimester ? " · ไตรมาสของคุณตอนนี้" : ""}`}
+            >
               <p className="text-sm text-ink/80">{d.theme}</p>
               <div className="mt-2 space-y-2">
                 {d.blocks.map((b) => (
@@ -284,7 +291,7 @@ export default function PregnancyKnowledgeView({ data, code }: { data: Pregnancy
       </a>
 
       <p className="text-sm text-ink/80">⚠️ {MEDICAL_DISCLAIMER}</p>
-      <p className="text-xs text-ink/75">สรุปหลักฐานเต็มของเนื้อหาชุดนี้: {data.brief}</p>
+      {/* R4 (0408) · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกตามที่ client ยืนยัน */}
     </div>
   );
 }

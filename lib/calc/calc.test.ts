@@ -143,8 +143,21 @@ describe("vitamins (M6)", () => {
   it("prep covers the brand's full set, not a token few", () => {
     const r = recommendVitamins({ stage: "prep", hasPcos: false, artPlan: "ยัง" });
     const all = [...r.core, ...r.targeted, ...r.nutrition, ...r.external];
-    expect(all.length).toBeGreaterThanOrEqual(18);
-    expect(r.core.map((p) => p.id)).toEqual(["ovaall", "ferty", "collatelo", "ferti9oil"]);
+    // R4 (0408) · PDF-01 — core เปลี่ยน collatelo → kaffirshot (client ยืนยัน 4 ตัวหลัก)
+    // และ Night Shot ย้ายจาก targeted แบบไม่มีเงื่อนไข ไปผูกกับ sleepSignal (PDF-09)
+    // ตัว sleepSignal ไม่ได้ส่งมาในเทสต์นี้ (undefined) จึงไม่มี Night Shot → รวมน้อยลง 2 ตัว
+    expect(all.length).toBeGreaterThanOrEqual(16);
+    expect(r.core.map((p) => p.id)).toEqual(["ovaall", "ferty", "kaffirshot", "ferti9oil"]);
+  });
+  it("PDF-09 (0408) — Night Shot โผล่เฉพาะเมื่อสัญญาณการนอนไม่ดี (ต้นยืนยัน 4/08: ทุก stage ที่ประเมินการนอน)", () => {
+    for (const stage of ["prep", "infertility", "pregnant", "lactating", "male"] as const) {
+      const bad = recommendVitamins({ stage, hasPcos: false, artPlan: "ยัง", sleepSignal: "bad" });
+      expect(bad.primary.map((p) => p.id), stage).toContain("nightshot");
+      const ok = recommendVitamins({ stage, hasPcos: false, artPlan: "ยัง", sleepSignal: "ok" });
+      expect(ok.primary.map((p) => p.id), stage).not.toContain("nightshot");
+      const unknown = recommendVitamins({ stage, hasPcos: false, artPlan: "ยัง" });
+      expect(unknown.primary.map((p) => p.id), stage).not.toContain("nightshot");
+    }
   });
   // Safety Matrix (product-catalog-master.md §4) — these must never reach the wrong stage.
   it("drops the products banned in pregnancy", () => {
@@ -605,8 +618,8 @@ describe("R8 — ป้าย IVF-ICSI [TS-08]", () => {
 });
 
 describe("R9 — ตั้งครรภ์: วิธีตั้งครรภ์ + เบาหวานขณะตั้งครรภ์ [TS-09]", () => {
-  it("TC-09-01/03 CONCEPTION_METHODS เริ่ม 2 ตัวเลือก และเป็น array เดียวที่เติมได้", () => {
-    expect(CONCEPTION_METHODS).toEqual(["ท้องธรรมชาติ", "ท้องด้วย ICSI"]);
+  it("TC-09-01/03 CONCEPTION_METHODS เป็น array เดียวที่เติมตัวเลือกได้ — R4 (0408) · PDF-12 เติม IUI แล้ว", () => {
+    expect(CONCEPTION_METHODS).toEqual(["ท้องธรรมชาติ", "ท้องด้วย IUI", "ท้องด้วย ICSI"]);
   });
   it("🔒 ติ๊กเบาหวานขณะตั้งครรภ์ → มีข้อความให้อยู่ในการดูแลของแพทย์", () => {
     const r = recommendVitamins({ stage: "pregnant", hasPcos: false, artPlan: "ยัง", hasGdm: true });

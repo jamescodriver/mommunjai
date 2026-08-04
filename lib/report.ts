@@ -4,7 +4,7 @@
 import {
   recommendVitamins, resolvePcosStatus, Product, VitaminProfile, ArtPlan, InfertilityIssue,
   EXERCISE_FREQS,
-  type MaleBehavior, type PcosStatus, type ExerciseFreq,
+  type MaleBehavior, type PcosStatus, type ExerciseFreq, type ConceptionMethod,
 } from "./calc/vitamins";
 import { calcProtein, Stage } from "./calc/protein";
 import { bmiTier, bmiScale, type BmiResult } from "./calc/bmi";
@@ -45,6 +45,8 @@ export interface ReportProfile {
   /** R9/R10 — อายุครรภ์ (สัปดาห์) ใช้หาไตรมาส + กฎน้ำหัวปลี ≥16 สัปดาห์
    *  ไม่กรอก = ไม่เดาไตรมาสให้ (ดู lib/calc/pregnancy.ts) */
   gestationalWeeks?: number;
+  /** R4 (0408) · PDF-12 — ท้องธรรมชาติ/IUI/ICSI มีความหมายเฉพาะ stage "pregnant" */
+  conceptionMethod?: ConceptionMethod;
   tools?: Record<string, { input?: any; output?: any }>;
 }
 
@@ -139,7 +141,6 @@ export interface Report {
   //    (lib/line.ts) จึงคงกฎ "ยังไม่ประเมิน ≠ 0%" ไว้เต็มรูปแบบ
   score: number; // 0..100 overall
   scoreLabel: string;
-  quickWinToday: string; // 1 thing to do today (dampens "want answer now")
   pillars: Pillar[];
   fertileWindow: { ovulation: string; start: string; end: string; next: string } | null;
   protein: { min: number; max: number; ferty: number; note?: string } | null;
@@ -282,6 +283,11 @@ export function generateReport(p: ReportProfile): Report {
   // คำนวณได้เมื่อมีทั้งน้ำหนักและส่วนสูง — R4 ทำให้ถามครบทุก stage แล้ว
   const weightTier = p.weightKg && p.heightCm ? bmiTier(p.weightKg, p.heightCm) ?? undefined : undefined;
   const bmi = p.weightKg && p.heightCm ? bmiScale(p.weightKg, p.heightCm) : null;
+  // R4 (0408) · PDF-09 — สัญญาณการนอนสำหรับ Night Shot ต้องคำนวณก่อน vp เพราะ
+  // recommendVitamins อ่านจาก vp.sleepSignal โดยตรง — ไม่กรอกเวลานอน = undefined (ไม่เดา)
+  const sleepAssess = p.sleepBedtime && p.sleepWaketime ? assessSleep(p.sleepBedtime, p.sleepWaketime) : null;
+  const sleepSignal: "bad" | "ok" | undefined =
+    sleepAssess && !("error" in sleepAssess) ? (sleepAssess.goodDuration && sleepAssess.beforeTen ? "ok" : "bad") : undefined;
   const vp: VitaminProfile = {
     // ⚠️ ต้องส่ง stage จริง ไม่ใช่ baseStage — baseStage แปลง "infertility" → "prep"
     // เพื่อใช้กับตารางโปรตีนเท่านั้น (protein.ts ไม่มีช่วงของ infertility) ถ้าส่ง baseStage
@@ -296,6 +302,7 @@ export function generateReport(p: ReportProfile): Report {
     behaviors: p.behaviors,
     partnerBehaviors: p.partnerBehaviors,
     hasGdm: p.hasGdm,
+    sleepSignal,
   };
   const rec = recommendVitamins(vp);
 
@@ -372,12 +379,9 @@ export function generateReport(p: ReportProfile): Report {
     p.stage === "pregnant" ? buildPregnancyKnowledge({ gestationalWeeks: p.gestationalWeeks }) : undefined;
   const lactationKnowledge = p.stage === "lactating" ? buildLactationKnowledge() : undefined;
 
-  // ----- quick win today (dampens "want answer now") -----
-  const quickWinToday = hasPcos
-    ? "วันนี้: งดของหวานทั้งหมด แล้วดื่มน้ำอุ่น 1 แก้วตอนตื่น"
-    : isMale
-      ? "วันนี้: เพิ่มไข่ต้ม 2 ฟอง + เมล็ดฟักทองหนึ่งกำมือ"
-      : "วันนี้: กินไข่ต้ม 2 ฟอง และเข้านอนก่อน 4 ทุ่ม";
+  // R4 (0408) · PDF-02/07 — "quickWinToday" (กล่อง "วันนี้ทำอะไร") ตัดออกทั้งระบบตามที่
+  // client ยืนยัน ("เอาออกทั้ง teaser และ line card") — เอาออกทั้งหน้าเทสเซอร์ (app/plan)
+  // และการ์ด LINE Flex (lib/line.ts) ไม่ใช่แค่ซ่อนบน UI
 
   // ----- partner nudge (include the partner — ~40% male factor) -----
   const partnerNudge = isMale
@@ -405,6 +409,14 @@ export function generateReport(p: ReportProfile): Report {
   }
   if (tryingToConceive && (p.ageRange === "40+" || p.ageRange === "35–39" || artActive))
     cautions.push("เรื่องเวลาเป็นสิ่งสำคัญ แนะนำปรึกษาแพทย์ผู้เชี่ยวชาญควบคู่ไปด้วย");
+  // R4 (0408) · PDF-12 — ต้นยืนยัน (4/08) "แนะนำตามจริง": การตั้งครรภ์จาก IUI/ICSI มักอยู่ใน
+  // การดูแลต่อเนื่องของแพทย์ผู้เชี่ยวชาญด้านมีบุตรยากในช่วงแรก (เช่น ยาฮอร์โมนเสริม) — เป็น
+  // ข้อเท็จจริงทางการแพทย์ที่มีจริง ไม่ใช่การเพิ่มสินค้า/สรรพคุณใหม่ที่ไม่มีหลักฐาน (ตรวจแล้ว
+  // ไม่มี logic ใดใน recommendVitamins ที่ควรแยกสินค้าตามวิธีตั้งครรภ์ เพราะไม่มีหลักฐาน
+  // รองรับว่าวิตามินควรต่างกัน — ความต่างที่แท้จริงคือการดูแล/ประสานแพทย์)
+  if (p.stage === "pregnant" && (p.conceptionMethod === "ท้องด้วย IUI" || p.conceptionMethod === "ท้องด้วย ICSI")) {
+    cautions.push("การตั้งครรภ์จาก IUI/ICSI มักอยู่ในการดูแลต่อเนื่องของแพทย์ผู้เชี่ยวชาญด้านมีบุตรยากในช่วงแรก (เช่น ยาฮอร์โมนเสริม) — ควรแจ้งให้แพทย์ฝากครรภ์และแพทย์ที่ดูแลเรื่องมีบุตรยากประสานกัน ก่อนเริ่มหรือปรับอาหารเสริมใดๆ");
+  }
   // referral ตามอายุใช้กับคนที่กำลังพยายามมีลูกเท่านั้น · อีก 2 กลุ่มได้ referral ของตัวเอง
   // ที่ "เร่งด่วนกว่า" (ไม่ต้องรอนัด) ไม่ใช่ได้คำเตือนน้อยลง
   cautions.push(
@@ -427,7 +439,7 @@ export function generateReport(p: ReportProfile): Report {
     tagline: STAGE_TAGLINE[p.stage || "prep"] || STAGE_TAGLINE.prep,
     nickname: p.nickname || "คุณ",
     greeting: `เราอ่านคำตอบของคุณ ${p.nickname || "คุณ"} แล้ว และทำแผนนี้ขึ้นเพื่อคุณโดยเฉพาะค่ะ 💛`,
-    score, scoreLabel, quickWinToday,
+    score, scoreLabel,
     pillars, fertileWindow, protein,
     vitamins: rec.primary, vitaminNote: rec.note,
     part1, part2,
@@ -536,7 +548,6 @@ export interface TeaserSummary {
   metrics: PlanMetric[];
   weakestPillars: { label: string; note: string }[];
   recommendedProducts: { id: string; name: string; why: string }[];
-  quickWinToday: string;
   /** 🔒 คำเตือนที่ต้องเดินทางมาถึงหน้า teaser ด้วย — ห้ามตัดออก (ดูคอมเมนต์ใน buildTeaser) */
   cautions: string[];
 }
@@ -550,8 +561,10 @@ export function buildTeaser(report: Report): TeaserSummary {
     scoreLabel: report.scoreLabel,
     metrics: planMetrics(report),
     weakestPillars: ordered.slice(0, 2).map((x) => ({ label: x.label, note: x.note })),
-    recommendedProducts: report.vitamins.slice(0, 3).map((x) => ({ id: x.id, name: x.name, why: x.why })),
-    quickWinToday: report.quickWinToday,
+    // R4 (0408) · PDF-01/14 — ขยายจาก 3 เป็น 4 ตัว: ที่ 3 ตัวเคยตัด probiotics/ตัวสุดท้าย
+    // ของชุด core (4 ตัว) ออกไปเงียบ ๆ ทุก stage ที่ core มี 4 ตัวพอดี (prep/infertility/
+    // pregnant) → confirm แล้วว่าให้โชว์ทั้ง 4 ไม่ใช่ตัดเหลือ 3
+    recommendedProducts: report.vitamins.slice(0, 4).map((x) => ({ id: x.id, name: x.name, why: x.why })),
     // 🔒 Lucifer red-team 31/7 — หน้า teaser แนะนำอาหารเสริม 3 ตัวโดยไม่มี disclaimer และ
     // ไม่มีข้อความ referral ตามอายุเลย ทั้งที่ teaser คือ tier ที่ **คนส่วนใหญ่ของแอปเห็น**
     // (หลัง R5/R11 ตัดคำถาม ART ออกจาก prep/lactating → 2 กลุ่มนี้เป็น teaser เสมอ)

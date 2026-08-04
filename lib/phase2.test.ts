@@ -18,10 +18,25 @@ describe("report engine", () => {
     expect(r.part1).toBeTruthy();
     expect(r.part2).toBeTruthy();
   });
-  it("has a quick win today", () => { expect(generateReport(base).quickWinToday).toBeTruthy(); });
+  // R4 (0408) · PDF-02/07 — quickWinToday ตัดออกจาก Report ทั้งระบบแล้ว (เอาเทสต์เดิมออก)
   it("PCOS + ICSI → safety caution about not changing treatment", () => {
     const r = generateReport(base);
     expect(r.cautions.join(" ")).toMatch(/อย่าหยุดหรือปรับยา|ปรึกษาแพทย์/);
+  });
+  // R4 (0408) · PDF-12 — ต้นยืนยัน "แนะนำตามจริง": ท้องด้วย IUI/ICSI ได้คำเตือนให้ประสาน
+  // แพทย์มีบุตรยากกับแพทย์ฝากครรภ์ (ข้อเท็จจริงทางการแพทย์ ไม่ใช่สินค้า/สรรพคุณใหม่)
+  it("PDF-12 (0408) — ท้องด้วย IUI/ICSI ได้คำเตือนให้ประสานแพทย์มีบุตรยาก, ท้องธรรมชาติไม่ได้", () => {
+    const iui = generateReport({ nickname: "A", stage: "pregnant", conceptionMethod: "ท้องด้วย IUI" });
+    expect(iui.cautions.join(" ")).toMatch(/IUI\/ICSI/);
+    const icsi = generateReport({ nickname: "A", stage: "pregnant", conceptionMethod: "ท้องด้วย ICSI" });
+    expect(icsi.cautions.join(" ")).toMatch(/IUI\/ICSI/);
+    const natural = generateReport({ nickname: "A", stage: "pregnant", conceptionMethod: "ท้องธรรมชาติ" });
+    expect(natural.cautions.join(" ")).not.toMatch(/IUI\/ICSI/);
+    const noMethod = generateReport({ nickname: "A", stage: "pregnant" });
+    expect(noMethod.cautions.join(" ")).not.toMatch(/IUI\/ICSI/);
+    // ไม่เกี่ยวกับ stage อื่น แม้ artPlan จะเป็น IUI/ICSI-adjacent ก็ตาม
+    const infertility = generateReport({ nickname: "A", stage: "infertility", artPlan: "IUI" });
+    expect(infertility.cautions.join(" ")).not.toMatch(/IUI\/ICSI/);
   });
   it("never claims cure/guarantee", () => {
     const all = JSON.stringify(generateReport(base));
@@ -241,9 +256,11 @@ describe("buildTeaser (R6) — server-side gate, never leaks full report fields"
     const scored = fullReport.pillars.filter((p) => p.score !== null).sort((a, b) => (a.score as number) - (b.score as number));
     expect(t.weakestPillars.map((p) => p.label)).toEqual(scored.slice(0, 2).map((p) => p.label));
   });
-  it("caps recommended products at 3", () => {
+  // R4 (0408) · PDF-01/14 — ขยาย cap จาก 3 เป็น 4 (เอา 3 ตัวเคยตัด probiotics/ตัวที่ 4
+  // ของชุด core ออกไปเงียบ ๆ — client ยืนยันให้โชว์ครบ 4)
+  it("caps recommended products at 4", () => {
     const t = buildTeaser(fullReport);
-    expect(t.recommendedProducts.length).toBeLessThanOrEqual(3);
+    expect(t.recommendedProducts.length).toBeLessThanOrEqual(4);
     expect(t.recommendedProducts.length).toBeGreaterThan(0);
   });
   it("recommended product entries never carry price/dosage/detail — only id/name/why", () => {
@@ -254,11 +271,10 @@ describe("buildTeaser (R6) — server-side gate, never leaks full report fields"
     const json = JSON.stringify(t);
     expect(json).not.toMatch(/"price"|"howto"|"detail"/);
   });
-  it("carries nickname, scoreLabel and quickWinToday through", () => {
+  it("carries nickname and scoreLabel through", () => {
     const t = buildTeaser(fullReport);
     expect(t.nickname).toBe(fullReport.nickname);
     expect(t.scoreLabel).toBe(fullReport.scoreLabel);
-    expect(t.quickWinToday).toBe(fullReport.quickWinToday);
   });
   it("still surfaces something even when nothing was assessed yet at submit time", () => {
     const bare = generateReport({ nickname: "A", stage: "prep" });

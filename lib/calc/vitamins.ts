@@ -104,7 +104,10 @@ export const MALE_BEHAVIOR_VALUES: MaleBehavior[] = MALE_BEHAVIORS.map((x) => x.
 
 /** R9 · TC-09-01/03 — "ท้องด้วยวิธีไหน" เริ่ม 2 ตัวเลือก แต่ต้องเติมข้อ 3 ได้โดยแก้ที่เดียว
  *  (เช่น IUI / บำรุงไข่ ตาม P2 ใน PRD) — logic ทุกที่อ่านจาก array นี้ ห้าม hardcode ซ้ำ */
-export const CONCEPTION_METHODS = ["ท้องธรรมชาติ", "ท้องด้วย ICSI"] as const;
+// R4 (0408) · PDF-12 — เติมตัวเลือกที่ 3 "ท้องด้วย IUI" ตามที่ client ยืนยัน
+// ⚠️ ยังไม่มี logic ใดในไฟล์นี้แยกคำแนะนำตามค่านี้ (ธรรมชาติ/IUI/ICSI ได้ชุดสินค้าเดียวกัน
+// ทุกกรณี) — client ยืนยันแค่ให้เพิ่มตัวเลือก ยังไม่ได้ขอ logic แยกเพิ่ม
+export const CONCEPTION_METHODS = ["ท้องธรรมชาติ", "ท้องด้วย IUI", "ท้องด้วย ICSI"] as const;
 export type ConceptionMethod = (typeof CONCEPTION_METHODS)[number];
 
 export interface VitaminProfile {
@@ -126,6 +129,10 @@ export interface VitaminProfile {
   partnerBehaviors?: MaleBehavior[];
   /** R9 — เบาหวานขณะตั้งครรภ์ → ต้องมีข้อความให้อยู่ในการดูแลของแพทย์ */
   hasGdm?: boolean;
+  /** R4 (0408) · PDF-09 — สัญญาณการนอนจาก lib/calc/sleep.ts (นอน <7-9 ชม. หรือเข้านอนหลัง
+   *  22:00) "bad" เมื่อกรอกเวลานอนจริงแล้วไม่เข้าเกณฑ์ทั้งคู่ — ไม่กรอกเวลา = undefined
+   *  (ไม่เดาว่านอนไม่ดี) ปัจจุบันมีผลเฉพาะ stage prep (ดู Night Shot ด้านล่าง) */
+  sleepSignal?: "bad" | "ok";
 }
 
 /** Which life stages this product must be stopped in — from the Safety Matrix (§4). */
@@ -394,9 +401,10 @@ export const LINING_PREP_SET: string[] = ["collatelo", "safflower", "castoroil",
  *  และ lactation.ts เป๊ะ (มีเทสต์ล็อกไว้) — ประกาศซ้ำที่นี่เพื่อเลี่ยง circular import
  *  เพราะ 2 โมดูลนั้น import productsForStage() จากไฟล์นี้อยู่แล้ว
  *  ⚠️ น้ำหัวปลีของ pregnant ถูกเพิ่มตามอายุครรภ์ ≥16 สัปดาห์ในชั้น R10 ไม่ใช่ที่นี่ */
-export const STAGE_CORE_PREGNANT: string[] = ["goatmilk", "ferty", "ferti9oil", "probiotics"];
+// R4 (0408) · PDF-16 — นมแพะย้ายจากลำดับแรกไปลำดับสุดท้ายของทั้ง 2 ชุด (ตามที่ client ยืนยัน)
+export const STAGE_CORE_PREGNANT: string[] = ["ferty", "ferti9oil", "probiotics", "goatmilk"];
 export const STAGE_CORE_LACTATING: string[] = [
-  "goatmilk", "ferty", "ferti9oil", "probiotics", "bananaflower", "ginger", "blackchickensoup",
+  "ferty", "ferti9oil", "probiotics", "bananaflower", "ginger", "blackchickensoup", "goatmilk",
 ];
 
 /** ตัดสินค้าที่ต้องหยุดสำหรับช่วงชีวิตนี้ออก (Safety Matrix §4)
@@ -468,6 +476,9 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
     const targeted = byId(behaviorProductIds(p.behaviors));
     if (agedAos) targeted.push(PRODUCTS.aos);
     if (p.artPlan !== "ยัง") targeted.push(PRODUCTS.aos);
+    // R4 (0408) · PDF-09 — ฝ่ายชายก็ประเมินการนอนเหมือนกัน ต้นยืนยันให้ Night Shot ขึ้นทุก
+    // stage ที่มีการประเมินการนอนแล้วสัญญาณไม่ดี ไม่ใช่แค่ prep
+    if (p.sleepSignal === "bad") targeted.push(PRODUCTS.nightshot);
     const nutrition = byId(["pureseed"]);
 
     const c = keep(core);
@@ -507,15 +518,21 @@ export function recommendVitamins(p: VitaminProfile): VitaminResult {
     // ใน lib/calc/pregnancy.ts และ lactation.ts · มีเทสต์ล็อกไว้ไม่ให้ 2 ที่หลุดจากกัน
     core = byId(p.stage === "pregnant" ? STAGE_CORE_PREGNANT : STAGE_CORE_LACTATING);
   } else {
-    // prep — ชุดเดิมของแบรนด์ตามที่ทำมาตั้งแต่ R2
-    core = byId(["ovaall", "ferty", "collatelo", "ferti9oil"]);
+    // prep — R4 (0408) · PDF-01 — ชุด core เปลี่ยนจาก Colla Telo เป็นน้ำมะกรูด (kaffirshot)
+    // ตามรายการ 4 ตัวหลักที่ client ยืนยัน (Ferty/OvaAll/น้ำมะกรูด/Ferti9 Oil)
+    core = byId(["ovaall", "ferty", "kaffirshot", "ferti9oil"]);
     if (effectivePcos) targeted.push(PRODUCTS.pcovit);
-    targeted.push(PRODUCTS.varginaree, PRODUCTS.nightshot);
+    targeted.push(PRODUCTS.varginaree);
   }
 
   if (p.artPlan !== "ยัง") targeted.push(PRODUCTS.aos);
   if (agedAos) targeted.push(PRODUCTS.aos); // R2 — dedupe ด้านล่างทำให้ปรากฏครั้งเดียว (TC-02-04)
   if (liningPrep) targeted.push(...byId(LINING_PREP_SET));
+  // R4 (0408) · PDF-09 — ต้นยืนยัน (4/08) "ถ้ามีการประเมินการนอน ให้แนะนำแบบนี้เลย" คือ
+  // ไม่จำกัดแค่ stage prep อีกต่อไป — ทุก stage ฝ่ายหญิงที่มีสัญญาณการนอนไม่ดี (นอน <7-9 ชม.
+  // หรือเข้านอนหลัง 22:00) ได้ Night Shot เหมือนกันหมด · ไม่มี stop rule ผูกกับ nightshot
+  // ในแคตตาล็อก (ปลอดภัยทุก stage รวมตั้งครรภ์/ให้นม ผ่าน allowedIn() ตามปกติ)
+  if (p.sleepSignal === "bad") targeted.push(PRODUCTS.nightshot);
 
   const nutrition = byId([
     "phytocrystalc", "pureseed", "goodgrain", "pureblack",
