@@ -53,6 +53,31 @@ export default function Home() {
         </div>
       </section>
 
+      {/* หน้าแรก R4 (0408) — ต้นสั่งสลับลำดับ: เครื่องมือแยกทีละอันขึ้นก่อน (เข้าถึงได้ทันที
+          ไม่ต้องกรอกอะไร) หมวดชีวิต 4 ใบ (นำไปแบบสอบถาม /plan) ย้ายลงล่างแทน */}
+      <h2 id="tools" className="mt-10 text-center text-xl font-semibold sm:text-2xl">
+        เลือกเครื่องมือที่ตรงกับคุณ ใช้ฟรี ไม่ต้องสมัคร
+      </h2>
+
+      <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {TOOLS.map((t) => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
+              {t.icon}
+            </div>
+            <h3 className="mt-3 text-lg font-semibold">{t.title}</h3>
+            <p className="mt-1 text-base text-ink/70">{t.desc}</p>
+            <span className="mt-3 inline-block text-sm font-medium text-teal-deep">
+              เริ่มเลย →
+            </span>
+          </Link>
+        ))}
+      </section>
+
       <h2 className="mt-10 text-center text-xl font-semibold sm:text-2xl">
         ตอนนี้คุณอยู่ช่วงไหน?
       </h2>
@@ -106,30 +131,6 @@ export default function Home() {
             <h3 className="mt-3 text-lg font-semibold">{c.title}</h3>
             <p className="mt-1 text-base text-ink/70">{c.desc}</p>
             <span className="mt-3 inline-block text-sm font-medium text-teal-deep">เริ่มเลย →</span>
-          </Link>
-        ))}
-      </section>
-
-      <h2 id="tools" className="mt-10 text-center text-xl font-semibold sm:text-2xl">
-        หรือใช้เครื่องมือแยกทีละอัน
-      </h2>
-      <p className="mt-1 text-center text-base text-ink/60">เลือกเครื่องมือที่ตรงกับคุณ ใช้ฟรี ไม่ต้องสมัคร</p>
-
-      <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TOOLS.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className="glass group p-5 transition hover:-translate-y-0.5 hover:ring-2 hover:ring-teal/30"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-soft text-teal-deep" aria-hidden>
-              {t.icon}
-            </div>
-            <h3 className="mt-3 text-lg font-semibold">{t.title}</h3>
-            <p className="mt-1 text-base text-ink/70">{t.desc}</p>
-            <span className="mt-3 inline-block text-sm font-medium text-teal-deep">
-              เริ่มเลย →
-            </span>
           </Link>
         ))}
       </section>

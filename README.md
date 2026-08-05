@@ -9,25 +9,26 @@
 ## Dev
 ```bash
 npm install
-cp .env.example .env.local   # ใส่ค่า Supabase/PIN (ไม่ใส่ก็รันได้ — lead API เข้าโหมด dev fallback)
+cp .env.example .env.local   # ใส่ค่า Supabase/LINE (ไม่ใส่ก็รันได้ — lead API เข้าโหมด dev fallback)
 npm run dev                  # http://localhost:3000
-npm test                     # unit tests (vitest) — 18 เคส
+npm test                     # unit tests (vitest) — 340 เคส
 npm run build                # production build
 ```
 > ไม่มี env Supabase → `/api/lead` คืนเลข ticket จำลอง (ไม่บันทึกจริง) เพื่อให้ทดสอบ UI ได้
 
-## Deploy (Vercel)
-1. สร้าง **Supabase project เฉพาะงานนี้** → รัน [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-2. เชื่อม GitHub repo → Vercel → ตั้ง env ตาม [`.env.example`](.env.example) (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `STAFF_PIN`, `ALLOWED_ORIGINS`, `ALLOWED_FRAME_ANCESTORS`, `NEXT_PUBLIC_LINE_OA_URL`)
-3. Deploy
+## Deploy (Vercel) / ติดตั้งเองในบัญชีใหม่
+คู่มือเต็ม (fork → Supabase project ใหม่ → migration 7 ไฟล์ → LINE OA → Vercel env → verify): **[docs/SELF-HOST-SETUP.md](docs/SELF-HOST-SETUP.md)**
+
+สรุปสั้น: สร้าง Supabase project ใหม่เฉพาะงานนี้ → รัน `supabase/migrations/0001_init.sql` ถึง `0007_tool_results_widen.sql` ตามลำดับ → เชื่อม GitHub repo เข้า Vercel → ตั้ง env ตาม [`.env.example`](.env.example) ให้ครบ (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SESSION_SECRET`, `RESUME_TOKEN_SECRET`, `NEXT_PUBLIC_APP_URL`, `LINE_CHANNEL_SECRET`, `LINE_CHANNEL_ACCESS_TOKEN`, `ALLOWED_ORIGINS`, `ALLOWED_FRAME_ANCESTORS`, `NEXT_PUBLIC_LINE_OA_URL`) → Deploy → สร้างแอดมินคนแรกที่ `/login`
 
 ## หน้า
 | Path | คือ |
 |---|---|
-| `/` | หน้าหลัก 6 การ์ด |
-| `/tools/{ovulation,protein,nutrients,sleep,vitamins}` | เครื่องมือ (เปิด `?embed=1` เป็น widget) |
+| `/` | หน้าหลัก 4 หมวดชีวิต (เตรียมตั้งครรภ์/มีบุตรยาก/ตั้งครรภ์แล้ว/ให้นมบุตร) + เครื่องมือแยก 9 ตัว |
+| `/tools/{ovulation,protein,nutrients,sleep,water,exercise,vitamins,labs,stress}` | เครื่องมือ (เปิด `?embed=1` เป็น widget) |
 | `/plan` | แบบสอบถาม + consent + รับ ticket |
-| `/staff` | ทีมค้น ticket (PIN) |
+| `/r/[code]` | แผนฉบับเต็ม (เข้าถึงผ่านลิงก์ใน LINE เท่านั้น) |
+| `/login`, `/leads`, `/staff`, `/admin` | งานฝั่งทีม — ต้องล็อกอิน (สร้างแอดมินคนแรกที่ `/login`) |
 | `/privacy` | นโยบายความเป็นส่วนตัว (ร่าง) |
 
 ## ฝังเป็น Widget บนเว็บแบรนด์
