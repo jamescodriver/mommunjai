@@ -13,6 +13,26 @@ export const runtime = "nodejs";
 // real tapping user server-side (via the webhook's verified line_user_id).
 const MENU_TRIGGER = "แผนของฉัน";
 
+// This LINE channel previously had its webhook pointed directly at a
+// third-party slip-verification service (thunder.in.th) — a single LINE
+// channel can only have one webhook URL, so now that this app owns the
+// webhook, every raw event is relayed on to that service too (best-effort,
+// same signed body + signature LINE sent us) so slip-checking keeps working.
+const SLIP_CHECK_WEBHOOK_URL = process.env.SLIP_CHECK_WEBHOOK_URL;
+
+async function forwardToSlipCheckWebhook(raw: string, sig: string | null) {
+  if (!SLIP_CHECK_WEBHOOK_URL) return;
+  try {
+    await fetch(SLIP_CHECK_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(sig ? { "x-line-signature": sig } : {}) },
+      body: raw,
+    });
+  } catch {
+    /* best-effort — an outage here must never break this app's own bot flow */
+  }
+}
+
 // LINE Messaging API webhook.
 // When a user sends their ticket code (MJ-XXXXXX) in the OA chat, we:
 //  1) bind their LINE userId <-> lead, 2) tag them (#line-connected), 3) reply with their report Flex.
@@ -27,8 +47,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
+  const forwardDone = forwardToSlipCheckWebhook(raw, sig);
+
   let payload: any;
-  try { payload = JSON.parse(raw); } catch { return NextResponse.json({ ok: true }); }
+  try { payload = JSON.parse(raw); } catch { await forwardDone; return NextResponse.json({ ok: true }); }
   const events: any[] = payload.events || [];
 
   for (const ev of events) {
@@ -120,6 +142,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  await forwardDone;
   return NextResponse.json({ ok: true });
 }
 

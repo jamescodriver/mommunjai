@@ -87,6 +87,7 @@ Repo เป็น **public** บน GitHub — กด Fork ได้เลยไ
    | `NEXT_PUBLIC_LINE_OA_URL` | ขั้นตอน 3.5 | |
    | `ALLOWED_ORIGINS` | โดเมนเว็บแบรนด์ที่จะยิง POST `/api/lead` ข้าม origin (ถ้ามี) เช่น `https://www.yourbrand.com` | ถ้ายังไม่มีเว็บแบรนด์ ใส่ `https://<โดเมนแอปตัวเอง>` ไปก่อนได้ |
    | `ALLOWED_FRAME_ANCESTORS` | โดเมนที่จะฝัง `/tools/*` เป็น iframe widget เช่น `'self' https://www.yourbrand.com` | ค่าเริ่มต้นปลอดภัย: `'self'` |
+   | `SLIP_CHECK_WEBHOOK_URL` | ใส่เฉพาะถ้า LINE channel นี้เคยมี webhook อื่นผูกอยู่ก่อน (เช่น บริการตรวจสลิปโอนเงิน) — ไม่บังคับ | LINE อนุญาต webhook URL เดียวต่อ channel เท่านั้น เมื่อผูก webhook เข้ากับแอปนี้แล้ว (ขั้นตอน 5.1) แอปจะ relay raw event ทุกตัวต่อไปยัง URL นี้ให้อัตโนมัติ (best-effort ไม่บล็อก flow ของแอปเอง) เพื่อให้บริการเดิมยังทำงานต่อได้ |
 
 4. กด **Deploy** — รอ build (~1-2 นาที)
 5. ได้โดเมน `https://<project>.vercel.app` → กลับไปอัปเดต `NEXT_PUBLIC_APP_URL` ให้ตรงกับโดเมนจริงถ้ายังไม่ได้ใส่ (แล้ว redeploy)
