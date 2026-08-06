@@ -2,7 +2,7 @@
 import { useState } from "react";
 import type { Report } from "@/lib/report";
 import { BMI_BANDS } from "@/lib/calc/bmi";
-import { SAMPLE_PLATE, SAMPLE_PLATE_DISCLAIMER } from "@/lib/calc/food-reference";
+import { MEAL_EXAMPLES, MEAL_EXAMPLES_DISCLAIMER } from "@/lib/calc/food-reference";
 import { productPhotoSrc } from "@/lib/product-photos";
 import { track } from "@/lib/track";
 import { Wordmark } from "@/components/wordmark";
@@ -405,40 +405,27 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
 
         {showMenu && (
           <div className="mt-3 rounded-xl bg-white/70 p-3">
-            {/* ภาพจานอาหารตัวอย่าง — วาดด้วย SVG ในหน้า (ยังไม่มีไฟล์ภาพจานจากแบรนด์
-                ดู PRD Open Question #3 เรื่อง asset) จึงไม่มีรูปแตกและไม่ต้องรอ asset */}
-            <div className="flex flex-col items-center gap-3 sm:flex-row">
-              <svg viewBox="0 0 120 120" className="h-36 w-36 shrink-0" role="img" aria-label="ภาพจานอาหารตัวอย่าง แบ่งเป็น 4 หมวด">
-                <circle cx="60" cy="60" r="58" fill="#ffffff" stroke="rgba(0,0,0,0.08)" />
-                {(() => {
-                  let start = -90;
-                  return SAMPLE_PLATE.map((part) => {
-                    const angle = (part.share / 100) * 360;
-                    const end = start + angle;
-                    const rad = (d: number) => (d * Math.PI) / 180;
-                    const x1 = 60 + 50 * Math.cos(rad(start));
-                    const y1 = 60 + 50 * Math.sin(rad(start));
-                    const x2 = 60 + 50 * Math.cos(rad(end));
-                    const y2 = 60 + 50 * Math.sin(rad(end));
-                    const large = angle > 180 ? 1 : 0;
-                    start = end;
-                    return (
-                      <path key={part.key} d={`M60 60 L${x1} ${y1} A50 50 0 ${large} 1 ${x2} ${y2} Z`}
-                        fill={part.color} fillOpacity={0.75} stroke="#fff" strokeWidth={1.5} />
-                    );
-                  });
-                })()}
-              </svg>
-              <ul className="w-full space-y-1 text-sm">
-                {SAMPLE_PLATE.map((part) => (
-                  <li key={part.key} className="flex items-start gap-2">
-                    <span className="mt-1 h-3 w-3 shrink-0 rounded-sm" style={{ backgroundColor: part.color }} />
-                    <span><b>{part.label}</b> ~{part.share}% — <span className="text-ink/80">{part.examples}</span></span>
-                  </li>
-                ))}
-              </ul>
+            {/* R4 (0408) · PDF-05 — ภาพจานอาหารจริงจากทีมแบรนด์ (ไม่ใช่ pie chart แล้ว)
+                ที่มา: source/AW_ความรู้โภชนาการ_12-19/ */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {MEAL_EXAMPLES.map((m) => (
+                <div key={m.key} className="rounded-xl bg-white p-2 text-center shadow-sm">
+                  <img
+                    src={m.image}
+                    alt={m.alt}
+                    loading="lazy"
+                    className="aspect-square w-full rounded-lg object-cover"
+                  />
+                  <p className="mt-2 text-sm font-semibold">{m.title}</p>
+                  <ul className="mt-1 space-y-0.5 text-left text-xs text-ink/75">
+                    {m.items.map((it) => (
+                      <li key={it}>• {it}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
-            <p className="mt-2 text-xs text-ink/75">{SAMPLE_PLATE_DISCLAIMER}</p>
+            <p className="mt-2 text-xs text-ink/75">{MEAL_EXAMPLES_DISCLAIMER}</p>
           </div>
         )}
 
