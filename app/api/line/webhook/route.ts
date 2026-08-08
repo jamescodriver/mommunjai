@@ -23,13 +23,18 @@ const SLIP_CHECK_WEBHOOK_URL = process.env.SLIP_CHECK_WEBHOOK_URL;
 async function forwardToSlipCheckWebhook(raw: string, sig: string | null) {
   if (!SLIP_CHECK_WEBHOOK_URL) return;
   try {
-    await fetch(SLIP_CHECK_WEBHOOK_URL, {
+    const res = await fetch(SLIP_CHECK_WEBHOOK_URL, {
       method: "POST",
       headers: { "content-type": "application/json", ...(sig ? { "x-line-signature": sig } : {}) },
       body: raw,
     });
-  } catch {
-    /* best-effort — an outage here must never break this app's own bot flow */
+    if (!res.ok) {
+      console.error(`[slip-check webhook] forward rejected: HTTP ${res.status}`);
+    }
+  } catch (err) {
+    // best-effort — an outage here must never break this app's own bot flow,
+    // but it must show up in Vercel logs instead of failing silently.
+    console.error("[slip-check webhook] forward failed:", err);
   }
 }
 
@@ -86,10 +91,10 @@ export async function POST(req: NextRequest) {
 
       const code = extractTicketCode(ev.message.text);
 
-      if (!code) {
-        await lineReply(ev.replyToken, [{ type: "text", text: "สวัสดีค่ะ 💛 พิมพ์ ‘รหัส MJ-XXXXXX’ ที่ได้จากแอป เพื่อรับรายงานความพร้อมมีลูกเฉพาะคุณค่ะ" }]);
-        continue;
-      }
+      // No auto-reply here: this webhook now shares the channel with
+      // slip-check + normal staff chat (see forwardToSlipCheckWebhook above),
+      // so replying to every unrecognized text message would talk over them.
+      if (!code) continue;
       if (!hasSupabaseEnv()) {
         await lineReply(ev.replyToken, [{ type: "text", text: `รับรหัส ${code} แล้วค่ะ (โหมดทดสอบ — ยังไม่เชื่อมฐานข้อมูล)` }]);
         continue;
