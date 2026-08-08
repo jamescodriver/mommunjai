@@ -17,5 +17,8 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  // mobile/ เป็นแอป React Native (Expo) มี tsconfig + alias ของตัวเอง (@shared → ./lib)
+  // ถ้าไม่กันออก tsc ของเว็บจะไล่เช็คไฟล์แอปด้วยแล้วหา @shared ไม่เจอ → build เว็บพัง
+  // ตรวจ type ของแอปด้วย `cd mobile && npx tsc --noEmit` แยกต่างหาก
+  "exclude": ["node_modules", "mobile"]
 }
