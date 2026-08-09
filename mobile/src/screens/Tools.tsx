@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TextInput, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { C, T, S } from "../theme";
-import { Card, H2, H3, Body, Small, Notice, Btn } from "../components/ui";
+import { C, T, S, R } from "../theme";
+import { Card, H2, H3, Body, Small, Notice, Tappable, IconBubble } from "../components/ui";
+import { IconCycle, IconDrop, IconLeaf, IconScale, IconMoon, IconChevron } from "../components/icons";
 import type { Profile } from "../store";
 
 // ใช้เครื่องคำนวณชุดเดียวกับเว็บทั้งหมด (ผ่าน alias @shared → <repo>/lib)
@@ -14,12 +15,16 @@ import { bedtimesForWake } from "@shared/calc/sleep";
 
 type ToolKey = "water" | "protein" | "ovulation" | "bmi" | "sleep";
 
-const TOOLS: { key: ToolKey; title: string; desc: string; emoji: string }[] = [
-  { key: "ovulation", title: "นับวันไข่ตก", emoji: "📅", desc: "หาช่วงวันมีโอกาสจากรอบเดือน" },
-  { key: "water", title: "เช็คปริมาณน้ำ", emoji: "💧", desc: "ควรดื่มน้ำวันละเท่าไหร่" },
-  { key: "protein", title: "คำนวณโปรตีน", emoji: "🥚", desc: "โปรตีนต่อวันเพื่อบำรุงไข่" },
-  { key: "bmi", title: "ค่า BMI", emoji: "⚖️", desc: "น้ำหนักอยู่ในเกณฑ์ไหน" },
-  { key: "sleep", title: "คำนวณการนอน", emoji: "🌙", desc: "ควรเข้านอนกี่โมงถึงตื่นทัน" },
+type Tint = "teal" | "rose" | "lavender" | "cream" | "mint";
+const TOOLS: {
+  key: ToolKey; title: string; desc: string; tint: Tint;
+  Icon: (p: { size?: number; color?: string }) => JSX.Element; iconColor: string;
+}[] = [
+  { key: "ovulation", title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสจากรอบเดือน", tint: "rose", Icon: IconCycle, iconColor: C.roseDeep },
+  { key: "water", title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่", tint: "teal", Icon: IconDrop, iconColor: C.tealDeep },
+  { key: "protein", title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่", tint: "mint", Icon: IconLeaf, iconColor: C.tealDeep },
+  { key: "bmi", title: "ค่า BMI", desc: "น้ำหนักอยู่ในเกณฑ์ไหน", tint: "cream", Icon: IconScale, iconColor: C.gold },
+  { key: "sleep", title: "คำนวณการนอน", desc: "ควรเข้านอนกี่โมงถึงตื่นทัน", tint: "lavender", Icon: IconMoon, iconColor: "#6E5FA8" },
 ];
 
 export default function Tools({ profile, onSaveProfile }: { profile: Profile; onSaveProfile: (p: Partial<Profile>) => void }) {
@@ -37,17 +42,21 @@ export default function Tools({ profile, onSaveProfile }: { profile: Profile; on
           const isOpen = open === t.key;
           return (
             <Card key={t.key}>
-              <Pressable
+              <Tappable
                 onPress={() => setOpen(isOpen ? null : t.key)}
-                style={{ flexDirection: "row", alignItems: "center", gap: S.md, minHeight: 44 }}
+                accessibilityLabel={t.title}
               >
-                <Text style={{ fontSize: 26 }}>{t.emoji}</Text>
-                <View style={{ flex: 1 }}>
-                  <H3>{t.title}</H3>
-                  <Small muted>{t.desc}</Small>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, minHeight: 48 }}>
+                  <IconBubble tint={t.tint}>
+                    <t.Icon size={24} color={t.iconColor} />
+                  </IconBubble>
+                  <View style={{ flex: 1 }}>
+                    <H3>{t.title}</H3>
+                    <Small muted>{t.desc}</Small>
+                  </View>
+                  <IconChevron size={20} color={C.muted} open={isOpen} />
                 </View>
-                <Text style={{ color: C.muted, fontSize: 18 }}>{isOpen ? "▴" : "▾"}</Text>
-              </Pressable>
+              </Tappable>
 
               {isOpen ? (
                 <View style={{ marginTop: S.md, borderTopWidth: 1, borderTopColor: C.line, paddingTop: S.md }}>
@@ -63,7 +72,7 @@ export default function Tools({ profile, onSaveProfile }: { profile: Profile; on
         })}
 
         <Notice>
-          ℹ️ เครื่องมืออีก 4 ตัว (เช็กสารอาหาร · ออกกำลังกาย · แนะนำวิตามิน · ค่าตรวจร่างกาย · แบบประเมินความเครียด)
+          เครื่องมืออีก 4 ตัว (เช็กสารอาหาร · ออกกำลังกาย · แนะนำวิตามิน · ค่าตรวจร่างกาย · แบบประเมินความเครียด)
           ยังอยู่ที่เว็บ — จะยกมาในรอบถัดไป
         </Notice>
       </ScrollView>
@@ -113,7 +122,7 @@ function TextField({
 
 function Result({ children }: { children: React.ReactNode }) {
   return (
-    <View style={{ backgroundColor: C.tealSoft, borderRadius: 12, padding: S.md, marginTop: S.xs }}>{children}</View>
+    <View style={{ backgroundColor: C.tealSoft, borderRadius: R.inner, padding: S.md, marginTop: S.xs }}>{children}</View>
   );
 }
 
@@ -138,7 +147,7 @@ function useAutoSave(
 function SavedHint() {
   return (
     <View style={{ marginTop: S.sm }}>
-      <Small muted>✓ จำค่านี้ไว้ให้แล้ว — เครื่องมืออื่นและหน้า "วันนี้" ใช้ค่านี้ได้เลย</Small>
+      <Small muted>จำค่านี้ไว้ให้แล้ว — เครื่องมืออื่นและหน้า "วันนี้" ใช้ค่านี้ได้เลย</Small>
     </View>
   );
 }
@@ -295,7 +304,7 @@ const s = StyleSheet.create({
     flex: 1,
     borderWidth: 1.5,
     borderColor: C.line,
-    borderRadius: 12,
+    borderRadius: R.input,
     paddingHorizontal: S.md,
     paddingVertical: 12,
     fontSize: 16,

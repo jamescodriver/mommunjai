@@ -17,6 +17,9 @@ export interface Rhythm {
   needs?: { label: string; field: "period" | "gestational" | "weight" };
   /** ช่วงมีโอกาสตั้งครรภ์อยู่ในวันนี้ไหม (ใช้เน้นสีการ์ด) */
   inFertileWindow?: boolean;
+  /** ── ข้อมูลวาดวงแหวนหน้าแรก ──
+   *  progress 0–1 · **null = ข้อมูลไม่พอ ให้วาดวงจางอย่างเดียว ห้ามวาดเต็มหลอก ๆ** */
+  ring: { progress: number | null; highlight?: { start: number; end: number } | null };
 }
 
 export function buildRhythm(p: Profile): Rhythm {
@@ -28,6 +31,7 @@ export function buildRhythm(p: Profile): Rhythm {
         headline: "ยังไม่รู้อายุครรภ์ของคุณ",
         sub: null,
         needs: { label: "กรอกอายุครรภ์", field: "gestational" },
+        ring: { progress: null },
       };
     }
     // เดินอายุครรภ์ต่อจากวันที่กรอกไว้ ไม่ให้ค้างอยู่ที่ตัวเลขเดิม
@@ -37,15 +41,17 @@ export function buildRhythm(p: Profile): Rhythm {
     return {
       headline: `อายุครรภ์ ${wk} สัปดาห์`,
       sub: `ไตรมาสที่ ${tri}`,
+      ring: { progress: Math.min(1, wk / 40) },
     };
   }
 
   if (p.stage === "lactating") {
-    if (!p.planStartedOn) return { headline: "ช่วงฟื้นฟูหลังคลอด", sub: null };
+    if (!p.planStartedOn) return { headline: "ช่วงฟื้นฟูหลังคลอด", sub: null, ring: { progress: null } };
     const wk = Math.floor(daysBetween(p.planStartedOn, today) / 7);
     return {
       headline: `สัปดาห์ที่ ${wk + 1} ของการดูแลตัวเอง`,
       sub: "ช่วงฟื้นฟูร่างกายคุณแม่",
+      ring: { progress: Math.min(1, (wk * 7 + 1) / 90) },
     };
   }
 
@@ -54,6 +60,7 @@ export function buildRhythm(p: Profile): Rhythm {
     return {
       headline: `วันที่ ${d} ของแผนบำรุง 90 วัน`,
       sub: "อสุจิใช้เวลาพัฒนาจนสมบูรณ์ราว 90 วัน",
+      ring: { progress: Math.min(1, d / 90) },
     };
   }
 
@@ -63,6 +70,7 @@ export function buildRhythm(p: Profile): Rhythm {
       headline: "ยังไม่รู้จังหวะรอบเดือนของคุณ",
       sub: null,
       needs: { label: "กรอกวันแรกของประจำเดือนล่าสุด", field: "period" },
+      ring: { progress: null },
     };
   }
 
@@ -73,6 +81,7 @@ export function buildRhythm(p: Profile): Rhythm {
       headline: "ยังคำนวณจังหวะรอบเดือนไม่ได้",
       sub: res.error,
       needs: { label: "แก้ไขวันแรกของประจำเดือน", field: "period" },
+      ring: { progress: null },
     };
   }
 
@@ -86,10 +95,17 @@ export function buildRhythm(p: Profile): Rhythm {
   else if (toFertileStart > 0) sub = `ช่วงมีโอกาสอีก ${toFertileStart} วัน`;
   else sub = "ช่วงมีโอกาสของรอบนี้ผ่านไปแล้ว";
 
+  // ช่วงมีโอกาสคิดเป็นสัดส่วนของรอบ เพื่อวาดเป็นส่วนโค้งบนวงแหวน
+  const fsDay = daysBetween(p.lastPeriodStart, res.fertileStart) % cycleLength;
+  const feDay = daysBetween(p.lastPeriodStart, res.fertileEnd) % cycleLength;
+  const highlight =
+    feDay >= fsDay ? { start: fsDay / cycleLength, end: (feDay + 1) / cycleLength } : null;
+
   return {
     headline: `วันที่ ${dayOfCycle} ของรอบเดือน`,
     sub,
     inFertileWindow: inWindow,
+    ring: { progress: dayOfCycle / cycleLength, highlight },
   };
 }
 

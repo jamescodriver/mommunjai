@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { C, T, S, shadow } from "../theme";
-import { Body, Small, Notice } from "../components/ui";
+import { C, T, S, R, shadow } from "../theme";
+import { Body, Small, Notice, Tappable } from "../components/ui";
 import { STAGE_LABEL, STAGE_DESC } from "../rhythm";
 import type { Stage } from "../store";
 
@@ -24,19 +24,15 @@ export default function Onboarding({ onPick }: { onPick: (s: Stage) => void }) {
         </View>
 
         {STAGES.map((st) => (
-          <Pressable
-            key={st}
-            onPress={() => onPick(st)}
-            style={({ pressed }) => [s.opt, pressed && { opacity: 0.7, transform: [{ scale: 0.99 }] }]}
-          >
+          <Tappable key={st} onPress={() => onPick(st)} accessibilityLabel={STAGE_LABEL[st]} style={s.opt}>
             <Text style={[T.h3, { color: C.ink }]}>{STAGE_LABEL[st]}</Text>
             <Text style={[T.small, { color: C.muted, marginTop: 2 }]}>{STAGE_DESC[st]}</Text>
-          </Pressable>
+          </Tappable>
         ))}
 
         <View style={{ marginTop: S.md }}>
           <Notice>
-            ℹ️ เลือกผิดเปลี่ยนทีหลังได้ตลอด — ข้อมูลเก็บอยู่ในเครื่องคุณเท่านั้น ยังไม่ส่งออกไปไหน
+            เลือกผิดเปลี่ยนทีหลังได้ตลอด — ข้อมูลเก็บอยู่ในเครื่องคุณเท่านั้น ยังไม่ส่งออกไปไหน
           </Notice>
         </View>
         <View style={{ marginTop: S.sm }}>
@@ -53,11 +49,9 @@ export default function Onboarding({ onPick }: { onPick: (s: Stage) => void }) {
 const s = StyleSheet.create({
   opt: {
     backgroundColor: C.white,
-    borderRadius: 16,
+    borderRadius: R.card,
     padding: S.lg,
     marginBottom: S.md,
-    borderWidth: 1,
-    borderColor: C.line,
-    ...shadow,
+    ...shadow.soft,
   },
 });

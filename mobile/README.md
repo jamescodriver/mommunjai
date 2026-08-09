@@ -1,7 +1,8 @@
 # Mommunjai Mobile — รุ่นทดลอง (ยังไม่ปล่อยขึ้นร้าน)
 
 แอปมือถือต่อยอดจากเว็บ Mommunjai · React Native (Expo) · iOS + Android
-สเปกเต็ม: [`../docs/mobile/PRD-MOBILE-APP.md`](../docs/mobile/PRD-MOBILE-APP.md)
+· สเปกฟีเจอร์: [`../docs/mobile/PRD-MOBILE-APP.md`](../docs/mobile/PRD-MOBILE-APP.md)
+· สเปกงานออกแบบ: [`../docs/mobile/DESIGN-MOBILE.md`](../docs/mobile/DESIGN-MOBILE.md) (แนว 2D โค้งมน อ้างอิง FLO)
 
 ---
 
@@ -58,7 +59,9 @@ mobile/
   App.tsx              โครงแอป + bottom tabs + state กลาง
   metro.config.js      🔑 ตั้ง alias @shared → ../lib (โค้ดคำนวณชุดเดียวกับเว็บ)
   src/
-    theme.ts           สี/ตัวอักษรตาม CI จริง (docs/DESIGN.md)
+    theme.ts           โทเคนสี/ความโค้ง/เงา/ตัวอักษร (CI จาก docs/DESIGN.md)
+    components/icons.tsx   ไอคอน SVG เส้นมน — แทน emoji ทั้งหมด
+    components/RhythmRing.tsx  วงแหวนจังหวะหน้าแรก (องค์ประกอบเอกลักษณ์)
     store.ts           เก็บข้อมูลในเครื่อง (AsyncStorage)
     rhythm.ts          "จังหวะวันนี้" + งานประจำวัน แยกตามช่วงชีวิต
     components/ui.tsx  ปุ่ม การ์ด ช่องติ๊ก แถบความคืบหน้า
@@ -67,6 +70,8 @@ mobile/
 
 ### 🔴 กฎที่ห้ามผิด (มีคอมเมนต์กำกับในโค้ดทุกจุด)
 
+0. **ห้ามใช้ emoji เป็นไอคอน** — ใช้ SVG ใน `src/components/icons.tsx`
+   (emoji หน้าตาต่างกันทุกเครื่อง เปลี่ยนสีตามธีมไม่ได้ และชนกับลุคพาสเทล)
 1. **โค้ดคำนวณห้าม copy มาไว้ในแอป** — ใช้ `@shared/calc/*` ซึ่งชี้ไปที่ `lib/` ของเว็บ
    ถ้าแยกเป็น 2 ชุด Safety Matrix (กฎว่าสินค้าไหนห้ามใช้ช่วงไหน) จะหลุดจากกันได้ = อันตรายจริง
 2. **checklist รายวันห้ามเป็นสินค้า** — ต้องเป็นพฤติกรรมเท่านั้น

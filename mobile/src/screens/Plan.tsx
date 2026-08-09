@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text, ScrollView, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { C, T, S } from "../theme";
-import { Card, H2, H3, Body, Small, Progress, Notice, Btn } from "../components/ui";
+import { C, T, S, R } from "../theme";
+import { Card, H2, H3, Body, Small, Progress, Notice, Btn, IconBubble } from "../components/ui";
+import { IconChat, IconCheck, IconSparkle } from "../components/icons";
 import { todayISO, daysBetween, activeDays } from "../store";
 import type { Profile, DailyLogs } from "../store";
 
@@ -28,7 +29,7 @@ export default function Plan({ profile, logs }: { profile: Profile; logs: DailyL
           <Small muted>ไข่และอสุจิใช้เวลาพัฒนาจนสมบูรณ์ขึ้นราว 90 วัน</Small>
         </View>
 
-        <Card tinted="teal">
+        <Card tint="teal">
           <Text style={[T.h1, { color: C.tealDeep }]}>วันที่ {planDay}</Text>
           <View style={{ marginBottom: S.sm }}>
             <Body muted>จาก 90 วัน</Body>
@@ -43,10 +44,14 @@ export default function Plan({ profile, logs }: { profile: Profile; logs: DailyL
           const isNow = planDay >= m.from && planDay <= m.to;
           const isPast = planDay > m.to;
           return (
-            <Card key={m.title} tinted={isNow ? "rose" : undefined}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
-                <Text style={{ fontSize: 18 }}>{isPast ? "✅" : isNow ? "📍" : "⚪️"}</Text>
-                <H3>{m.title}</H3>
+            <Card key={m.title} tint={isNow ? "rose" : undefined} lifted={isNow}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
+                <IconBubble tint={isNow ? "rose" : isPast ? "teal" : "lavender"}>
+                  {isPast ? <IconCheck size={22} color={C.tealDeep} />
+                   : isNow ? <IconSparkle size={22} color={C.roseDeep} />
+                   : <Text style={[T.h3, { color: C.muted }]}>{m.from}</Text>}
+                </IconBubble>
+                <View style={{ flex: 1 }}><H3>{m.title}</H3></View>
               </View>
               <View style={{ marginTop: S.xs }}>
                 <Small muted>{m.desc}</Small>
@@ -71,11 +76,11 @@ export default function Plan({ profile, logs }: { profile: Profile; logs: DailyL
               ทีม Baby & Mom ส่งให้ทาง LINE OA — จะได้ตอบคำถามเฉพาะของคุณได้ด้วย
             </Small>
           </View>
-          <Btn label="💬 คุยกับทีม Baby & Mom" onPress={() => Linking.openURL(LINE_OA)} />
+          <Btn label="คุยกับทีม Baby & Mom" icon={<IconChat size={20} color={C.white} />} onPress={() => Linking.openURL(LINE_OA)} />
         </Card>
 
         <Notice>
-          ⚠️ แผนนี้เป็นคำแนะนำทั่วไปเพื่อเตรียมความพร้อม ไม่ใช่การวินิจฉัยหรือรักษาโรค
+          แผนนี้เป็นคำแนะนำทั่วไปเพื่อเตรียมความพร้อม ไม่ใช่การวินิจฉัยหรือรักษาโรค
           และไม่รับประกันการตั้งครรภ์
         </Notice>
       </ScrollView>

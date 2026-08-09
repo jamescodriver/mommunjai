@@ -5,7 +5,8 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { C, T } from "./src/theme";
+import { C, T, R, shadow } from "./src/theme";
+import { IconHome, IconTools, IconPlan, IconMe } from "./src/components/icons";
 import {
   loadProfile, saveProfile, loadLogs, saveLogs, resetAll, todayISO,
   type Profile, type DailyLogs, type Stage,
@@ -107,35 +108,45 @@ export default function App() {
             tabBarInactiveTintColor: C.muted,
             // ภาษาไทยมีสระบน-ล่าง ต้องการความสูงมากกว่าอังกฤษ — ถ้าใช้ค่า default
             // ตัวอักษรจะโดนตัดครึ่ง (เจอตอนเทสต์จริง 8/8)
-            tabBarStyle: { backgroundColor: C.white, borderTopColor: C.line, height: 76, paddingBottom: 14, paddingTop: 8 },
+            tabBarStyle: {
+              backgroundColor: C.surface,
+              borderTopWidth: 0,
+              height: 78, paddingBottom: 14, paddingTop: 10,
+              // ขอบบนโค้ง + เงานุ่ม ให้แถบล่างดู "ลอย" ตามลุค FLO
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              position: "absolute",
+              ...shadow.lifted,
+            },
             tabBarLabelStyle: { fontSize: 11.5, lineHeight: 18, includeFontPadding: false },
-            tabBarIconStyle: { marginBottom: 0 },
+            tabBarIconStyle: { marginBottom: 2 },
+            // แถบล่างลอยทับเนื้อหา — เผื่อที่ให้ scroll ไม่โดนบัง
+            sceneStyle: { paddingBottom: 78 },
           }}
         >
           <Tab.Screen
             name="วันนี้"
-            options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🏠</Text> }}
+            options={{ tabBarIcon: ({ color }) => <IconHome size={25} color={color} /> }}
           >
             {() => <Today profile={profile} logs={logs} onToggleTask={toggleTask} onNeedInput={needInput} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="เครื่องมือ"
-            options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🧮</Text> }}
+            options={{ tabBarIcon: ({ color }) => <IconTools size={25} color={color} /> }}
           >
             {() => <Tools profile={profile} onSaveProfile={patchProfile} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="แผนของฉัน"
-            options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📅</Text> }}
+            options={{ tabBarIcon: ({ color }) => <IconPlan size={25} color={color} /> }}
           >
             {() => <Plan profile={profile} logs={logs} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="ฉัน"
-            options={{ tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>👤</Text> }}
+            options={{ tabBarIcon: ({ color }) => <IconMe size={25} color={color} /> }}
           >
             {() => <Me profile={profile} onSaveProfile={patchProfile} onChangeStage={changeStage} onReset={doReset} />}
           </Tab.Screen>

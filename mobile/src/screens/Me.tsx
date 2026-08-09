@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, Alert, Pressable, TextInput, StyleSheet, Linking } from "react-native";
+import { View, Text, ScrollView, Alert, TextInput, StyleSheet, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { C, T, S } from "../theme";
-import { Card, H2, H3, Body, Small, Notice, Btn } from "../components/ui";
+import { C, T, S, R, shadow } from "../theme";
+import { Card, H2, H3, Body, Small, Notice, Btn, Tappable } from "../components/ui";
+import { IconChat } from "../components/icons";
 import { STAGE_LABEL, STAGE_DESC } from "../rhythm";
 import type { Profile, Stage } from "../store";
 
@@ -68,18 +69,18 @@ export default function Me({
           ) : (
             <View>
               {STAGES.map((st) => (
-                <Pressable
+                <Tappable
                   key={st}
                   onPress={() => confirmStage(st)}
-                  style={({ pressed }) => [
+                  accessibilityLabel={STAGE_LABEL[st]}
+                  style={[
                     s.stageOpt,
-                    st === profile.stage && { borderColor: C.teal, backgroundColor: C.tealSoft },
-                    pressed && { opacity: 0.7 },
+                    st === profile.stage ? { borderColor: C.teal, backgroundColor: C.tealSoft } : {},
                   ]}
                 >
                   <Body>{STAGE_LABEL[st]}</Body>
                   {st === profile.stage ? <Small muted>ตอนนี้</Small> : null}
-                </Pressable>
+                </Tappable>
               ))}
               <View style={{ marginTop: S.sm }}>
                 <Btn label="ยกเลิก" variant="quiet" onPress={() => setEditingStage(false)} />
@@ -138,11 +139,11 @@ export default function Me({
           <View style={{ marginTop: S.xs, marginBottom: S.md }}>
             <Small muted>มีคำถามเรื่องแผนของคุณ ทักทีม Baby & Mom ได้เลย</Small>
           </View>
-          <Btn label="💬 เปิด LINE OA" variant="ghost" onPress={() => Linking.openURL("https://lin.ee/fBa4xkz")} />
+          <Btn icon={<IconChat size={20} color={C.tealDeep} />} label="เปิด LINE OA" variant="ghost" onPress={() => Linking.openURL("https://lin.ee/fBa4xkz")} />
         </Card>
 
         <Notice>
-          ⚠️ ข้อมูลในแอปเป็นคำแนะนำทั่วไปเพื่อการดูแลสุขภาพ ไม่แทนคำวินิจฉัยของแพทย์
+          ข้อมูลในแอปเป็นคำแนะนำทั่วไปเพื่อการดูแลสุขภาพ ไม่แทนคำวินิจฉัยของแพทย์
         </Notice>
         <View style={{ marginTop: S.md, alignItems: "center" }}>
           <Small muted>Mommunjai · รุ่นทดลอง (ยังไม่ปล่อยขึ้นร้าน)</Small>
@@ -154,12 +155,12 @@ export default function Me({
 
 const s = StyleSheet.create({
   input: {
-    borderWidth: 1.5, borderColor: C.line, borderRadius: 12,
+    borderWidth: 1.5, borderColor: C.line, borderRadius: R.input,
     paddingHorizontal: S.md, paddingVertical: 12, fontSize: 16,
     color: C.ink, backgroundColor: C.white, marginTop: 4, marginBottom: S.md, minHeight: 48,
   },
   stageOpt: {
-    borderWidth: 1.5, borderColor: C.line, borderRadius: 12,
+    borderWidth: 1.5, borderColor: C.line, borderRadius: R.input,
     padding: S.md, marginBottom: S.sm, minHeight: 48, justifyContent: "center",
   },
 });
