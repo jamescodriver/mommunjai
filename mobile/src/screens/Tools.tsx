@@ -3,7 +3,13 @@ import { View, Text, ScrollView, TextInput, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { C, T, S, R } from "../theme";
 import { Card, H2, H3, Body, Small, Notice, Tappable, IconBubble } from "../components/ui";
-import { IconCycle, IconDrop, IconLeaf, IconScale, IconMoon, IconChevron } from "../components/icons";
+import { IconCycle, IconDrop, IconLeaf, IconScale, IconMoon, IconChevron, IconSalad, IconRun, IconPill, IconClipboard, IconHeart } from "../components/icons";
+import DateField from "../components/DateField";
+import NutrientsTool from "./tools/NutrientsTool";
+import ExerciseTool from "./tools/ExerciseTool";
+import VitaminsTool from "./tools/VitaminsTool";
+import LabsTool from "./tools/LabsTool";
+import StressTool from "./tools/StressTool";
 import type { Profile } from "../store";
 
 // ใช้เครื่องคำนวณชุดเดียวกับเว็บทั้งหมด (ผ่าน alias @shared → <repo>/lib)
@@ -13,7 +19,7 @@ import { calcOvulation } from "@shared/calc/ovulation";
 import { bmiScale } from "@shared/calc/bmi";
 import { bedtimesForWake } from "@shared/calc/sleep";
 
-type ToolKey = "water" | "protein" | "ovulation" | "bmi" | "sleep";
+type ToolKey = "ovulation" | "water" | "protein" | "nutrients" | "bmi" | "sleep" | "exercise" | "vitamins" | "labs" | "stress";
 
 type Tint = "teal" | "rose" | "lavender" | "cream" | "mint";
 const TOOLS: {
@@ -23,8 +29,13 @@ const TOOLS: {
   { key: "ovulation", title: "นับวันไข่ตก", desc: "หาช่วงวันมีโอกาสจากรอบเดือน", tint: "rose", Icon: IconCycle, iconColor: C.roseDeep },
   { key: "water", title: "เช็คปริมาณน้ำ", desc: "ควรดื่มน้ำวันละเท่าไหร่", tint: "teal", Icon: IconDrop, iconColor: C.tealDeep },
   { key: "protein", title: "คำนวณโปรตีน", desc: "โปรตีนต่อวันเพื่อบำรุงไข่", tint: "mint", Icon: IconLeaf, iconColor: C.tealDeep },
-  { key: "bmi", title: "ค่า BMI", desc: "น้ำหนักอยู่ในเกณฑ์ไหน", tint: "cream", Icon: IconScale, iconColor: C.gold },
+  { key: "nutrients", title: "เช็กสารอาหาร", desc: "วันนี้กินครบตามหลักโภชนาการไหม", tint: "mint", Icon: IconSalad, iconColor: C.tealDeep },
   { key: "sleep", title: "คำนวณการนอน", desc: "ควรเข้านอนกี่โมงถึงตื่นทัน", tint: "lavender", Icon: IconMoon, iconColor: "#6E5FA8" },
+  { key: "exercise", title: "แนะนำการออกกำลังกาย", desc: "โปรแกรมที่เหมาะกับช่วงของคุณ", tint: "cream", Icon: IconRun, iconColor: C.gold },
+  { key: "vitamins", title: "แนะนำวิตามิน", desc: "เลือกวิตามินให้ตรงกับคุณ", tint: "rose", Icon: IconPill, iconColor: C.roseDeep },
+  { key: "bmi", title: "ค่า BMI", desc: "น้ำหนักอยู่ในเกณฑ์ไหน", tint: "cream", Icon: IconScale, iconColor: C.gold },
+  { key: "labs", title: "ตรวจร่างกาย ควรตรวจอะไรบ้าง", desc: "ความรู้ฮอร์โมน/ค่าน้ำเชื้อ", tint: "lavender", Icon: IconClipboard, iconColor: "#6E5FA8" },
+  { key: "stress", title: "แบบประเมินความเครียด", desc: "5 ข้อสั้น ๆ จากกรมสุขภาพจิต (ST-5)", tint: "teal", Icon: IconHeart, iconColor: C.tealDeep },
 ];
 
 export default function Tools({ profile, onSaveProfile }: { profile: Profile; onSaveProfile: (p: Partial<Profile>) => void }) {
@@ -65,6 +76,11 @@ export default function Tools({ profile, onSaveProfile }: { profile: Profile; on
                   {t.key === "ovulation" && <OvulationTool profile={profile} onSaveProfile={onSaveProfile} />}
                   {t.key === "bmi" && <BmiTool profile={profile} onSaveProfile={onSaveProfile} />}
                   {t.key === "sleep" && <SleepTool />}
+                  {t.key === "nutrients" && <NutrientsTool />}
+                  {t.key === "exercise" && <ExerciseTool profile={profile} />}
+                  {t.key === "vitamins" && <VitaminsTool profile={profile} />}
+                  {t.key === "labs" && <LabsTool profile={profile} />}
+                  {t.key === "stress" && <StressTool />}
                 </View>
               ) : null}
             </Card>
@@ -72,8 +88,8 @@ export default function Tools({ profile, onSaveProfile }: { profile: Profile; on
         })}
 
         <Notice>
-          เครื่องมืออีก 4 ตัว (เช็กสารอาหาร · ออกกำลังกาย · แนะนำวิตามิน · ค่าตรวจร่างกาย · แบบประเมินความเครียด)
-          ยังอยู่ที่เว็บ — จะยกมาในรอบถัดไป
+          ข้อมูลทั้งหมดเป็นคำแนะนำทั่วไปเพื่อการดูแลสุขภาพ ไม่ใช่การวินิจฉัยหรือรักษาโรค
+          และไม่แทนคำวินิจฉัยของแพทย์
         </Notice>
       </ScrollView>
     </SafeAreaView>
@@ -223,7 +239,7 @@ function OvulationTool({ profile, onSaveProfile }: { profile: Profile; onSavePro
 
   return (
     <View>
-      <TextField label="วันแรกของประจำเดือนล่าสุด (ปปปป-ดด-วว)" value={d} onChange={setD} placeholder="2026-08-01" />
+      <DateField label="วันแรกของประจำเดือนล่าสุด" value={d} onChange={setD} />
       <NumField label="ความยาวรอบเดือน" value={c} onChange={setC} placeholder="28" suffix="วัน" />
       {res && !("error" in res) ? (
         <>

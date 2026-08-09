@@ -202,3 +202,64 @@ export function IconSparkle(p: IconProps) {
     </Wrap>
   );
 }
+
+/** สลัด/จาน (เช็กสารอาหาร) */
+export function IconSalad(p: IconProps) {
+  const { size, color, width } = base(p);
+  return (
+    <Wrap size={size}>
+      <Path d="M3.8 12.6h16.4a8.2 8.2 0 0 1-16.4 0z" {...strokeProps(color, width)} />
+      <Line x1="2.6" y1="20.4" x2="21.4" y2="20.4" {...strokeProps(color, width)} />
+      <Path d="M9.6 12.4a2.6 2.6 0 0 1 4.8-1.6" {...strokeProps(color, width)} />
+      <Circle cx="15.4" cy="8.6" r="1.6" {...strokeProps(color, width)} />
+    </Wrap>
+  );
+}
+
+/** คนวิ่ง (ออกกำลังกาย) */
+export function IconRun(p: IconProps) {
+  const { size, color, width } = base(p);
+  return (
+    <Wrap size={size}>
+      <Circle cx="14.6" cy="4.6" r="2" {...strokeProps(color, width)} />
+      <Path d="M8.2 21l2.8-5.4 3-2.2-1.4-4.4-3.4 2-1.6 3" {...strokeProps(color, width)} />
+      <Path d="M12.6 9l3.6 1.2 1.4 3.4 2.6.8" {...strokeProps(color, width)} />
+      <Path d="M13.8 13.4 16 17.6l.4 3.4" {...strokeProps(color, width)} />
+    </Wrap>
+  );
+}
+
+/** แคปซูล (วิตามิน) */
+export function IconPill(p: IconProps) {
+  const { size, color, width } = base(p);
+  return (
+    <Wrap size={size}>
+      <Path d="M9.4 3.8a4.4 4.4 0 0 1 6.2 6.2l-5.6 5.6a4.4 4.4 0 0 1-6.2-6.2z" {...strokeProps(color, width)} />
+      <Line x1="6.6" y1="6.6" x2="12.8" y2="12.8" {...strokeProps(color, width)} />
+      <Circle cx="17.6" cy="17.6" r="3.4" {...strokeProps(color, width)} />
+    </Wrap>
+  );
+}
+
+/** คลิปบอร์ด (ค่าตรวจร่างกาย) */
+export function IconClipboard(p: IconProps) {
+  const { size, color, width } = base(p);
+  return (
+    <Wrap size={size}>
+      <Path d="M8.6 4.4H6.4a1.8 1.8 0 0 0-1.8 1.8v13a1.8 1.8 0 0 0 1.8 1.8h11.2a1.8 1.8 0 0 0 1.8-1.8v-13a1.8 1.8 0 0 0-1.8-1.8h-2.2" {...strokeProps(color, width)} />
+      <Path d="M9.4 2.6h5.2a.9.9 0 0 1 .9.9v1.8a.9.9 0 0 1-.9.9H9.4a.9.9 0 0 1-.9-.9V3.5a.9.9 0 0 1 .9-.9z" {...strokeProps(color, width)} />
+      <Line x1="8.6" y1="11.4" x2="15.4" y2="11.4" {...strokeProps(color, width)} />
+      <Line x1="8.6" y1="15.6" x2="13" y2="15.6" {...strokeProps(color, width)} />
+    </Wrap>
+  );
+}
+
+/** หัวใจ (ความเครียด/ความรู้สึก) */
+export function IconHeart(p: IconProps) {
+  const { size, color, width } = base(p);
+  return (
+    <Wrap size={size}>
+      <Path d="M12 20.4s-7.6-4.6-7.6-9.8a4.4 4.4 0 0 1 7.6-3 4.4 4.4 0 0 1 7.6 3c0 5.2-7.6 9.8-7.6 9.8z" {...strokeProps(color, width)} />
+    </Wrap>
+  );
+}
