@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRD — Mommunjai Mobile App (ร่างแรก)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --indigo:#6366F1; --indigo-deep:#4338CA; --indigo-soft:#E9E9FE;
+  --red:#DC2626; --red-deep:#991B1B; --red-soft:#FEE2E2;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE; --muted:#6B7280;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.7;background:var(--bg);font-size:15.5px}
+.wrap{max-width:920px;margin:0 auto;padding:22px 18px 70px}
+
+header.top{background:linear-gradient(125deg,var(--teal) 0%,var(--teal-deep) 55%,var(--rose-deep) 100%);color:#fff;padding:28px 24px;border-radius:20px;margin-bottom:20px;box-shadow:0 10px 30px rgba(21,156,151,.22)}
+header.top .eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.85;font-weight:600}
+header.top h1{margin:6px 0 6px;font-family:Poppins,Prompt,sans-serif;font-size:26px;font-weight:600;line-height:1.3}
+header.top p{margin:0;font-size:13.5px;opacity:.95}
+header.top .meta{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.28);font-size:12px;opacity:.9;display:flex;flex-wrap:wrap;gap:6px 18px}
+
+.toc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:20px}
+.toc b{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px}
+.toc a{display:inline-block;font-size:13px;color:var(--teal-deep);text-decoration:none;background:var(--teal-soft);padding:5px 12px;border-radius:999px;margin:0 5px 5px 0}
+.toc a:hover{background:#D3EFEE}
+
+section.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin-bottom:18px}
+section.card > h2{margin:0 0 4px;font-family:Poppins,Prompt,sans-serif;font-size:19px;font-weight:600;color:var(--teal-deep);scroll-margin-top:16px}
+section.card > .sub{margin:0 0 16px;font-size:13px;color:var(--muted)}
+h3{font-size:16px;font-weight:600;margin:22px 0 8px}
+h4{font-size:14px;font-weight:600;margin:16px 0 6px;color:#374151}
+p{margin:0 0 12px}
+ul,ol{margin:0 0 12px;padding-left:22px}
+li{margin-bottom:5px}
+code{background:#F3F4F6;padding:1px 6px;border-radius:5px;font-size:.88em;font-family:ui-monospace,Menlo,monospace}
+
+.lede{font-size:16px;background:linear-gradient(90deg,var(--teal-soft),transparent);border-left:4px solid var(--teal);padding:14px 16px;border-radius:0 12px 12px 0;margin-bottom:18px}
+.callout{border-radius:12px;padding:13px 16px;margin:14px 0;font-size:14px}
+.callout.red{background:var(--red-soft);border-left:4px solid var(--red)}
+.callout.gold{background:var(--gold-soft);border-left:4px solid var(--gold)}
+.callout.teal{background:var(--teal-soft);border-left:4px solid var(--teal)}
+.callout.rose{background:var(--rose-soft);border-left:4px solid var(--rose-deep)}
+.callout b{display:block;margin-bottom:3px}
+
+.tblwrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:480px}
+thead th{background:var(--teal-soft);color:var(--teal-deep);font-weight:600;text-align:left;padding:9px 12px;font-size:12.5px;white-space:nowrap}
+tbody td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:#FAFDFD}
+td.id{font-family:Poppins,Prompt,sans-serif;font-weight:600;color:var(--teal-deep);white-space:nowrap}
+
+.flow{background:#F8FAFB;border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.85;white-space:pre;overflow-x:auto;color:#374151}
+
+.phone{max-width:290px;margin:16px auto;border:9px solid #2A3441;border-radius:32px;background:#fff;overflow:hidden;box-shadow:0 12px 32px rgba(0,0,0,.16)}
+.phone .status{background:#2A3441;height:20px}
+.phone .body{padding:12px;min-height:330px;background:linear-gradient(170deg,#FFF6FA,#F2FCFB)}
+.phone .tabs{display:flex;border-top:1px solid var(--line);background:#fff}
+.phone .tabs div{flex:1;text-align:center;padding:9px 2px;font-size:9.5px;color:var(--muted)}
+.phone .tabs div.on{color:var(--teal-deep);font-weight:600;background:var(--teal-soft)}
+.pcard{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(0,0,0,.05);font-size:11.5px}
+.pcard .t{font-weight:600;font-size:12px;margin-bottom:3px}
+.pcard .m{color:var(--muted);font-size:10.5px}
+.pcard.hi{background:linear-gradient(120deg,var(--teal-soft),var(--rose-soft))}
+.chk{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:11px}
+.chk .box{width:15px;height:15px;border:1.5px solid var(--teal);border-radius:4px;flex-shrink:0}
+.chk .box.on{background:var(--teal);border-color:var(--teal);position:relative}
+.chk .box.on::after{content:"✓";color:#fff;font-size:11px;position:absolute;left:2.5px;top:-2px}
+.bar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--rose));width:26%}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.pill.p0{background:var(--red);color:#fff}
+.pill.p1{background:var(--gold);color:#fff}
+.pill.p2{background:var(--muted);color:#fff}
+.pill.block{background:var(--red-soft);color:var(--red-deep)}
+
+details.q{border:1.5px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;background:#fff}
+details.q[open]{border-color:var(--rose)}
+details.q.blocker{border-color:var(--red);background:#FFFBFB}
+details.q summary{padding:13px 16px;cursor:pointer;font-weight:600;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:9px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"▸";color:var(--muted);transition:.15s;display:inline-block}
+details.q[open] summary::before{transform:rotate(90deg)}
+details.q .qbody{padding:0 16px 16px}
+.owner{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:auto;white-space:nowrap}
+.ansbox{width:100%;min-height:66px;font-family:inherit;font-size:13.5px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);resize:vertical;margin-top:8px}
+.ansbox:focus{outline:2px solid var(--rose);border-color:var(--rose)}
+.saved{font-size:11px;color:var(--teal-deep);opacity:0;transition:.3s;margin-top:3px}
+.saved.show{opacity:1}
+
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:500;padding:10px 18px;border-radius:999px;background:var(--rose);color:#fff;box-shadow:0 4px 14px rgba(249,120,179,.32)}
+.btn.ghost{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal);box-shadow:none}
+
+footer.note{margin-top:22px;font-size:12px;color:#8B95A1;text-align:center;line-height:1.8}
+@media(max-width:620px){
+  body{font-size:15px}
+  .wrap{padding:16px 13px 60px}
+  section.card{padding:18px 16px}
+  header.top{padding:22px 18px}
+  header.top h1{font-size:21px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Sub-project · ร่างแรก รอรีวิว</div>
+  <h1>📱 PRD — Mommunjai Mobile App</h1>
+  <p>ต่อยอดจากเว็บ Mommunjai · เพื่อนคู่ใจรายวัน + ยกเครื่องมือมาครบ · ใช้ฐานข้อมูลเดียวกัน</p>
+  <div class="meta">
+    <span>เวอร์ชัน 0.1 · 8 ส.ค. 2569</span>
+    <span>React Native (Expo) · iOS + Android</span>
+    <span>ยังไม่เริ่ม dev</span>
+  </div>
+</header>
+
+<div class="toc">
+  <b>ไปที่หัวข้อ</b>
+  <a href="#sum">สรุป 1 นาที</a>
+  <a href="#problem">ปัญหา</a>
+  <a href="#goals">เป้าหมาย</a>
+  <a href="#exp">ออกแบบ Experience</a>
+  <a href="#stories">User Stories</a>
+  <a href="#req">Requirements</a>
+  <a href="#arch">สถาปัตยกรรม</a>
+  <a href="#oq">คำถามที่ต้องตอบ</a>
+  <a href="#time">ลำดับงาน</a>
+  <a href="#next">ทำอะไรต่อ</a>
+</div>
+
+<section class="card" id="sum">
+  <h2>สรุปสำหรับผู้บริหาร</h2>
+  <p class="sub">อ่าน 1 นาที</p>
+
+  <div class="lede">
+    เว็บ Mommunjai วันนี้เป็น <b>เครื่องคิดเลข</b> — เข้ามา กรอก ได้ตัวเลข ได้รหัส แล้วจบ ความสัมพันธ์ย้ายไปอยู่ที่ LINE OA ทั้งหมด<br><br>
+    แอปมือถือจะเป็น <b>เพื่อนที่อยู่ด้วยทุกวัน</b> — สิ่งที่เว็บทำไม่ได้จริง ๆ มี 3 อย่าง: <b>(1) เตือนได้</b> (push) <b>(2) จำต่อเนื่องได้</b> โดยไม่ต้องกรอกซ้ำ <b>(3) ทำให้ "แผน 90 วัน" ที่เราสัญญาไว้ มองเห็นและจับต้องได้</b> — เว็บบอกว่า "90 วัน" แต่แอปบอกได้ว่า "วันที่ 23 จาก 90 · ทำได้ 18 วันแล้ว"
+  </div>
+
+  <div class="callout teal">
+    <b>สิ่งที่ไม่เปลี่ยน</b>
+    ฐานข้อมูลเดียวกับเว็บ · funnel เข้า LINE OA ยังอยู่ · Safety Matrix + เส้นแดง compliance ทุกข้อยังบังคับใช้เหมือนเดิม
+  </div>
+
+  <div class="callout red">
+    <b>⚠️ ความเสี่ยงใหญ่สุด — ต้องตัดสินใจก่อนเริ่ม</b>
+    ถ้าแอปเป็นแค่ "เว็บห่อกล่อง" Apple ปฏิเสธตาม guideline 4.2 (minimum functionality) → ดูคำถาม <b>A1</b>
+  </div>
+</section>
+
+<section class="card" id="problem">
+  <h2>1. ปัญหาที่จะแก้</h2>
+
+  <p><b>ปัญหาของผู้ใช้:</b> ผู้หญิงที่กำลังเตรียมตั้งครรภ์หรือมีบุตรยากต้องทำสิ่งเดิมซ้ำ ๆ ทุกวันเป็นเวลาหลายเดือน (กินวิตามินให้ตรงเวลา · นอนก่อน 4 ทุ่ม · กินโปรตีนให้ถึงเป้า · จับวันไข่ตก) แต่เว็บให้ได้แค่ <b>"ตัวเลขเป้าหมาย ณ วันที่กรอก"</b> แล้วปล่อยให้เขาไปจำเอง ทำเอง ไม่มีอะไรเตือน ไม่มีอะไรบอกว่าทำได้ดีแค่ไหน</p>
+
+  <p><b>ใครเจอ:</b> ผู้ใช้ทุกคนที่ผ่านแบบสอบถาม — วงจรการเตรียมตัวคือ <b>90 วัน</b> (ตามที่แบรนด์สื่อสารเอง) แต่จุดสัมผัสที่เรามีคือ "ครั้งเดียวตอนกรอกฟอร์ม" + "แชท LINE ตอนที่เขาทักมาเอง"</p>
+
+  <h4>ต้นทุนของการไม่แก้</h4>
+  <ul>
+    <li><b>ฝั่งผู้ใช้</b> — ตั้งใจดีแต่ทำไม่ต่อเนื่อง เพราะไม่มีระบบช่วยจำ คุณค่าที่เราให้ไปหายไปในไม่กี่วัน</li>
+    <li><b>ฝั่งธุรกิจ</b> — ทีมต้องออกแรงตามเอง 100% การซื้อซ้ำและการบำรุงต่อเนื่อง (แกนของสินค้ากลุ่มนี้ — ต้องกิน 3 เดือนขึ้นไป) ไม่มีอะไรพยุงเลย</li>
+    <li><b>ฝั่งข้อมูล</b> — เราไม่รู้เลยว่าคนที่รับแผนไปแล้วทำตามได้จริงแค่ไหน จึงปรับเนื้อหาจากของจริงไม่ได้</li>
+  </ul>
+
+  <div class="callout gold">
+    <b>หลักฐานที่มี / ที่ยังไม่มี</b>
+    โครงสร้าง 90 วันและ Safety Matrix มาจากเอกสารแบรนด์จริง · <b>แต่ยังไม่มีข้อมูลจริงว่า retention ของเว็บวันนี้เป็นเท่าไร</b> (ตาราง <code>events</code> เก็บอยู่แล้วแต่ยังไม่เคยดึงมาวิเคราะห์) → ดูคำถาม D1 ก่อนตั้งเป้าตัวเลข
+  </div>
+</section>
+
+<section class="card" id="goals">
+  <h2>2. เป้าหมาย และสิ่งที่จงใจไม่ทำ</h2>
+
+  <h3>เป้าหมาย</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>#</th><th>เป้าหมาย</th><th>วัดยังไง</th></tr></thead>
+    <tbody>
+      <tr><td class="id">G1</td><td><b>ทำให้ "90 วัน" เป็นเรื่องที่ทำต่อเนื่องได้จริง</b> ไม่ใช่แค่คำโฆษณา</td><td>% ผู้ใช้ที่ยังเปิดแอปในวันที่ 30</td></tr>
+      <tr><td class="id">G2</td><td><b>ลดแรงเสียดทานการกลับมาใช้ซ้ำจนเกือบเป็นศูนย์</b> — เปิดแล้วเห็นของตัวเองทันที</td><td>เวลาเปิดแอป → เห็นข้อมูลตัวเอง (เป้า &lt; 2 วิ ไม่ต้องแตะอะไร)</td></tr>
+      <tr><td class="id">G3</td><td><b>ให้ทีมเข้าหาลูกค้า "ถูกเวลา" โดยไม่ต้องเดา</b> — รู้ว่าใครกำลังเข้าช่วงไข่ตก ใครหยุดไป 5 วัน</td><td>บทสนทนาใน LINE OA ที่เริ่มจาก trigger จริง (ไม่ใช่ broadcast หว่าน)</td></tr>
+      <tr><td class="id">G4</td><td><b>เก็บข้อมูลจริงว่าคนทำตามแผนได้แค่ไหน</b></td><td>% ผู้ใช้ที่บันทึก ≥ 1 อย่าง/สัปดาห์</td></tr>
+      <tr><td class="id">G5</td><td><b>ไม่ทำลาย funnel เดิม</b></td><td>อัตรากด CTA เข้า LINE จากแอป เทียบกับเว็บ</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout gold">
+    <b>ยังไม่ตั้งตัวเลขเป้า</b>
+    เพราะยังไม่มี baseline จากเว็บ (คำถาม D1) — การตั้งเป้าลอย ๆ ตอนนี้จะกลายเป็นตัวเลขที่ไม่มีใครเชื่อทีหลัง
+  </div>
+
+  <h3>จงใจไม่ทำในเวอร์ชันแรก</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>ไม่ทำ</th><th>ทำไม</th></tr></thead>
+    <tbody>
+      <tr><td><b>ตะกร้า/จ่ายเงินในแอป</b></td><td>การขายยังอยู่ที่ LINE OA · เปิดประเด็นค่าธรรมเนียม 30% ของ Apple + งาน compliance สินค้าอีกชุด โดยไม่จำเป็นต่อการพิสูจน์คุณค่า</td></tr>
+      <tr><td><b>แชตในแอป</b></td><td>LINE OA คือที่ที่ทีมอยู่จริงและมีประวัติลูกค้าแล้ว · กล่องแชทที่ 2 = ทีมต้องเฝ้า 2 ที่ ลูกค้าสับสน</td></tr>
+      <tr><td><b>คอมมูนิตี้ / ฟีดผู้ใช้</b></td><td>เนื้อหาผู้ใช้เขียนเองในกลุ่มมีบุตรยากเสี่ยงสูง (ข้อมูลผิด · ขายตรง · ประเด็นอ่อนไหวทางใจ) ต้องมี moderation จริงจังก่อน</td></tr>
+      <tr><td><b>เชื่อมนาฬิกา/wearable</b></td><td>ทีมเคาะไว้แล้วว่าเป็น Phase 2 (PDF-13) · ต้องผ่านรีวิวสิทธิ์ข้อมูลสุขภาพเพิ่ม ทำให้ launch ช้าโดยไม่จำเป็น</td></tr>
+      <tr><td><b>AI ถ่ายรูปอาหารแปลผล</b></td><td>ทีมเคาะแล้วว่า Phase 2 (PDF-11)</td></tr>
+      <tr><td><b>แทนที่เว็บ</b></td><td>เว็บยังเป็นประตูหลักจาก Google/Facebook (คนไม่โหลดแอปเพื่อลองครั้งแรก) · แอปคือชั้นความสัมพันธ์ ไม่ใช่ตัวแทน</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="card" id="exp">
+  <h2>3. ออกแบบ Experience</h2>
+  <p class="sub">หัวใจของเอกสารนี้</p>
+
+  <h3>3.1 หลักคิด: จากเครื่องคิดเลข → เพื่อนคู่ใจ</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>เว็บวันนี้</th><th>แอป</th></tr></thead>
+    <tbody>
+      <tr><td><b>หน่วยของคุณค่า</b></td><td>"ตัวเลขของคุณคือ X"</td><td>"วันนี้คุณควรทำอะไร"</td></tr>
+      <tr><td><b>จังหวะการใช้</b></td><td>ครั้งเดียว</td><td>ทุกวัน (30 วินาที)</td></tr>
+      <tr><td><b>ความจำ</b></td><td>ลืมทุกครั้งที่ปิดเบราว์เซอร์</td><td>จำต่อเนื่อง</td></tr>
+      <tr><td><b>ใครเริ่มบทสนทนา</b></td><td>ผู้ใช้ต้องนึกได้เอง</td><td>แอปเตือนตามจังหวะของเขา</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>3.2 วงจรหลัก 3 ชั้น</h3>
+  <h4>ชั้นที่ 1 — วงจรรายวัน (30 วินาที) 🔁 ตัวขับ retention</h4>
+  <div class="flow">เช้า: push "วันนี้วันที่ 12 ของรอบ — ใกล้ช่วงไข่ตกแล้วนะคะ"
+  ↓
+เปิดแอป → เห็นการ์ด "วันนี้ของคุณ" ทันที
+           (ไม่ต้องกรอก · ไม่ต้อง login)
+  ↓
+แตะติ๊ก 2-3 อย่าง (กินวิตามินแล้ว · ดื่มน้ำครบ · เข้านอนกี่โมง)
+  ↓
+เห็นความคืบหน้า → ปิดแอป</div>
+
+  <h4>ชั้นที่ 2 — วงจรรายสัปดาห์ (2 นาที)</h4>
+  <p>สรุปสัปดาห์: ทำได้กี่วัน · เรื่องไหนที่ยังหลุด · 1 อย่างที่จะโฟกัสสัปดาห์หน้า</p>
+
+  <h4>ชั้นที่ 3 — วงจร 90 วัน (ตัวเล่าเรื่องใหญ่)</h4>
+  <p>เส้นเวลา 90 วันที่เดินหน้าเรื่อย ๆ พร้อมหมุดหมาย (เดือน 1 ปรับพื้นฐาน · เดือน 2 บำรุงเข้มข้น · เดือน 3 พร้อม) — <b>นี่คือสิ่งที่แบรนด์สัญญาไว้แต่เว็บทำให้เห็นภาพไม่ได้</b></p>
+
+  <h3>3.3 โครงหน้าจอ</h3>
+  <p>bottom tab 4 อัน · หน้าแรกคือ "วันนี้"</p>
+
+  <div class="phone">
+    <div class="status"></div>
+    <div class="body">
+      <div class="pcard hi">
+        <div class="t">วันที่ 12 ของรอบเดือน</div>
+        <div class="m">ช่วงมีโอกาสอีก 3 วัน</div>
+      </div>
+      <div class="pcard">
+        <div class="t">วันนี้ทำ 3 อย่าง</div>
+        <div class="chk"><span class="box on"></span> ดื่มน้ำ 1,800 มล.</div>
+        <div class="chk"><span class="box on"></span> โปรตีนให้ถึง 66 ก.</div>
+        <div class="chk"><span class="box"></span> เข้านอนก่อน 4 ทุ่ม</div>
+      </div>
+      <div class="pcard">
+        <div class="t">ความรู้ของวันนี้ 💡</div>
+        <div class="m">ช่วงก่อนไข่ตก ร่างกายต้องการ…</div>
+      </div>
+      <div class="pcard">
+        <div class="t" style="font-size:11px">แผน 90 วัน · วันที่ 23</div>
+        <div class="bar"><i></i></div>
+        <div class="m" style="margin-top:4px">ทำได้ 18 วันแล้ว 👏</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="on">🏠<br>วันนี้</div>
+      <div>🧮<br>เครื่องมือ</div>
+      <div>📅<br>แผนของฉัน</div>
+      <div>👤<br>ฉัน</div>
+    </div>
+  </div>
+
+  <h4>แท็บ 1 — "วันนี้" (หัวใจของแอป)</h4>
+  <p>ต้อง <b>เปิดปุ๊บเห็นของตัวเองปั๊บ</b> ไม่มีหน้าโหลด ไม่มี login gate · บรรทัดบนสุดปรับตาม stage:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Stage</th><th>บรรทัดบนสุดบอกอะไร</th></tr></thead>
+    <tbody>
+      <tr><td>เตรียมตั้งครรภ์ / มีบุตรยาก</td><td>"วันที่ 12 ของรอบเดือน · ช่วงมีโอกาสอีก 3 วัน"</td></tr>
+      <tr><td>ตั้งครรภ์แล้ว</td><td>"อายุครรภ์ 18 สัปดาห์ · ไตรมาสที่ 2"</td></tr>
+      <tr><td>ให้นมบุตร</td><td>"หลังคลอด 6 สัปดาห์ · ช่วงฟื้นฟูร่างกาย"</td></tr>
+      <tr><td>ฝ่ายชาย</td><td>"วันที่ 34 ของแผนบำรุง 90 วัน"</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout red">
+    <b>🔴 กฎที่ห้ามผิด</b>
+    การ์ด "วันนี้ทำ 3 อย่าง" <b>ห้ามเป็นรายการสินค้า</b> — ต้องเป็นพฤติกรรม (นอน/น้ำ/อาหาร/ออกกำลังกาย) เป็นหลัก · สินค้าโผล่ได้ต่อเมื่อผู้ใช้ซื้อไปแล้วและตั้งเตือนเอง
+  </div>
+
+  <h4>แท็บ 2 — "เครื่องมือ"</h4>
+  <p>9 เครื่องมือเดิมยกมาครบ แต่ได้ 2 อย่างที่เว็บให้ไม่ได้:</p>
+  <ul>
+    <li><b>กรอกครั้งเดียวใช้ได้ทุกที่</b> — น้ำหนัก/ส่วนสูง/อายุ กรอกที่เครื่องมือหนึ่ง เครื่องมืออื่นรู้ทันที (เว็บทำได้บางส่วนผ่าน localStorage แต่หายเมื่อเปลี่ยนเครื่อง)</li>
+    <li><b>เห็นย้อนหลัง</b> — กราฟง่าย ๆ ว่ารอบเดือน/การนอน/น้ำหนัก เปลี่ยนไปยังไงใน 3 เดือน</li>
+  </ul>
+  <p>จัดกลุ่มใหม่ให้หาง่ายกว่าเว็บ (ที่เรียง 9 อันเท่ากันหมด): <b>ที่ใช้บ่อย</b> (ปักหมุดเองได้) · <b>คำนวณเป้าหมาย</b> · <b>ประเมินตัวเอง</b></p>
+
+  <h4>แท็บ 3 — "แผนของฉัน"</h4>
+  <div class="callout red">
+    <b>⚠️ จุดตัดสินใจสำคัญ</b>
+    เว็บวันนี้ <b>จงใจ</b> ไม่ส่งแผนฉบับเต็มให้เบราว์เซอร์เลย ต้องผ่าน LINE OA เท่านั้น (ต้นเคาะ 1 ส.ค. 2569) → แอปจะเอายังไง ดูคำถาม <b>B1</b> — <b>ต้องเคาะก่อนเริ่ม dev แท็บนี้</b>
+  </div>
+
+  <h4>แท็บ 4 — "ฉัน"</h4>
+  <p>โปรไฟล์ · เปลี่ยน stage · ตั้งค่าการเตือน · <b>ลบบัญชี/ลบข้อมูล</b> (บังคับ) · ลิงก์ไป LINE OA</p>
+
+  <h3>3.4 การเปลี่ยน stage — โมเมนต์สำคัญที่สุดของแอป</h3>
+  <p>คนกลุ่มนี้ <b>เปลี่ยน stage จริง</b> ระหว่างที่ใช้ — และนั่นคือข่าวดีที่สุดในชีวิตเขา แอปต้องรับโมเมนต์นี้ให้ดี:</p>
+  <div class="flow">ผู้ใช้แตะ "ฉันตั้งครรภ์แล้ว"
+  ↓
+หน้าจอแสดงความยินดี (ไม่ใช่ form เปล่า ๆ)
+  ↓
+ถามเพิ่มแค่ที่จำเป็น (อายุครรภ์ · วิธีตั้งครรภ์)
+  ↓
+🔴 ตัดสินค้าที่ต้องหยุดออกทันที ตาม Safety Matrix
+   + แจ้งชัด ๆ ว่า "รายการที่ต้องหยุดช่วงตั้งครรภ์ถูกตัดออกแล้ว"
+  ↓
+แผน 90 วันเริ่มนับใหม่ตาม stage ใหม่ · ข้อมูลเดิมไม่หาย</div>
+  <div class="callout teal">
+    โครงนี้ตรงกับที่ระบบเว็บเตรียมไว้แล้ว (<code>customers.current_stage</code>, <code>sanitizeForStage()</code>, <code>allowedIn()</code>) — ไม่ต้องออกแบบ logic ใหม่ แค่ทำ UI ให้โมเมนต์นี้อบอุ่นแทนที่จะเป็นฟอร์มเย็นชา
+  </div>
+
+  <h3>3.5 Guest → บัญชี ("ใช้ก่อน login ทีหลัง")</h3>
+  <div class="flow">ติดตั้ง → ใช้ได้ทันที ไม่ถาม login เลย
+   │      (ข้อมูลอยู่ในเครื่อง · เครื่องมือครบ · บันทึกรายวันได้ · streak นับได้)
+   │
+   ├─ ชวนผูกบัญชีเมื่อ: ① ขอแผนฉบับเต็ม
+   │                    ② ใช้ต่อเนื่อง 7 วัน (ลงทุนไปเยอะแล้ว)
+   │                    ③ กดตั้งเตือน
+   │                    ④ เปลี่ยนเครื่อง
+   │
+   └─ ผูกด้วย LINE Login → เจอ/สร้าง row ใน customers
+          ↓
+      ดันข้อมูลในเครื่องขึ้น server · ทีมเห็นในระบบหลังบ้านทันที</div>
+  <div class="callout rose">
+    <b>กฎ</b>
+    ห้ามบล็อกฟีเจอร์ที่ให้คุณค่าจริงไว้หลัง login — ขอผูกบัญชีเฉพาะตอนที่ <b>ผู้ใช้ได้ประโยชน์จากการผูกเอง</b> (ข้อมูลไม่หาย · ทีมช่วยได้ตรงจุด) ไม่ใช่ตอนที่ <b>เราอยากได้ข้อมูลเขา</b>
+  </div>
+
+  <h3>3.6 การเตือน (push) — ออกแบบด้วยความระวัง</h3>
+  <p>Push คือเหตุผลหลักที่ทำแอป แต่ก็เป็นทางที่พังง่ายที่สุดเช่นกัน</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>ประเภทที่อนุญาต</th><th>ตัวอย่าง</th><th>ความถี่สูงสุด</th></tr></thead>
+    <tbody>
+      <tr><td>จังหวะร่างกาย</td><td>"วันนี้เข้าช่วงมีโอกาสแล้วนะคะ"</td><td>ตามรอบจริง</td></tr>
+      <tr><td>เตือนสิ่งที่เขาตั้งเอง</td><td>"ถึงเวลากินวิตามินแล้วค่ะ"</td><td>ตามที่ตั้ง</td></tr>
+      <tr><td>สรุปสัปดาห์</td><td>"สัปดาห์นี้ทำได้ 5 จาก 7 วัน 👏"</td><td>1/สัปดาห์</td></tr>
+      <tr><td>ความรู้ตามช่วง</td><td>"อายุครรภ์ 20 สัปดาห์แล้ว — ลูกเริ่ม…"</td><td>≤ 2/สัปดาห์</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout red">
+    <b>🔴 ห้ามเด็ดขาด</b>
+    <ul style="margin:6px 0 0">
+      <li><b>ห้ามใช้ความกลัวเร่ง</b> — ห้าม "อีก 2 วันหมดช่วงไข่ตก! รีบ…" (ผิด legal-compliance §4)</li>
+      <li><b>ห้ามยิงขายตรง</b> — "โปรฯ OvaAll ลด 20%" ต้องไปทาง LINE OA เท่านั้น</li>
+      <li><b>ห้ามพูดถึงนม/การให้นมผูกกับสินค้า</b> (พ.ร.บ.นมผง ม.14 ผูกกับ "ผู้ใด" = ตัวแอปเองก็ผิดได้)</li>
+      <li><b>ห้ามข้อความที่คนอื่นเห็นหน้าจอล็อกแล้วรู้เรื่องสุขภาพส่วนตัว</b> — ผู้ใช้บางคนยังไม่บอกใครว่ากำลังพยายามมีลูก <b>นี่คือความปลอดภัยของผู้ใช้จริง ไม่ใช่แค่ UX</b><br>→ ค่าเริ่มต้น: หน้าจอล็อกแสดงข้อความกลาง ๆ ("มีอัปเดตในแอป") ให้ผู้ใช้เลือกเปิดรายละเอียดเองได้</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="stories">
+  <h2>4. User Stories</h2>
+
+  <h4>กลุ่มหลัก — ผู้หญิงที่กำลังเตรียมตัว/มีบุตรยาก</h4>
+  <ol>
+    <li>ในฐานะคนที่เพิ่งโหลดแอป <b>ฉันอยากใช้เครื่องมือได้เลยโดยไม่ต้องสมัคร</b> เพื่อลองว่ามีประโยชน์จริงไหมก่อนให้ข้อมูลตัวเอง</li>
+    <li>ในฐานะคนที่กรอกในเว็บไปแล้ว <b>ฉันอยากให้แอปรู้จักฉันโดยไม่ต้องกรอกใหม่</b> เพื่อไม่เสียเวลาซ้ำและไม่รู้สึกเป็นคนใหม่</li>
+    <li>ในฐานะคนที่ต้องทำหลายอย่างทุกวัน <b>ฉันอยากเห็นในหน้าเดียวว่าวันนี้ต้องทำอะไร</b> เพื่อไม่ต้องจำเองทั้งหมด</li>
+    <li>ในฐานะคนที่ตั้งใจแต่ลืมบ่อย <b>ฉันอยากให้แอปเตือนตามเวลาที่ฉันตั้งเอง</b> เพื่อทำได้ต่อเนื่องจริง</li>
+    <li>ในฐานะคนที่ทำมา 3 สัปดาห์ <b>ฉันอยากเห็นว่าฉันมาไกลแค่ไหน</b> เพื่อมีแรงทำต่อในวันที่ท้อ</li>
+    <li>ในฐานะคนที่เพิ่งรู้ว่าตั้งครรภ์ <b>ฉันอยากเปลี่ยนโหมดแอปทันทีและมั่นใจว่าของที่ห้ามกินตอนท้องจะไม่ถูกแนะนำอีก</b> เพื่อความปลอดภัยของลูก</li>
+    <li>ในฐานะคนที่ยังไม่บอกใครว่ากำลังพยายามมีลูก <b>ฉันไม่อยากให้ข้อความบนหน้าจอล็อกเปิดเผยเรื่องนี้</b></li>
+    <li>ในฐานะคนที่มีคำถามเฉพาะตัว <b>ฉันอยากทักทีมได้โดยไม่ต้องเล่าประวัติใหม่</b></li>
+    <li>ในฐานะคนที่เปลี่ยนมือถือ <b>ฉันอยากให้ข้อมูลย้ายตามมา</b> เพื่อไม่ต้องเริ่มนับใหม่จากศูนย์</li>
+    <li>ในฐานะคนที่เลิกใช้แล้ว <b>ฉันอยากลบข้อมูลสุขภาพของฉันออกจากระบบได้เอง</b></li>
+  </ol>
+
+  <h4>กลุ่มรอง — ฝ่ายชาย</h4>
+  <ol start="11"><li>ในฐานะสามีที่อยากช่วย <b>ฉันอยากมีแผนของตัวเองที่ไม่ใช่แค่ส่วนต่อขยายของแผนภรรยา</b> เพื่อรู้สึกว่ามีบทบาทจริง</li></ol>
+
+  <h4>กลุ่มทีมงาน</h4>
+  <ol start="12">
+    <li>ในฐานะแอดมิน LINE OA <b>ฉันอยากรู้ว่าลูกค้าคนนี้ทำตามแผนได้แค่ไหน</b> ก่อนตอบแชท</li>
+    <li>ในฐานะทีมการตลาด <b>ฉันอยากรู้ว่ากลุ่มไหนหลุดจากแผนช่วงไหน</b> เพื่อปรับเนื้อหาให้ตรงจุดที่คนหลุดจริง</li>
+  </ol>
+
+  <h4>กรณีขอบ (ต้องออกแบบ ไม่ใช่ปล่อยพัง)</h4>
+  <ol start="14">
+    <li>เปิดแอปครั้งแรกโดยไม่มีเน็ต → เครื่องมือคำนวณต้องยังทำงานได้</li>
+    <li>ไม่กรอกอะไรเลย 30 วัน → หน้า "วันนี้" ต้องไม่ว่างเปล่าน่าอาย แต่ชวนกลับมาแบบไม่ตำหนิ</li>
+    <li><b>ผู้ใช้แท้งหรือสูญเสีย</b> → ต้องมีทางออกจาก stage "ตั้งครรภ์" ที่ไม่โหดร้าย และ <b>หยุด push เรื่องพัฒนาการลูกทันที</b> (ดูคำถาม C2)</li>
+  </ol>
+</section>
+
+<section class="card" id="req">
+  <h2>5. Requirements</h2>
+
+  <h3><span class="pill p0">P0</span> ไม่มีไม่ได้ (MVP)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>ID</th><th>ความต้องการ</th><th>เกณฑ์ยอมรับ</th></tr></thead>
+    <tbody>
+      <tr><td class="id">R-A1</td><td>ใช้แอปได้เต็มที่โดยไม่ต้อง login</td><td>เปิดครั้งแรก → ใช้เครื่องมือครบ 9 ตัว + บันทึกรายวันได้ โดยไม่เจอหน้า login เลย</td></tr>
+      <tr><td class="id">R-A2</td><td>ผูกบัญชีด้วย LINE Login ภายหลังได้</td><td>ผูกแล้ว: ข้อมูลในเครื่องขึ้น server ครบ · เจอ row เดิมใน <code>customers</code> ถ้าเคยผูก LINE กับเว็บมาก่อน (ไม่สร้างคนซ้ำ)</td></tr>
+      <tr><td class="id">R-A3</td><td>ข้อมูลในเครื่องไม่หายเมื่อยังไม่ผูกบัญชี</td><td>ปิดแอป/รีสตาร์ทเครื่อง → ข้อมูลยังอยู่ครบ</td></tr>
+      <tr><td class="id">R-B1</td><td>หน้า "วันนี้" แสดงจังหวะปัจจุบันตาม stage</td><td>ทั้ง 5 stage ถูกต้อง · ถ้าข้อมูลไม่พอ → บอกว่าต้องกรอกอะไรเพิ่ม <b>ห้ามแสดง 0 หรือค่าเดา</b></td></tr>
+      <tr><td class="id">R-B2</td><td>บันทึกรายวันได้ ≤ 3 แตะ</td><td>เปิดแอป → บันทึกเสร็จ 1 รายการ ไม่เกิน 3 แตะ</td></tr>
+      <tr><td class="id">R-B3</td><td>เห็นความคืบหน้า 90 วัน</td><td>แสดง "วันที่ N จาก 90" + จำนวนวันที่บันทึกจริง · <b>ห้ามใช้คำที่ตำหนิผู้ใช้</b></td></tr>
+      <tr><td class="id">R-C1</td><td>ยกเครื่องมือทั้ง 9 ตัวมาครบ</td><td>ผลลัพธ์ตรงกับเว็บเป๊ะ (ใช้ logic ชุดเดียวกัน)</td></tr>
+      <tr><td class="id">R-C2</td><td>กรอกโปรไฟล์ครั้งเดียว ใช้ได้ทุกเครื่องมือ</td><td>กรอกน้ำหนักที่เครื่องมือ A → B, C รู้ทันที ไม่ถามซ้ำ</td></tr>
+      <tr><td class="id">R-D1</td><td>เปลี่ยน stage ได้เอง</td><td>คำถามใหม่ครบ · <b>สินค้าที่ต้องหยุดถูกตัดทันทีตาม Safety Matrix</b> · ข้อมูลเดิมไม่หาย</td></tr>
+      <tr><td class="id">R-D2</td><td>🔴 Safety Matrix บังคับใช้ทุกจุดที่แนะนำสินค้า</td><td>ทดสอบครบทุก stage × ทุกสินค้าที่มี stop rule → ของที่ห้ามต้องไม่โผล่แม้จุดเดียว (รวม push และการ์ด "วันนี้")</td></tr>
+      <tr><td class="id">R-E1</td><td>Push ตั้งเวลาเองได้ + ปิดได้ทุกประเภท</td><td>ปิดแล้วต้องไม่มี push ประเภทนั้นอีกเลย</td></tr>
+      <tr><td class="id">R-E2</td><td>🔴 ข้อความบนหน้าจอล็อกไม่เปิดเผยเรื่องสุขภาพ (ค่าเริ่มต้น)</td><td>ค่าเริ่มต้นกลาง ๆ · ผู้ใช้เลือกเปิดรายละเอียดเองได้</td></tr>
+      <tr><td class="id">R-F1</td><td>CTA เข้า LINE OA ครบทุกที่ที่ควรมี</td><td>กดแล้วเข้า LINE OA พร้อมรหัสอ้างอิง ไม่ต้องพิมพ์เอง</td></tr>
+      <tr><td class="id">R-P1</td><td>🔴 ขอ consent ก่อนเก็บข้อมูลสุขภาพขึ้น server (PDPA ม.26)</td><td>ไม่กด consent = ไม่มีข้อมูลสุขภาพออกจากเครื่องแม้แต่ field เดียว</td></tr>
+      <tr><td class="id">R-P2</td><td>🔴 disclaimer "ไม่แทนคำวินิจฉัยแพทย์" ทุกหน้าที่ให้ผลสุขภาพ</td><td>ตรวจครบทุกหน้า</td></tr>
+      <tr><td class="id">R-P3</td><td>🔴 ลบบัญชี + ลบข้อมูลได้ในแอป</td><td>บังคับโดย Apple 5.1.1(v) <b>และ</b> PDPA · ลบแล้วข้อมูลใน Supabase หายจริง ไม่ใช่ซ่อน</td></tr>
+      <tr><td class="id">R-P4</td><td>🔴 นับวันไข่ตกเตือนว่าใช้คุมกำเนิดไม่ได้</td><td>มีทุกจุดที่แสดงผลวันไข่ตก รวมใน push</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3><span class="pill p1">P1</span> ทำต่อทันทีหลัง launch</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>ID</th><th>ความต้องการ</th><th>หมายเหตุ</th></tr></thead>
+    <tbody>
+      <tr><td class="id">R-G1</td><td>กราฟย้อนหลัง (รอบเดือน · การนอน · น้ำหนัก)</td><td>คุณค่าสูง แต่ต้องมีข้อมูลสะสมก่อนถึงมีความหมาย</td></tr>
+      <tr><td class="id">R-G2</td><td>สรุปรายสัปดาห์</td><td>ต้องดูข้อมูลจริงก่อนว่าเนื้อหาควรเป็นอะไร</td></tr>
+      <tr><td class="id">R-G3</td><td>ปักหมุดเครื่องมือที่ใช้บ่อย</td><td></td></tr>
+      <tr><td class="id">R-G4</td><td>โหมดฝ่ายชายแยกเต็มรูป</td><td>ปัจจุบันโค้ดเว็บ male กับ prep ใช้ logic ร่วมกันเกือบหมด</td></tr>
+      <tr><td class="id">R-G5</td><td>ทีมเห็นข้อมูลการทำตามแผนในหน้าหลังบ้าน</td><td>ตอบ story 12-13 · ต้องคุย scope กับทีมแอดมินก่อน</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3><span class="pill p2">P2</span> ยังไม่ทำ แต่ออกแบบไม่ให้ปิดทาง</h3>
+  <ul>
+    <li>เชื่อม HealthKit/Google Fit (ต้องไม่ล็อกโครงข้อมูลการนอน/น้ำหนักไว้กับการกรอกมือเท่านั้น)</li>
+    <li>Widget หน้าโฮม / Apple Watch</li>
+    <li>คู่ใช้ร่วมกัน (สามี-ภรรยาเห็นแผนกัน) — ต้องคิดเรื่องความยินยอมให้ดีก่อน</li>
+    <li>แจ้งเตือนอัจฉริยะจากพฤติกรรมจริง</li>
+  </ul>
+</section>
+
+<section class="card" id="arch">
+  <h2>6. สถาปัตยกรรม — ต่อยอดของเดิม ไม่สร้างใหม่</h2>
+
+  <h4>ใช้ร่วมกับเว็บได้ทันที (ห้าม copy-paste มาแก้แยก)</h4>
+  <ul>
+    <li><code>lib/calc/*</code> — โค้ดคำนวณทั้งหมด เป็น TypeScript บริสุทธิ์ ไม่ผูกกับ React ใช้ใน React Native ได้เลย</li>
+    <li><code>lib/report.ts</code> — ตัวสร้างแผน + <code>planMetrics()</code></li>
+    <li><b>Safety Matrix</b> (<code>allowedIn()</code>) — 🔴 <b>ต้องเป็นชุดเดียวกันเท่านั้น</b> ถ้าแยกเป็น 2 ชุดแล้วอัปเดตไม่พร้อมกัน = ความเสี่ยงด้านความปลอดภัยโดยตรง</li>
+    <li>ฐานข้อมูล Supabase เดิมทั้งหมด</li>
+  </ul>
+  <div class="callout teal">
+    <b>ข้อเสนอ</b>
+    ย้าย <code>lib/calc/*</code> + <code>lib/report.ts</code> เป็น shared package ที่ทั้งเว็บและแอปดึงไปใช้ (monorepo) — ตัดสินใจก่อนเริ่ม dev ดูคำถาม A2
+  </div>
+
+  <h4>ต้องเพิ่มใหม่</h4>
+  <div class="tblwrap"><table>
+    <thead><tr><th>สิ่งที่เพิ่ม</th><th>ทำไม</th></tr></thead>
+    <tbody>
+      <tr><td>ตาราง <code>daily_logs</code></td><td>เก็บบันทึกรายวัน (ยังไม่มีที่เก็บในระบบเดิม)</td></tr>
+      <tr><td>ตาราง <code>push_tokens</code></td><td>เก็บ token อุปกรณ์เพื่อส่ง push</td></tr>
+      <tr><td>⚠️ ขยาย CHECK constraint ของ <code>tool_results.tool</code></td><td>ทุกครั้งที่เพิ่มเครื่องมือ — เคยมีบั๊กจริงที่ <code>exercise</code>/<code>labs</code> โดนทิ้งเงียบ ๆ เพราะลืมจุดนี้</td></tr>
+      <tr><td>API สำหรับแอปโดยเฉพาะ</td><td>เว็บใช้ BFF (เรียกจาก server ตัวเอง) แอปเรียกข้ามเครื่อง ต้องมีชั้น auth ที่ไม่ใช่ service_role</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout red">
+    <b>🔴 กฎความปลอดภัยที่ห้ามพลาด</b>
+    <b>service_role key ห้ามอยู่ในแอปเด็ดขาด</b> — คีย์นี้ข้าม RLS ได้ทุกตาราง ถ้าฝังในแอป ใครที่แกะไฟล์ .apk/.ipa จะอ่านข้อมูลสุขภาพลูกค้าทุกคนได้ (แอปที่ติดตั้งบนเครื่องผู้ใช้ = ไม่มีความลับ)<br>
+    → แอปต้องคุยผ่าน API ที่ยืนยันตัวตนรายคน และ <code>daily_logs</code> ต้องมี RLS policy จริง
+  </div>
+</section>
+
+<section class="card" id="oq">
+  <h2>7. คำถามที่ต้องตอบ</h2>
+  <p class="sub">🔴 = ต้องตอบก่อนเริ่ม dev · พิมพ์คำตอบในช่องได้เลย บันทึกอัตโนมัติ แล้วกด Export ท้ายหน้า</p>
+
+  <details class="q blocker" open>
+    <summary>🔴 A1 — Apple guideline 4.2 (เว็บห่อกล่อง) <span class="owner">ต้น + แบรนด์</span></summary>
+    <div class="qbody">
+      <p>Apple ปฏิเสธแอปที่เป็นแค่ "เว็บห่อกล่อง" ไม่มีอะไรมากกว่าเว็บ ทางที่ทำให้ผ่านคือต้องมีของที่เว็บทำไม่ได้จริง ๆ — ในแผนนี้คือ <b>push + ทำงานออฟไลน์ + บันทึกต่อเนื่อง</b></p>
+      <p><b>คำถาม:</b> ยืนยันไหมว่า MVP จะมี 3 อย่างนี้ครบตั้งแต่วันแรก? ถ้าตัดออกเพื่อให้เร็วขึ้น ความเสี่ยงโดน reject สูงมาก</p>
+      <textarea class="ansbox" data-q="A1" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="A1">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q blocker" open>
+    <summary>🔴 A2 — โครง repo <span class="owner">ต้น + แบรนด์</span></summary>
+    <div class="qbody">
+      <p>โค้ดแอปจะอยู่ที่ไหน:</p>
+      <ul>
+        <li><b>(ก) repo เดียวกับเว็บ แบบ monorepo</b> — แชร์โค้ดคำนวณง่ายที่สุด แต่ต้องปรับโครง repo ที่ทีมใช้อยู่</li>
+        <li><b>(ข) repo แยก</b> — เริ่มง่าย แต่โค้ดคำนวณจะแตกเป็น 2 ชุดเมื่อไรก็ได้</li>
+      </ul>
+      <p><b>ข้อเสนอ:</b> (ก) — แต่ต้องเป็นการตัดสินใจของแบรนด์เพราะกระทบ repo ของลูกค้า</p>
+      <textarea class="ansbox" data-q="A2" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="A2">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q blocker" open>
+    <summary>🔴 A3 — บัญชี Apple Developer / Google Play <span class="owner">แบรนด์</span></summary>
+    <div class="qbody">
+      <p>ต้องเปิดในชื่อ <b>Baby &amp; Mom</b> ไม่ใช่ชื่อที่ปรึกษา — เพราะเป็นทรัพย์สินของแบรนด์และย้ายทีหลังยุ่งยากมาก (Apple $99/ปี · Google $25 ครั้งเดียว)</p>
+      <p><b>⏰ การเปิดบัญชีนิติบุคคลของ Apple ใช้เวลาตรวจสอบเป็นสัปดาห์ ควรเริ่มทันทีถ้าจะทำจริง</b></p>
+      <textarea class="ansbox" data-q="A3" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="A3">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q">
+    <summary>A4 — LINE Login channel <span class="owner">แบรนด์</span></summary>
+    <div class="qbody">
+      <p>เอกสาร Phase 3 ระบุไว้แล้วว่าเรื่องนี้ค้างอยู่ — แอปนี้ต้องใช้ ต้องปลดล็อกก่อน R-A2 จะทำได้</p>
+      <textarea class="ansbox" data-q="A4" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="A4">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q blocker" open>
+    <summary>🔴 B1 — แผนฉบับเต็มในแอป <span class="owner">ต้น + แบรนด์</span></summary>
+    <div class="qbody">
+      <p>เว็บจงใจให้แผนฉบับเต็มผ่าน LINE OA เท่านั้น เพื่อบังคับให้เกิดบทสนทนากับทีม แอปจะเอายังไง:</p>
+      <div class="tblwrap"><table>
+        <thead><tr><th>ทาง</th><th>ได้</th><th>เสีย</th></tr></thead>
+        <tbody>
+          <tr><td>① เหมือนเว็บ — แอปโชว์แค่ย่อ ต้องไป LINE</td><td>funnel เดิมไม่กระทบเลย</td><td>ผู้ใช้ที่โหลดแอปแล้วยังต้องออกไปแอปอื่น = ประสบการณ์ขาด และแอปดู "ไม่ครบ" ในสายตา Apple</td></tr>
+          <tr><td>② ผูกบัญชีแล้วเห็นเต็มในแอป</td><td>ประสบการณ์ลื่นที่สุด · การผูกบัญชีมีค่าชัดเจน</td><td>ทีมเสียโอกาสคุยกับลูกค้าใน LINE</td></tr>
+          <tr><td>③ เห็นเต็มในแอป + ทีมทักผ่าน push/LINE เอง</td><td>ได้ทั้งสองอย่าง</td><td>ทีมต้องมี process ใหม่ ไม่ใช่รอลูกค้าทักมา</td></tr>
+        </tbody>
+      </table></div>
+      <p><b>ข้อเสนอ:</b> ③ — แต่นี่คือการเปลี่ยนวิธีทำงานของทีมขาย ต้องให้แบรนด์เคาะ ไม่ใช่ที่ปรึกษาตัดสินแทน</p>
+      <textarea class="ansbox" data-q="B1" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="B1">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q">
+    <summary>B2 — เนื้อหารายวันมาจากไหน <span class="owner">แบรนด์ + ครูก้อย</span></summary>
+    <div class="qbody">
+      <p>การ์ด "ความรู้ของวันนี้" ต้องใช้เนื้อหาราว <b>90 ชิ้น × 5 stage</b> เพื่อไม่ให้ซ้ำ — เอามาจากคลังเดิม (BOOK-INSIGHTS, nutrition-protocol, บทความเดิมของแบรนด์) หรือเขียนใหม่?</p>
+      <p><b>🔴 ห้าม AI เขียนเนื้อหาสุขภาพเองแล้วปล่อยขึ้นโดยไม่มีคนตรวจ</b></p>
+      <textarea class="ansbox" data-q="B2" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="B2">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q blocker">
+    <summary>🔴 C1 — ใครเซ็นรับรองเนื้อหาสุขภาพ <span class="owner">แบรนด์</span></summary>
+    <div class="qbody">
+      <p>ค้างมาตั้งแต่ฝั่งเว็บแล้ว (R10/R11/R14 — ยังไม่มีแพทย์/เภสัชกร/นักโภชนาการตัวจริงเซ็น) แอปจะขยายปริมาณเนื้อหาอีกหลายเท่า ยิ่งต้องมีคนรับรอง <b>และแอปสุขภาพถูกรีวิวเข้มกว่าเว็บ</b></p>
+      <textarea class="ansbox" data-q="C1" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="C1">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q blocker">
+    <summary>🔴 C2 — ข้อความสำหรับกรณีสูญเสีย <span class="owner">แบรนด์ + คนที่มีประสบการณ์ตรง</span></summary>
+    <div class="qbody">
+      <p>story 16 — ต้องมีทางออกจาก stage "ตั้งครรภ์" ที่ไม่ทำร้ายจิตใจ และหยุด push เรื่องพัฒนาการลูกทันที</p>
+      <p><b>ข้อความส่วนนี้ห้ามให้ AI เขียนเองแล้วใช้เลย</b></p>
+      <textarea class="ansbox" data-q="C2" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="C2">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q">
+    <summary>C3 — พ.ร.บ.นมผงกับหน้าร้านแอป <span class="owner">แบรนด์/ที่ปรึกษากฎหมาย</span></summary>
+    <div class="qbody">
+      <p>ชื่อแอป คำอธิบาย และภาพ screenshot ในร้านค้าก็อยู่ใต้กฎหมายนี้เหมือนกัน — ห้ามภาพทารก ห้ามขวดนม/จุกนม ห้ามเคลมเรื่องน้ำนม</p>
+      <textarea class="ansbox" data-q="C3" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="C3">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <details class="q">
+    <summary>D1 — baseline ของเว็บวันนี้ <span class="owner">ทีม/ต้น · ไม่บล็อก dev</span></summary>
+    <div class="qbody">
+      <p>ตาราง <code>events</code> เก็บข้อมูลอยู่แล้วแต่ยังไม่เคยดึงมาดู — ควรดึงก่อนตั้งเป้า เพื่อให้เป้าใน §2 มีที่มาจริง ไม่ใช่ตัวเลขที่คิดเอาเอง</p>
+      <textarea class="ansbox" data-q="D1" placeholder="คำตอบ/การตัดสินใจ…"></textarea><div class="saved" data-s="D1">✓ บันทึกแล้ว</div>
+    </div>
+  </details>
+
+  <div class="btnrow">
+    <button class="btn" id="exportBtn">⬇️ Export คำตอบเป็น .md</button>
+    <button class="btn ghost" id="openAll">เปิดทุกข้อ</button>
+    <button class="btn ghost" id="closeAll">ปิดทุกข้อ</button>
+  </div>
+</section>
+
+<section class="card" id="time">
+  <h2>8. ลำดับงานที่เสนอ</h2>
+  <div class="callout gold">
+    <b>ยังไม่ใส่จำนวนสัปดาห์</b>
+    เพราะยังไม่รู้ว่าทีม dev มีกี่คนและเต็มเวลาหรือไม่ — ใส่ลำดับก่อน ให้ต้นเติมเวลาจริง
+  </div>
+
+  <h4>เฟส 0 — ปลดล็อกสิ่งที่รอคนอื่น (เริ่มทันที ทำคู่ขนาน)</h4>
+  <p>เปิดบัญชี Apple/Google (A3) · เปิด LINE Login channel (A4) · เคาะ B1 + A2 · ดึง baseline (D1)</p>
+  <div class="callout red">A3 กับ A4 ไม่ใช่งานโค้ด แต่ถ้าไม่เริ่มตอนนี้จะกลายเป็นตัวบล็อกตอนใกล้ปล่อย</div>
+
+  <h4>เฟส 1 — แกนที่พิสูจน์ว่าแอปมีค่า</h4>
+  <p>โครงแอป + แชร์โค้ดคำนวณ · หน้า "วันนี้" · บันทึกรายวัน · เครื่องมือ 9 ตัว · โหมด guest · Safety Matrix + compliance</p>
+
+  <h4>เฟส 2 — สิ่งที่ทำให้เป็น "แอป" ไม่ใช่ "เว็บห่อกล่อง"</h4>
+  <p>Push · ผูกบัญชี LINE · เปลี่ยน stage · แผน 90 วัน · CTA LINE</p>
+
+  <h4>เฟส 3 — ส่งขึ้นร้าน</h4>
+  <p>เตรียม asset ร้านค้า (ผ่าน C3) · privacy label · ทดสอบ · ส่งรีวิว</p>
+  <div class="callout gold">Google Play บังคับ <b>closed testing 12 คน 14 วัน</b> ก่อนขึ้น production — ต้องเผื่อเวลาส่วนนี้ไว้ในแผน</div>
+
+  <h4>เฟส 4 (P1)</h4>
+  <p>กราฟย้อนหลัง · สรุปสัปดาห์ · ข้อมูลฝั่งทีม</p>
+</section>
+
+<section class="card" id="next">
+  <h2>9. ทำอะไรต่อ</h2>
+  <div class="tblwrap"><table>
+    <thead><tr><th>ใคร</th><th>ทำอะไร</th><th>เมื่อไหร่</th></tr></thead>
+    <tbody>
+      <tr><td><b>ต้น</b></td><td>รีวิว PRD นี้ · ตอบคำถาม 🔴 โดยเฉพาะ <b>B1</b> (แผนเต็มในแอป) และ <b>A1</b> (ยืนยัน scope กัน Apple reject)</td><td>ก่อนเริ่มงานถัดไป</td></tr>
+      <tr><td><b>ต้น → แบรนด์</b></td><td>ประสานบัญชี Apple/Google (A3) + LINE Login channel (A4) + คนเซ็นรับรองเนื้อหา (C1)</td><td><b>เริ่มทันที</b> — ใช้เวลานาน</td></tr>
+      <tr><td><b>ต้น</b></td><td>สั่งได้เมื่อพร้อม: ทำ <b>แบบร่างหน้าจอที่กดดูได้จริง</b> ก่อนลง dev</td><td>หลังตอบ B1</td></tr>
+      <tr><td><b>Claude</b></td><td>เมื่อ B1/A1/A2 ตอบแล้ว → แตกงานเป็น sprint + เขียน test scenario ตามรูปแบบเดิม</td><td>รอต้นสั่ง</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout rose">
+    <b>หมายเหตุขอบเขต</b>
+    เอกสารนี้เป็น <b>ข้อเสนอ</b> ไม่ใช่การตัดสินใจ — เรื่องบัญชีร้านค้า · repo · การเปลี่ยน funnel การขาย · การรับรองเนื้อหาสุขภาพ ทั้งหมดเป็นสิทธิ์ของเจ้าของแบรนด์
+  </div>
+</section>
+
+<footer class="note">
+  คำตอบบันทึกอัตโนมัติในเบราว์เซอร์นี้ (localStorage) — กด "Export คำตอบเป็น .md" เมื่อพร้อมส่งกลับ<br>
+  ฉบับ Markdown: <code>docs/mobile/PRD-MOBILE-APP.md</code>
+</footer>
+
+</div>
+
+<script>
+var LS = "mmj_prd_mobile_answers_v1";
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)||"{}"); }catch(e){ return {}; } }
+var ans = load();
+
+document.querySelectorAll("textarea.ansbox").forEach(function(ta){
+  var k = ta.getAttribute("data-q");
+  if(ans[k]) ta.value = ans[k];
+  var timer = null;
+  ta.addEventListener("input", function(){
+    ans[k] = ta.value;
+    localStorage.setItem(LS, JSON.stringify(ans));
+    var m = document.querySelector('[data-s="'+k+'"]');
+    if(m){ m.classList.add("show"); clearTimeout(timer); timer = setTimeout(function(){ m.classList.remove("show"); }, 1400); }
+  });
+});
+
+document.getElementById("openAll").addEventListener("click", function(){
+  document.querySelectorAll("details.q").forEach(function(d){ d.open = true; });
+});
+document.getElementById("closeAll").addEventListener("click", function(){
+  document.querySelectorAll("details.q").forEach(function(d){ d.open = false; });
+});
+
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var L = [];
+  L.push("# คำตอบ Open Questions — PRD Mommunjai Mobile App");
+  L.push("");
+  L.push("> Export จาก prd-mobile-app.html เมื่อ " + new Date().toISOString().slice(0,10));
+  L.push("");
+  L.push("---");
+  L.push("");
+  document.querySelectorAll("details.q").forEach(function(d){
+    var title = d.querySelector("summary").textContent.trim();
+    var ta = d.querySelector("textarea.ansbox");
+    var k = ta.getAttribute("data-q");
+    var v = (ans[k]||"").trim();
+    L.push("## " + title);
+    L.push("");
+    L.push(v ? v : "_(ยังไม่ได้ตอบ)_");
+    L.push("");
+    L.push("---");
+    L.push("");
+  });
+  var blob = new Blob([L.join("\n")], {type:"text/markdown;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "prd-mobile-app-answers.md";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+</script>
+</body>
+</html>

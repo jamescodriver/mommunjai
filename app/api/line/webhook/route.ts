@@ -3,6 +3,7 @@ import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
+import { relayToPartner, isRelayMode, isBotEnabled, relayTargetUrl } from "@/lib/line-relay";
 
 export const runtime = "nodejs";
 
@@ -13,31 +14,6 @@ export const runtime = "nodejs";
 // real tapping user server-side (via the webhook's verified line_user_id).
 const MENU_TRIGGER = "แผนของฉัน";
 
-// This LINE channel previously had its webhook pointed directly at a
-// third-party slip-verification service (thunder.in.th) — a single LINE
-// channel can only have one webhook URL, so now that this app owns the
-// webhook, every raw event is relayed on to that service too (best-effort,
-// same signed body + signature LINE sent us) so slip-checking keeps working.
-const SLIP_CHECK_WEBHOOK_URL = process.env.SLIP_CHECK_WEBHOOK_URL;
-
-async function forwardToSlipCheckWebhook(raw: string, sig: string | null) {
-  if (!SLIP_CHECK_WEBHOOK_URL) return;
-  try {
-    const res = await fetch(SLIP_CHECK_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "content-type": "application/json", ...(sig ? { "x-line-signature": sig } : {}) },
-      body: raw,
-    });
-    if (!res.ok) {
-      console.error(`[slip-check webhook] forward rejected: HTTP ${res.status}`);
-    }
-  } catch (err) {
-    // best-effort — an outage here must never break this app's own bot flow,
-    // but it must show up in Vercel logs instead of failing silently.
-    console.error("[slip-check webhook] forward failed:", err);
-  }
-}
-
 // LINE Messaging API webhook.
 // When a user sends their ticket code (MJ-XXXXXX) in the OA chat, we:
 //  1) bind their LINE userId <-> lead, 2) tag them (#line-connected), 3) reply with their report Flex.
@@ -46,17 +22,50 @@ async function forwardToSlipCheckWebhook(raw: string, sig: string | null) {
 export async function POST(req: NextRequest) {
   const raw = await req.text();
   const sig = req.headers.get("x-line-signature");
-  const devBypass = !process.env.LINE_CHANNEL_SECRET && req.headers.get("x-dev-bypass") === "1";
+  const canVerify = !!process.env.LINE_CHANNEL_SECRET;
+  const devBypass = !canVerify && req.headers.get("x-dev-bypass") === "1";
+  const sigOk = verifyLineSignature(raw, sig);
 
-  if (!devBypass && !verifyLineSignature(raw, sig)) {
+  // ── ส่งต่อให้บอทอีกตัว (Thunder) ทันที ขนานกับงานของเรา ──────────────────
+  // 🔴 เริ่มก่อนทำงานอะไรของเราทั้งสิ้น เพื่อให้ error/ความช้าฝั่งเราไม่ไปหน่วง
+  //    บอทเช็คสลิปของลูกค้า · จะ await ตอนท้ายก่อน return (Vercel ตัดฟังก์ชันทิ้ง
+  //    ทันทีที่ return — ยิงแบบ fire-and-forget แล้วไม่รอ event จะหายเป็นช่วง ๆ)
+  //
+  // fail-open: ถ้าเรา "ตรวจลายเซ็นไม่ได้" (LINE_CHANNEL_SECRET หาย/ตั้งผิด)
+  //   → ส่งต่อไปก่อน ให้ Thunder ตรวจเอง — config พังฝั่งเรา ต้องไม่ทำบอทลูกค้าตาย
+  // fail-closed: ถ้าตรวจได้แล้ว "ไม่ผ่าน" = ของปลอม → ไม่ส่งต่อ ไม่เป็นทางผ่านให้คนยิงขยะ
+  const relayPromise = !canVerify || sigOk
+    ? relayToPartner(raw, req.headers)
+    : Promise.resolve(null);
+  // ห้ามให้ปัญหาของการส่งต่อทำให้ response เราพัง (LINE จะเห็นเป็น 500 แล้วอาจปิด webhook)
+  const settleRelay = async () => {
+    try {
+      const r = await relayPromise;
+      if (r && !r.relayed && r.reason !== "no-target") {
+        console.error(`[line-relay] ส่งต่อไม่สำเร็จ: ${r.reason} (ยิงไป ${r.attempts} ครั้ง)`);
+      }
+    } catch (e) {
+      console.error("[line-relay] ส่งต่อพังแบบไม่คาดคิด", e);
+    }
+  };
+
+  if (!devBypass && !sigOk) {
+    await settleRelay();
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
-  const forwardDone = forwardToSlipCheckWebhook(raw, sig);
-
   let payload: any;
-  try { payload = JSON.parse(raw); } catch { await forwardDone; return NextResponse.json({ ok: true }); }
+  try { payload = JSON.parse(raw); } catch { await settleRelay(); return NextResponse.json({ ok: true }); }
   const events: any[] = payload.events || [];
+
+  // kill switch — ปิดงานฝั่งเราได้ทันทีตอนฉุกเฉิน โดยที่ยังส่งต่อ Thunder ตามปกติ
+  if (!isBotEnabled()) {
+    await settleRelay();
+    return NextResponse.json({ ok: true, bot: "disabled" });
+  }
+
+  // อยู่ร่วมกับบอทตัวอื่นบน OA เดียวกัน → เราต้องเงียบกับข้อความที่ไม่ใช่ของเรา
+  const relaying = isRelayMode();
 
   for (const ev of events) {
     try {
@@ -91,10 +100,15 @@ export async function POST(req: NextRequest) {
 
       const code = extractTicketCode(ev.message.text);
 
-      // No auto-reply here: this webhook now shares the channel with
-      // slip-check + normal staff chat (see forwardToSlipCheckWebhook above),
-      // so replying to every unrecognized text message would talk over them.
-      if (!code) continue;
+      if (!code) {
+        // 🔴 โหมดอยู่ร่วมกับบอทอื่น: ข้อความที่ไม่ใช่ "แผนของฉัน" และไม่มีรหัส MJ-
+        //    = ไม่ใช่งานของเรา ต้องเงียบสนิท ห้ามตอบเด็ดขาด
+        //    เพราะ replyToken ใช้ได้ครั้งเดียว ถ้าเราตอบ คนส่งสลิปเข้ามาจะได้
+        //    ข้อความ "พิมพ์รหัส MJ-XXXXXX" แทนผลตรวจสลิป = ระบบเก็บเงินลูกค้าพัง
+        if (relaying) continue;
+        await lineReply(ev.replyToken, [{ type: "text", text: "สวัสดีค่ะ 💛 พิมพ์ ‘รหัส MJ-XXXXXX’ ที่ได้จากแอป เพื่อรับรายงานความพร้อมมีลูกเฉพาะคุณค่ะ" }]);
+        continue;
+      }
       if (!hasSupabaseEnv()) {
         await lineReply(ev.replyToken, [{ type: "text", text: `รับรหัส ${code} แล้วค่ะ (โหมดทดสอบ — ยังไม่เชื่อมฐานข้อมูล)` }]);
         continue;
@@ -147,11 +161,42 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  await forwardDone;
+  await settleRelay();
   return NextResponse.json({ ok: true });
 }
 
 // LINE verifies the webhook URL with a GET/verify — respond 200.
-export async function GET() {
-  return NextResponse.json({ ok: true });
+//
+// พ่วง diagnostic ไว้ด้วย เพราะเวลาสลับ webhook จริงบน OA ที่มีบอทเช็คสลิปทำงานอยู่
+// เราต้องรู้ให้ได้ใน 1 วินาทีว่า "โค้ดที่ deploy อยู่ตอนนี้ตั้งค่าไว้ยังไง" — ไม่งั้น
+// ต้องไปไล่อ่าน log ของ Vercel ซึ่งบางบัญชีเข้าไม่ได้ และช้าเกินไปตอนของพัง
+//
+// 🔒 ตั้งใจไม่ใส่: ค่า secret ใด ๆ · URL ปลายทางแบบเต็ม (ท่อนหลัง /webhook/<uuid>
+//    ทำหน้าที่เหมือนโทเคน) — โชว์แค่ชื่อโฮสต์ ซึ่งพอตรวจว่าพิมพ์โดเมนถูกไหม
+export function GET() {
+  const target = relayTargetUrl();
+  let relay: "on" | "off" | "bad-url" = target ? "on" : "off";
+  let relayHost: string | undefined;
+  if (target) {
+    try {
+      relayHost = new URL(target).host;
+    } catch {
+      relay = "bad-url"; // ตั้ง env ผิดรูปแบบ = ส่งต่อไม่ได้เลยทุก event
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    // ส่งต่อให้บอทอีกตัวไหม · off = เราตอบทุกข้อความ (ทับบอทสลิป!)
+    relay,
+    relayHost,
+    // kill switch — off = เราเงียบหมด แต่ยังส่งต่อ
+    bot: isBotEnabled() ? "on" : "off",
+    // ตั้ง secret/token ครบไหม (ไม่เปิดเผยค่า)
+    signature: !!process.env.LINE_CHANNEL_SECRET,
+    canReply: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+    // ตอบคำถาม "commit ที่ deploy อยู่มี relay แล้วหรือยัง" และ "นี่ env ไหน"
+    env: process.env.VERCEL_ENV || "local",
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7),
+  });
 }

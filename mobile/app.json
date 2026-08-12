@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Mommunjai",
+    "slug": "mommunjai",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "mommunjai",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E6F7F6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.th.babyandmom.mommunjai"
+    },
+    "android": {
+      "package": "co.th.babyandmom.mommunjai",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F7F6",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
