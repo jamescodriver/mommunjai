@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { relayTargetUrl, isRelayMode, isBotEnabled, relayToPartner } from "./line-relay";
-import { POST as WEBHOOK } from "../app/api/line/webhook/route";
+import { POST as WEBHOOK, GET as DIAG } from "../app/api/line/webhook/route";
 
 /**
  * 🔴 ชุดเทสต์นี้กันความพังที่ "มองไม่เห็นจากฝั่งเรา"
@@ -178,6 +178,40 @@ describe("webhook route — อยู่ร่วมกับบอทเช็�
     expect(lineReplyCalls()).toHaveLength(0);
     expect(relayCalls()).toHaveLength(1);
     expect(relayCalls()[0].init.body).toBe(body);
+  });
+
+  it("diagnostic (GET) บอกสถานะครบ และห้ามหลุด secret/URL เต็ม", async () => {
+    process.env.LINE_RELAY_WEBHOOK_URL = "https://line.thunder.in.th/api/v1/webhook/350dfadf-secret-uuid";
+    process.env.LINE_CHANNEL_SECRET = "s3cr3t";
+    process.env.LINE_BOT_ENABLED = "0";
+
+    const body = await (DIAG() as any).json();
+
+    expect(body).toMatchObject({
+      ok: true,
+      relay: "on",
+      relayHost: "line.thunder.in.th",
+      bot: "off",
+      signature: true,
+      canReply: true,
+    });
+    // 🔒 ท่อน /webhook/<uuid> ทำหน้าที่เหมือนโทเคน + ค่า secret ห้ามหลุดออกไปเด็ดขาด
+    const dump = JSON.stringify(body);
+    expect(dump).not.toContain("350dfadf");
+    expect(dump).not.toContain("s3cr3t");
+    expect(dump).not.toContain("test-token");
+  });
+
+  it("diagnostic: ตั้ง LINE_RELAY_WEBHOOK_URL ผิดรูปแบบ ต้องฟ้อง bad-url", async () => {
+    process.env.LINE_RELAY_WEBHOOK_URL = "line.thunder.in.th/webhook"; // ลืม https://
+    const body = await (DIAG() as any).json();
+    expect(body.relay).toBe("bad-url");
+    expect(body.relayHost).toBeUndefined();
+  });
+
+  it("diagnostic: ไม่ตั้ง relay = off (เตือนว่าเราจะตอบทับบอทตัวอื่น)", async () => {
+    const body = await (DIAG() as any).json();
+    expect(body).toMatchObject({ ok: true, relay: "off", bot: "on" });
   });
 
   it("ลายเซ็นไม่ผ่าน (มี secret จริง) = ตอบ 401 และไม่ส่งต่อขยะไปให้บอทอื่น", async () => {

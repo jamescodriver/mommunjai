@@ -3,7 +3,7 @@ import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
-import { relayToPartner, isRelayMode, isBotEnabled } from "@/lib/line-relay";
+import { relayToPartner, isRelayMode, isBotEnabled, relayTargetUrl } from "@/lib/line-relay";
 
 export const runtime = "nodejs";
 
@@ -166,6 +166,37 @@ export async function POST(req: NextRequest) {
 }
 
 // LINE verifies the webhook URL with a GET/verify — respond 200.
-export async function GET() {
-  return NextResponse.json({ ok: true });
+//
+// พ่วง diagnostic ไว้ด้วย เพราะเวลาสลับ webhook จริงบน OA ที่มีบอทเช็คสลิปทำงานอยู่
+// เราต้องรู้ให้ได้ใน 1 วินาทีว่า "โค้ดที่ deploy อยู่ตอนนี้ตั้งค่าไว้ยังไง" — ไม่งั้น
+// ต้องไปไล่อ่าน log ของ Vercel ซึ่งบางบัญชีเข้าไม่ได้ และช้าเกินไปตอนของพัง
+//
+// 🔒 ตั้งใจไม่ใส่: ค่า secret ใด ๆ · URL ปลายทางแบบเต็ม (ท่อนหลัง /webhook/<uuid>
+//    ทำหน้าที่เหมือนโทเคน) — โชว์แค่ชื่อโฮสต์ ซึ่งพอตรวจว่าพิมพ์โดเมนถูกไหม
+export function GET() {
+  const target = relayTargetUrl();
+  let relay: "on" | "off" | "bad-url" = target ? "on" : "off";
+  let relayHost: string | undefined;
+  if (target) {
+    try {
+      relayHost = new URL(target).host;
+    } catch {
+      relay = "bad-url"; // ตั้ง env ผิดรูปแบบ = ส่งต่อไม่ได้เลยทุก event
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    // ส่งต่อให้บอทอีกตัวไหม · off = เราตอบทุกข้อความ (ทับบอทสลิป!)
+    relay,
+    relayHost,
+    // kill switch — off = เราเงียบหมด แต่ยังส่งต่อ
+    bot: isBotEnabled() ? "on" : "off",
+    // ตั้ง secret/token ครบไหม (ไม่เปิดเผยค่า)
+    signature: !!process.env.LINE_CHANNEL_SECRET,
+    canReply: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+    // ตอบคำถาม "commit ที่ deploy อยู่มี relay แล้วหรือยัง" และ "นี่ env ไหน"
+    env: process.env.VERCEL_ENV || "local",
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7),
+  });
 }

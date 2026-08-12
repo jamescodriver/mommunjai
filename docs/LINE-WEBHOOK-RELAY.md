@@ -59,7 +59,39 @@ LINE Platform
 > ⚠️ ขั้นตอนนี้ **ต้องได้สิทธิ์จากเจ้าของ LINE OA** และเป็นจุดที่ระบบสลิปจะสะดุดถ้าทำผิด
 > ควรทำนอกเวลาขายของ และเตรียม URL เดิมไว้ paste กลับทันทีถ้ามีปัญหา
 
-### 3) ทดสอบทันทีหลังเปลี่ยน (ห้ามข้าม)
+### 3) เช็คสถานะด้วย curl วินาทีเดียว (ทำก่อนสลับ webhook)
+
+```bash
+curl -s https://mommunjai-dev.vercel.app/api/line/webhook | python3 -m json.tool
+```
+
+```jsonc
+{
+  "ok": true,
+  "relay": "on",                    // on | off | bad-url
+  "relayHost": "line.thunder.in.th",
+  "bot": "on",                      // kill switch: on | off
+  "signature": true,                // ตั้ง LINE_CHANNEL_SECRET แล้ว
+  "canReply": true,                 // ตั้ง LINE_CHANNEL_ACCESS_TOKEN แล้ว
+  "env": "production",              // production | preview | local
+  "commit": "3a64899"               // commit ที่ deploy อยู่จริง
+}
+```
+
+| เห็นอะไร | แปลว่า |
+|---|---|
+| `relay: "off"` | 🔴 **ยังไม่ตั้ง `LINE_RELAY_WEBHOOK_URL`** — ถ้าสลับ webhook ตอนนี้ เราจะตอบทับบอทสลิปทันที |
+| `relay: "bad-url"` | 🔴 ตั้ง URL ผิดรูปแบบ (ลืม `https://`) — ส่งต่อไม่ได้เลยสักอีเวนต์ |
+| `relayHost` ไม่ใช่ `line.thunder.in.th` | พิมพ์โดเมนผิด |
+| `bot: "off"` | kill switch ถูกกดอยู่ — เราเงียบ ส่งต่ออย่างเดียว |
+| `signature: false` | ยังไม่ตั้ง `LINE_CHANNEL_SECRET` — จะเข้าโหมด fail-open (ส่งต่อทุกอย่างโดยไม่ตรวจ) |
+| `commit` ไม่ตรงกับที่ push ล่าสุด | **ยังไม่ได้ Redeploy** — โค้ดที่รันอยู่เป็นตัวเก่า |
+| `env` ไม่ใช่ตัวที่คิด | ตั้ง env ผิด environment (`mommunjai-dev` เป็นคนละโปรเจกต์กับ production) |
+
+> 🔒 ตั้งใจไม่โชว์: ค่า secret ใด ๆ และ **URL ปลายทางแบบเต็ม** — ท่อน `/webhook/<uuid>` ทำหน้าที่เหมือนโทเคน
+> จึงโชว์แค่ชื่อโฮสต์ ซึ่งพอตรวจว่าพิมพ์โดเมนถูกไหม (มีเทสต์คุมว่า uuid/secret ห้ามหลุด)
+
+### 4) ทดสอบทันทีหลังเปลี่ยน (ห้ามข้าม)
 
 1. ส่งข้อความอะไรก็ได้ที่ไม่ใช่ของเรา → **บอทสลิปต้องตอบเหมือนเดิม** และของเราต้องเงียบ
 2. ส่งสลิปจริง 1 ใบ → ต้องได้ผลตรวจสลิปตามปกติ
