@@ -3,6 +3,7 @@ import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
+import { relayToPartner, isRelayMode, isBotEnabled } from "@/lib/line-relay";
 
 export const runtime = "nodejs";
 
@@ -21,15 +22,50 @@ const MENU_TRIGGER = "แผนของฉัน";
 export async function POST(req: NextRequest) {
   const raw = await req.text();
   const sig = req.headers.get("x-line-signature");
-  const devBypass = !process.env.LINE_CHANNEL_SECRET && req.headers.get("x-dev-bypass") === "1";
+  const canVerify = !!process.env.LINE_CHANNEL_SECRET;
+  const devBypass = !canVerify && req.headers.get("x-dev-bypass") === "1";
+  const sigOk = verifyLineSignature(raw, sig);
 
-  if (!devBypass && !verifyLineSignature(raw, sig)) {
+  // ── ส่งต่อให้บอทอีกตัว (Thunder) ทันที ขนานกับงานของเรา ──────────────────
+  // 🔴 เริ่มก่อนทำงานอะไรของเราทั้งสิ้น เพื่อให้ error/ความช้าฝั่งเราไม่ไปหน่วง
+  //    บอทเช็คสลิปของลูกค้า · จะ await ตอนท้ายก่อน return (Vercel ตัดฟังก์ชันทิ้ง
+  //    ทันทีที่ return — ยิงแบบ fire-and-forget แล้วไม่รอ event จะหายเป็นช่วง ๆ)
+  //
+  // fail-open: ถ้าเรา "ตรวจลายเซ็นไม่ได้" (LINE_CHANNEL_SECRET หาย/ตั้งผิด)
+  //   → ส่งต่อไปก่อน ให้ Thunder ตรวจเอง — config พังฝั่งเรา ต้องไม่ทำบอทลูกค้าตาย
+  // fail-closed: ถ้าตรวจได้แล้ว "ไม่ผ่าน" = ของปลอม → ไม่ส่งต่อ ไม่เป็นทางผ่านให้คนยิงขยะ
+  const relayPromise = !canVerify || sigOk
+    ? relayToPartner(raw, req.headers)
+    : Promise.resolve(null);
+  // ห้ามให้ปัญหาของการส่งต่อทำให้ response เราพัง (LINE จะเห็นเป็น 500 แล้วอาจปิด webhook)
+  const settleRelay = async () => {
+    try {
+      const r = await relayPromise;
+      if (r && !r.relayed && r.reason !== "no-target") {
+        console.error(`[line-relay] ส่งต่อไม่สำเร็จ: ${r.reason} (ยิงไป ${r.attempts} ครั้ง)`);
+      }
+    } catch (e) {
+      console.error("[line-relay] ส่งต่อพังแบบไม่คาดคิด", e);
+    }
+  };
+
+  if (!devBypass && !sigOk) {
+    await settleRelay();
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
   let payload: any;
-  try { payload = JSON.parse(raw); } catch { return NextResponse.json({ ok: true }); }
+  try { payload = JSON.parse(raw); } catch { await settleRelay(); return NextResponse.json({ ok: true }); }
   const events: any[] = payload.events || [];
+
+  // kill switch — ปิดงานฝั่งเราได้ทันทีตอนฉุกเฉิน โดยที่ยังส่งต่อ Thunder ตามปกติ
+  if (!isBotEnabled()) {
+    await settleRelay();
+    return NextResponse.json({ ok: true, bot: "disabled" });
+  }
+
+  // อยู่ร่วมกับบอทตัวอื่นบน OA เดียวกัน → เราต้องเงียบกับข้อความที่ไม่ใช่ของเรา
+  const relaying = isRelayMode();
 
   for (const ev of events) {
     try {
@@ -65,6 +101,11 @@ export async function POST(req: NextRequest) {
       const code = extractTicketCode(ev.message.text);
 
       if (!code) {
+        // 🔴 โหมดอยู่ร่วมกับบอทอื่น: ข้อความที่ไม่ใช่ "แผนของฉัน" และไม่มีรหัส MJ-
+        //    = ไม่ใช่งานของเรา ต้องเงียบสนิท ห้ามตอบเด็ดขาด
+        //    เพราะ replyToken ใช้ได้ครั้งเดียว ถ้าเราตอบ คนส่งสลิปเข้ามาจะได้
+        //    ข้อความ "พิมพ์รหัส MJ-XXXXXX" แทนผลตรวจสลิป = ระบบเก็บเงินลูกค้าพัง
+        if (relaying) continue;
         await lineReply(ev.replyToken, [{ type: "text", text: "สวัสดีค่ะ 💛 พิมพ์ ‘รหัส MJ-XXXXXX’ ที่ได้จากแอป เพื่อรับรายงานความพร้อมมีลูกเฉพาะคุณค่ะ" }]);
         continue;
       }
@@ -120,6 +161,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  await settleRelay();
   return NextResponse.json({ ok: true });
 }
 
