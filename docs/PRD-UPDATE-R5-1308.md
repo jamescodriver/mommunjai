@@ -139,7 +139,7 @@
 | ยืนยันเกณฑ์ mapping ภาพ ↔ วิธีใช้ + ไฟล์ภาพชุดใหม่ | ต้น + แบรนด์ | U-03 |
 | ค่าโปรตีน 6 รายการ + ตอบเรื่องอะโวคาโด/นม/ถั่ว | ทีมครูก้อย | U-08 |
 | ยืนยันว่า Webhook URL ของ LINE OA ชี้ไป production หรือ dev | ต้น | ความถูกต้องของรหัส ticket |
-| ตรวจว่าทำไม production ไม่ได้รันโค้ดจาก `jamescodriver/main` | ต้น | **งาน R5 ยังไม่ขึ้น production** |
+| ~~ตรวจว่าทำไม production ไม่ได้รันโค้ดจาก `jamescodriver/main`~~ | — | ✅ ไขแล้ว — production ใช้ `jamesruangsak/mommunjai` · push ครบทั้ง 3 repo แล้ว 19 ส.ค. |
 
 
 ---
@@ -151,7 +151,34 @@
 | production | `mommunjai.vercel.app` | jamescodriver | `jamescodriver/mommunjai` |
 | dev | `mommunjai-dev.vercel.app` | tonpalearn | `tonpalearn/mommunjai` |
 
-### 🔴 พบว่า production ไม่ได้รันโค้ดจาก repo ที่เรา push
+### ✅ ไขปริศนาแล้ว (19 ส.ค. 69) — production ใช้ repo ที่ 3
+
+**`jamesruangsak/mommunjai`** (private) คือ repo ที่ `mommunjai.vercel.app` deploy จริง
+HEAD ของมันคือ `3a01d66` ตรงกับที่ diagnostic รายงานเป๊ะ
+
+| repo | ใช้ทำอะไร | บัญชีที่เข้าถึงได้ |
+|---|---|---|
+| `jamescodriver/mommunjai` | ต้นทาง (upstream) | jamescodriver |
+| `tonpalearn/mommunjai` | dev (`mommunjai-dev.vercel.app`) | tonpalearn |
+| **`jamesruangsak/mommunjai`** | **production (`mommunjai.vercel.app`)** | **tonpalearn เท่านั้น** |
+
+repo ที่ 3 ไม่ใช่ fork แต่เป็น clone แยกที่ตั้ง `upstream` ไว้แล้วคอย merge เข้ามาเอง
+จึงมี merge commit เป็นของตัวเอง → SHA ไม่ตรงกับ upstream ตลอด
+
+### ⚠️ เคยมีคนทำ relay ซ้อนกับเราแบบไม่รู้ตัว
+
+ใน repo production มี 2 commit ที่ทำ "ส่งต่อ event ไปบริการตรวจสลิป" ไว้เองแบบขนานกับที่เราทำ:
+- `e836536` relay raw events to legacy slip-check service (ใช้ env `SLIP_CHECK_WEBHOOK_URL`)
+- `8be5226` stop auto-reply spam, log slip-check forward failures
+
+**ตรวจแล้วไม่มี relay ซ้อน 2 ชุด** — ตอนเขา merge upstream เข้ามา (`0af6a70`, `3a01d66`)
+ฝั่งนั้นรับ implementation ของเราไปแทน (`lib/line-relay.ts` + `LINE_RELAY_WEBHOOK_URL`)
+ส่วน `SLIP_CHECK_WEBHOOK_URL` หายไปจากโค้ดแล้ว
+(ถ้ามี 2 ชุดพร้อมกัน ทุก event จะถูกส่งไป Thunder ซ้ำสองรอบ)
+
+🔴 **บทเรียน:** มีคนอื่นแก้โค้ดชุดเดียวกันอยู่ ควรตกลงกันว่าใครทำอะไร ก่อนเริ่มงานรอบหน้า
+
+### (บันทึกเดิม) อาการที่ทำให้ไปเจอ
 
 ตรวจด้วย `curl <url>/api/line/webhook` (19 ส.ค. 69 หลัง push `90f43d4`):
 
