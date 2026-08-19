@@ -9,7 +9,8 @@ import { C, T, R, shadow } from "./src/theme";
 import { IconHome, IconTools, IconPlan, IconMe } from "./src/components/icons";
 import {
   loadProfile, saveProfile, loadLogs, saveLogs, resetAll, todayISO,
-  type Profile, type DailyLogs, type Stage,
+  loadSubmission, saveSubmission,
+  type Profile, type DailyLogs, type Stage, type Submission,
 } from "./src/store";
 import Onboarding from "./src/screens/Onboarding";
 import Today from "./src/screens/Today";
@@ -28,14 +29,21 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [profile, setProfile] = useState<Profile>({});
   const [logs, setLogs] = useState<DailyLogs>({});
+  const [submission, setSubmission] = useState<Submission | null>(null);
 
   useEffect(() => {
     (async () => {
-      const [p, l] = await Promise.all([loadProfile(), loadLogs()]);
+      const [p, l, s] = await Promise.all([loadProfile(), loadLogs(), loadSubmission()]);
       setProfile(p);
       setLogs(l);
+      setSubmission(s);
       setReady(true);
     })();
+  }, []);
+
+  const recordSubmission = useCallback((s: Submission) => {
+    setSubmission(s);
+    saveSubmission(s);
   }, []);
 
   const patchProfile = useCallback(async (patch: Partial<Profile>) => {
@@ -69,6 +77,7 @@ export default function App() {
     await resetAll();
     setProfile({});
     setLogs({});
+    setSubmission(null);
   }, []);
 
   const needInput = useCallback((field: "period" | "gestational" | "weight") => {
@@ -141,14 +150,14 @@ export default function App() {
             name="แผนของฉัน"
             options={{ tabBarIcon: ({ color }) => <IconPlan size={25} color={color} /> }}
           >
-            {() => <Plan profile={profile} logs={logs} />}
+            {() => <Plan profile={profile} logs={logs} submission={submission} onSubmitted={recordSubmission} />}
           </Tab.Screen>
 
           <Tab.Screen
             name="ฉัน"
             options={{ tabBarIcon: ({ color }) => <IconMe size={25} color={color} /> }}
           >
-            {() => <Me profile={profile} onSaveProfile={patchProfile} onChangeStage={changeStage} onReset={doReset} />}
+            {() => <Me profile={profile} submission={submission} onSaveProfile={patchProfile} onChangeStage={changeStage} onReset={doReset} />}
           </Tab.Screen>
         </Tab.Navigator>
       </NavigationContainer>

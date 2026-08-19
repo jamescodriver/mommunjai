@@ -1,14 +1,12 @@
-import React from "react";
-import { View, Text, ScrollView, Linking } from "react-native";
+import React, { useState } from "react";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { C, T, S, R } from "../theme";
 import { Card, H2, H3, Body, Small, Progress, Notice, Btn, IconBubble } from "../components/ui";
 import { IconChat, IconCheck, IconSparkle } from "../components/icons";
 import { todayISO, daysBetween, activeDays } from "../store";
-import type { Profile, DailyLogs } from "../store";
-
-// ลิงก์ LINE OA เดียวกับที่เว็บใช้ (NEXT_PUBLIC_LINE_OA_URL)
-const LINE_OA = "https://lin.ee/fBa4xkz";
+import type { Profile, DailyLogs, Submission } from "../store";
+import { HandoffModal } from "./Handoff";
 
 const MILESTONES = [
   { from: 1, to: 30, title: "เดือนที่ 1 — ปรับพื้นฐาน", desc: "สร้างนิสัยเรื่องน้ำ การนอน และโปรตีนให้อยู่ตัวก่อน" },
@@ -16,10 +14,18 @@ const MILESTONES = [
   { from: 61, to: 90, title: "เดือนที่ 3 — พร้อม", desc: "ร่างกายได้รับการบำรุงครบรอบการพัฒนาของไข่และอสุจิ" },
 ];
 
-export default function Plan({ profile, logs }: { profile: Profile; logs: DailyLogs }) {
+export default function Plan({
+  profile, logs, submission, onSubmitted,
+}: {
+  profile: Profile;
+  logs: DailyLogs;
+  submission: Submission | null;
+  onSubmitted: (s: Submission) => void;
+}) {
   const today = todayISO();
   const planDay = profile.planStartedOn ? Math.min(90, daysBetween(profile.planStartedOn, today) + 1) : 1;
   const active = activeDays(logs);
+  const [handoffOpen, setHandoffOpen] = useState(false);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={["top"]}>
@@ -67,16 +73,25 @@ export default function Plan({ profile, logs }: { profile: Profile; logs: DailyL
 
         {/* 🔴 แผนฉบับเต็ม (รายการวิตามิน/สินค้า) ยังต้องผ่าน LINE OA เหมือนเว็บ
             เพราะ PRD Open Question B1 ยังไม่ถูกเคาะ — เลือกทางที่ "ไม่เปลี่ยน funnel เดิม"
-            ไว้ก่อน ถ้าแบรนด์เคาะเป็นทางอื่นค่อยแก้จุดนี้จุดเดียว */}
+            ไว้ก่อน ถ้าแบรนด์เคาะเป็นทางอื่นค่อยแก้จุดนี้จุดเดียว
+
+            ⚠️ เดิมปุ่มนี้เปิด LINE ไปเฉย ๆ — ผู้ใช้ไปถึงแชทโดยไม่มีอะไรติดตัวไปเลย
+               ทีมงานไม่รู้ว่าเป็นใคร กรอกอะไรมา และเราไม่ได้เก็บ lead ด้วย
+               ตอนนี้ผ่านหน้า Handoff ก่อน เพื่อสรุปรายงาน + ออกรหัสให้ถือไป */}
         <Card>
-          <H3>อยากได้แผนฉบับเต็ม?</H3>
+          <H3>{submission ? "รหัสของคุณพร้อมแล้ว" : "อยากได้แผนฉบับเต็ม?"}</H3>
           <View style={{ marginTop: S.xs, marginBottom: S.md }}>
             <Small muted>
-              แผนฉบับเต็ม (รายการบำรุงเฉพาะคุณ พร้อมคำเตือนความปลอดภัยรายตัว)
-              ทีม Baby & Mom ส่งให้ทาง LINE OA — จะได้ตอบคำถามเฉพาะของคุณได้ด้วย
+              {submission
+                ? `รหัส ${submission.ticketCode} — เอาไปพิมพ์ในแชท LINE OA เพื่อรับแผน 90 วันฉบับเต็มค่ะ`
+                : "แผนฉบับเต็ม (รายการบำรุงเฉพาะคุณ พร้อมคำเตือนความปลอดภัยรายตัว) ทีม Baby & Mom ส่งให้ทาง LINE OA — จะได้ตอบคำถามเฉพาะของคุณได้ด้วย"}
             </Small>
           </View>
-          <Btn label="คุยกับทีม Baby & Mom" icon={<IconChat size={20} color={C.white} />} onPress={() => Linking.openURL(LINE_OA)} />
+          <Btn
+            label={submission ? "ดูรหัส + ไปที่ LINE OA" : "สรุปรายงาน + รับรหัสของฉัน"}
+            icon={<IconChat size={20} color={C.white} />}
+            onPress={() => setHandoffOpen(true)}
+          />
         </Card>
 
         <Notice>
@@ -84,6 +99,14 @@ export default function Plan({ profile, logs }: { profile: Profile; logs: DailyL
           และไม่รับประกันการตั้งครรภ์
         </Notice>
       </ScrollView>
+
+      <HandoffModal
+        visible={handoffOpen}
+        profile={profile}
+        submission={submission}
+        onSubmitted={onSubmitted}
+        onClose={() => setHandoffOpen(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -5,17 +5,21 @@ import { C, T, S, R, shadow } from "../theme";
 import { Card, H2, H3, Body, Small, Notice, Btn, Tappable } from "../components/ui";
 import { IconChat } from "../components/icons";
 import { STAGE_LABEL, STAGE_DESC } from "../rhythm";
-import type { Profile, Stage } from "../store";
+import type { Profile, Stage, Submission } from "../store";
+import { LINE_OA_URL } from "../config";
 
 const STAGES: Stage[] = ["prep", "infertility", "pregnant", "lactating", "male"];
 
 export default function Me({
   profile,
+  submission,
   onSaveProfile,
   onChangeStage,
   onReset,
 }: {
   profile: Profile;
+  /** ส่งข้อมูลขึ้น server ไปแล้วหรือยัง — เปลี่ยนสิ่งที่เราพูดเรื่องความเป็นส่วนตัวทั้งหมด */
+  submission: Submission | null;
   onSaveProfile: (p: Partial<Profile>) => void;
   onChangeStage: (s: Stage) => void;
   onReset: () => void;
@@ -26,9 +30,16 @@ export default function Me({
   const [gw, setGw] = useState(profile.gestationalWeeks ? String(profile.gestationalWeeks) : "");
 
   const confirmReset = () => {
+    // 🔴 PDPA — ห้ามพูดเกินจริงว่า "ลบทั้งหมด" ถ้าเคยส่งข้อมูลขึ้น server แล้ว
+    //    ปุ่มนี้ลบได้แค่ของในเครื่อง · สิทธิขอลบข้อมูลจริงต้องบอกทางให้เขาด้วย
+    //    (ไม่งั้นผู้ใช้เชื่อว่าลบหมดแล้วทั้งที่ข้อมูลสุขภาพยังอยู่ฝั่งแบรนด์)
     Alert.alert(
       "ลบข้อมูลทั้งหมด?",
-      "ข้อมูลทุกอย่างในเครื่องจะถูกลบถาวร — รวมบันทึกรายวันและความคืบหน้าที่ทำมา ย้อนกลับไม่ได้",
+      submission
+        ? "ข้อมูลในเครื่องจะถูกลบถาวร ย้อนกลับไม่ได้\n\n" +
+          `หมายเหตุ: ข้อมูลที่คุณเคยส่งให้ทีมงานพร้อมรหัส ${submission.ticketCode} ยังอยู่ในระบบของ Baby & Mom ` +
+          "ถ้าต้องการให้ลบด้วย ทักแจ้งในแชท LINE OA พร้อมรหัสนี้ได้เลยค่ะ"
+        : "ข้อมูลทุกอย่างในเครื่องจะถูกลบถาวร — รวมบันทึกรายวันและความคืบหน้าที่ทำมา ย้อนกลับไม่ได้",
       [
         { text: "ยกเลิก", style: "cancel" },
         { text: "ลบข้อมูล", style: "destructive", onPress: onReset },
@@ -126,9 +137,12 @@ export default function Me({
         <Card>
           <H3>ข้อมูลของคุณ</H3>
           <View style={{ marginTop: S.xs, marginBottom: S.md }}>
+            {/* 🔴 ข้อความนี้ต้องตรงกับความจริงเสมอ — เดิมเขียนตายตัวว่า "ยังไม่ส่งขึ้นเซิร์ฟเวอร์"
+                ซึ่งกลายเป็นเท็จทันทีที่ผู้ใช้กดรับรหัส (ผิดหลัก PDPA เรื่องความโปร่งใส) */}
             <Small muted>
-              รุ่นทดลองนี้เก็บข้อมูลไว้ในเครื่องคุณเท่านั้น ยังไม่ส่งขึ้นเซิร์ฟเวอร์
-              และยังไม่มีการเชื่อมบัญชีใด ๆ
+              {submission
+                ? `ข้อมูลในแอปเก็บไว้ในเครื่องคุณ · คุณได้ส่งข้อมูลให้ทีม Baby & Mom แล้วพร้อมรหัส ${submission.ticketCode} เพื่อรับแผนฉบับเต็ม`
+                : "ข้อมูลเก็บไว้ในเครื่องคุณเท่านั้น ยังไม่ส่งไปไหน · จะส่งก็ต่อเมื่อคุณกดยินยอมเองในหน้า “รับแผนฉบับเต็ม”"}
             </Small>
           </View>
           <Btn label="ลบข้อมูลทั้งหมด" variant="ghost" onPress={confirmReset} />
@@ -139,7 +153,7 @@ export default function Me({
           <View style={{ marginTop: S.xs, marginBottom: S.md }}>
             <Small muted>มีคำถามเรื่องแผนของคุณ ทักทีม Baby & Mom ได้เลย</Small>
           </View>
-          <Btn icon={<IconChat size={20} color={C.tealDeep} />} label="เปิด LINE OA" variant="ghost" onPress={() => Linking.openURL("https://lin.ee/fBa4xkz")} />
+          <Btn icon={<IconChat size={20} color={C.tealDeep} />} label="เปิด LINE OA" variant="ghost" onPress={() => Linking.openURL(LINE_OA_URL)} />
         </Card>
 
         <Notice>

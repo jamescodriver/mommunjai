@@ -1,8 +1,9 @@
 // เก็บข้อมูลในเครื่องทั้งหมด (โหมด guest ตาม PRD R-A1/R-A3)
 //
-// 🔴 PDPA — ยังไม่มีอะไรถูกส่งขึ้น server ในเวอร์ชันนี้เลย
-//    ข้อมูลสุขภาพจะออกจากเครื่องได้ก็ต่อเมื่อผู้ใช้กด consent + ผูกบัญชี (R-P1)
-//    ซึ่งยังไม่ได้ทำในรุ่นทดลองนี้ — ดู PRD §7 คำถาม A4 (LINE Login channel)
+// 🔴 PDPA — โดยปริยายข้อมูลทุกอย่างอยู่ในเครื่องผู้ใช้เท่านั้น
+//    มีทางเดียวที่ข้อมูลออกจากเครื่องได้: ผู้ใช้กดยินยอมเองในหน้า "รับแผนฉบับเต็ม"
+//    แล้วแอปยิงไป POST /api/lead (ดู src/lead.ts) — นอกจากนั้นไม่มีการส่งออกเลย
+//    ไม่ต้องมี LINE Login (A4) เพราะเว็บก็เก็บ lead แบบไม่ต้องล็อกอินเหมือนกัน
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Stage = "prep" | "infertility" | "pregnant" | "lactating" | "male";
@@ -28,8 +29,24 @@ export interface Profile {
 /** บันทึกรายวัน: key = yyyy-mm-dd, value = รายการที่ติ๊กแล้ว */
 export type DailyLogs = Record<string, string[]>;
 
+/**
+ * หลักฐานว่าเคยส่งข้อมูลขึ้น server แล้ว + รหัส ticket ที่ได้กลับมา
+ *
+ * ทำไมต้องเก็บ: ผู้ใช้ต้องเปิดดูรหัสตัวเองได้ตลอด ไม่ใช่เห็นครั้งเดียวตอนส่งเสร็จ
+ * (ถ้าปิดแอปไปก่อนพิมพ์เข้า LINE แล้วรหัสหาย = lead หลุดทั้งที่เก็บข้อมูลไปแล้ว)
+ *
+ * 🔒 ห้ามเก็บช่องทางติดต่อ (เบอร์/LINE ID) ซ้ำลงเครื่อง — server เก็บให้แล้ว
+ *    เก็บซ้ำที่นี่มีแต่เพิ่มพื้นที่ข้อมูลส่วนบุคคลที่ต้องดูแลโดยไม่ได้ประโยชน์
+ */
+export interface Submission {
+  ticketCode: string;
+  /** ISO timestamp ตอนที่ส่งสำเร็จ */
+  submittedAt: string;
+}
+
 const K_PROFILE = "mmj.profile.v1";
 const K_LOGS = "mmj.dailyLogs.v1";
+const K_SUBMISSION = "mmj.submission.v1";
 
 export function todayISO(): string {
   const d = new Date();
@@ -72,8 +89,23 @@ export async function saveLogs(l: DailyLogs): Promise<void> {
   await AsyncStorage.setItem(K_LOGS, JSON.stringify(l));
 }
 
+export async function loadSubmission(): Promise<Submission | null> {
+  try {
+    const raw = await AsyncStorage.getItem(K_SUBMISSION);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveSubmission(s: Submission): Promise<void> {
+  await AsyncStorage.setItem(K_SUBMISSION, JSON.stringify(s));
+}
+
 export async function resetAll(): Promise<void> {
-  await AsyncStorage.multiRemove([K_PROFILE, K_LOGS]);
+  // ⚠️ ล้างรหัส ticket ในเครื่องด้วย แต่ **ข้อมูลที่ส่งไป server แล้วไม่ได้ถูกลบ**
+  //    หน้าจอที่เรียกฟังก์ชันนี้ต้องบอกผู้ใช้ให้ชัด + ชี้ทางขอลบข้อมูลจริงตาม PDPA
+  await AsyncStorage.multiRemove([K_PROFILE, K_LOGS, K_SUBMISSION]);
 }
 
 /** จำนวนวันที่บันทึกอย่างน้อย 1 อย่าง (ใช้โชว์ความคืบหน้า ไม่ใช่ตัดสินผู้ใช้) */
