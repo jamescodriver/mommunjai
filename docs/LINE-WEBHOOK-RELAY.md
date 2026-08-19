@@ -2,6 +2,20 @@
 
 > อัปเดต 12 ส.ค. 2569 · โค้ด: [`lib/line-relay.ts`](../lib/line-relay.ts) · [`app/api/line/webhook/route.ts`](../app/api/line/webhook/route.ts) · เทสต์: [`lib/line-relay.test.ts`](../lib/line-relay.test.ts)
 
+## ผังสภาพแวดล้อม (ต้นยืนยัน 19 ส.ค. 69)
+
+| | URL | บัญชี Vercel | repo ที่ push |
+|---|---|---|---|
+| **production** | `https://mommunjai.vercel.app` | jamescodriver | `jamescodriver/mommunjai` |
+| **dev** | `https://mommunjai-dev.vercel.app` | tonpalearn | `tonpalearn/mommunjai` |
+
+> เครื่องนี้ push ขึ้น **ทั้งสอง remote** ทุกครั้ง (`origin` = jamescodriver · `tonpalearn` = tonpalearn)
+> ตรวจว่าแต่ละตัวรันโค้ด commit ไหนอยู่: `curl <url>/api/line/webhook` แล้วดูฟิลด์ `commit`
+
+🔴 **ต้องรู้ว่า Webhook URL ของ LINE OA ชี้ไปตัวไหน** — ticket ถูกเขียนลง Supabase ของ deployment
+ที่ออกรหัส ถ้า LINE ชี้คนละตัวกับที่ออกรหัส ผู้ใช้จะพิมพ์รหัสแล้วบอทตอบ "ไม่พบรหัสนี้"
+(ทั้งสองตัวตั้ง `LINE_RELAY_WEBHOOK_URL` ไว้แล้วทั้งคู่ จึงดูจาก diagnostic อย่างเดียวแยกไม่ออกว่าตัวไหนคือตัวที่ LINE ใช้จริง)
+
 ## ปัญหา
 
 LINE OA ตั้ง **Webhook URL ได้ช่องเดียวเท่านั้น** — OA ของ Baby & Mom มีบอทเช็คสลิปของ Thunder (`line.thunder.in.th`) จองช่องนั้นอยู่ก่อนแล้ว webhook ของ Mommunjai จึงไม่เคยถูกเรียกเลย
