@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { Report } from "@/lib/report";
 import { BMI_BANDS } from "@/lib/calc/bmi";
+import { fmtRange, fertyTopUpText } from "@/lib/calc/protein";
 import { MEAL_EXAMPLES, MEAL_EXAMPLES_DISCLAIMER } from "@/lib/calc/food-reference";
 import { productPhotoSrc } from "@/lib/product-photos";
 import { track } from "@/lib/track";
@@ -101,7 +102,11 @@ function VitaminWhy({ v }: { v: Vitamin }) {
 //    teaser/medium ยังได้แค่ buildTeaser() จาก /api/lead เหมือนเดิม
 // 🔒 รายงานที่ snapshot ไว้ก่อน R3 ไม่มี part1/part2 → ทุกบล็อกใหม่เป็น optional chain
 //    บล็อกที่ไม่มีข้อมูลหายไปเงียบ ๆ ไม่พังทั้งหน้า
-export default function ReportView({ report, code, ticketNote }: { report: Report; code?: string; ticketNote?: boolean }) {
+export default function ReportView({ report, code, ticketNote, lineLinked }: {
+  report: Report; code?: string; ticketNote?: boolean;
+  /** U-06 — true เมื่อ lead นี้ผูกบัญชี LINE แล้ว (เช็คฝั่ง server ที่ app/r/[code]/page.tsx) */
+  lineLinked?: boolean;
+}) {
   const [showMenu, setShowMenu] = useState(false);
   const p1 = report.part1;
   const p2 = report.part2;
@@ -231,7 +236,11 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
           <Card title={`โปรตีน ${report.isMale ? "💪" : "🥚"}`}>
             {report.protein ? (
               <>
-                <p>เป้าหมาย <b className="text-teal-deep">{report.protein.min}–{report.protein.max} กรัม/วัน</b> (เติมด้วย {report.isMale ? "Ferta" : "Ferty"} ~{report.protein.ferty} ซอง ถ้าอาหารไม่ถึง)</p>
+                {/* U-04 — ถ้าเป้าต่ำสุด = สูงสุด (เช่นช่วงให้นมบุตร) ต้องขึ้นเลขเดียว ไม่ใช่ "91–91"
+                    U-05 — จำนวนซองที่ "เติม" เป็นค่าคงที่ของแบรนด์ (1–2 ซอง) ไม่ใช่ report.protein.ferty
+                           ซึ่งเป็นเลข "กินซองแทนโปรตีนทั้งวัน" คนละความหมายกัน */}
+                <p>เป้าหมาย <b className="text-teal-deep">{fmtRange(report.protein.min, report.protein.max)} กรัม/วัน</b></p>
+                <p className="mt-0.5 text-sm text-ink/75">{fertyTopUpText(report.isMale)}</p>
                 {report.protein.note && <p className="mt-1 text-sm text-teal-deep">💡 {report.protein.note}</p>}
               </>
             ) : (
@@ -450,11 +459,26 @@ export default function ReportView({ report, code, ticketNote }: { report: Repor
         {code ? (
           <div className="mt-3 rounded-xl border border-teal/30 bg-teal-soft/40 p-3 text-center">
             <p className="text-sm text-ink/80">มีคำถามเรื่องแผนของคุณ? แอดมินเห็นคำตอบที่คุณตอบไว้แล้ว ไม่ต้องเล่าซ้ำ</p>
-            <div className="mx-auto my-2 w-fit rounded-xl border-2 border-dashed border-teal bg-white px-4 py-1.5 text-lg font-bold tracking-widest text-teal-deep">{code}</div>
-            <a className="btn-primary w-full" href={LINE_OA_URL} target="_blank" rel="noreferrer" onClick={() => track("line_click", { code, source: "report" })}>
-              💬 คุยกับทีม Baby &amp; Mom ที่ LINE OA
+
+            {/* U-06 (RTM 13 ส.ค. 69) — คนที่กดเข้ามาจาก LINE เห็นรหัสมาแล้ว การโชว์ซ้ำ
+                + บอกให้ "พิมพ์รหัสในแชท" อีกรอบคือความซ้ำซ้อน (ต้นทักเอง)
+                🔒 แต่ลบทิ้งทั้งหมดไม่ได้ — คนที่เปิดลิงก์ /r/<รหัส> ที่เซฟไว้เองหรือมีคนส่งต่อ
+                   ยังไม่เคยผูก LINE และ **ผูกได้ด้วยการพิมพ์รหัสในแชทเท่านั้น**
+                   จึงเช็คจากฝั่ง server ว่า lead นี้ผูก LINE แล้วหรือยัง (ต้นเสนอเอง 19 ส.ค. 69)
+                   ผูกแล้ว → ซ่อนรหัส · ยังไม่ผูก → ยังต้องเห็นรหัสเพื่อผูกให้ได้ */}
+            {!lineLinked && (
+              <>
+                <div className="mx-auto my-2 w-fit rounded-xl border-2 border-dashed border-teal bg-white px-4 py-1.5 text-lg font-bold tracking-widest text-teal-deep">{code}</div>
+              </>
+            )}
+
+            <a className="btn-primary w-full" href={LINE_OA_URL} target="_blank" rel="noreferrer" onClick={() => track("line_click", { code, source: "report", linked: !!lineLinked })}>
+              💬 กลับไปคุยกับแอดมิน
             </a>
-            <p className="mt-1 text-sm text-ink/75">พิมพ์รหัส {code} ในแชท หรือกด “แผนของฉัน” ในเมนู LINE</p>
+
+            {!lineLinked && (
+              <p className="mt-1 text-sm text-ink/75">พิมพ์รหัส {code} ในแชท เพื่อให้แอดมินเห็นแผนของคุณ</p>
+            )}
           </div>
         ) : (
           <AdminHandoffCta

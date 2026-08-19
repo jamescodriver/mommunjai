@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RTM ยืนยันแก้ไข — Update App Mommunjai (13 ส.ค. 69)</title>
+<style>
+:root{
+  --teal:#1BC0BA; --teal-deep:#159C97; --teal-soft:#E6F7F6;
+  --rose:#F978B3; --rose-deep:#E14F97; --rose-soft:#FFE7F1;
+  --gold:#D4A017; --gold-deep:#9C7A0E; --gold-soft:#FBF1DA;
+  --indigo:#6366F1; --indigo-deep:#4338CA; --indigo-soft:#E9E9FE;
+  --gray:#9CA3AF; --gray-deep:#5B6472; --gray-soft:#EEF1F4;
+  --ok:#22C55E; --ok-deep:#16A34A; --warn:#F59E0B; --warn-deep:#B45309;
+  --bad:#DC2626; --bad-deep:#991B1B;
+  --ink:#1F2937; --bg:#FBFCFE; --line:#E4E9EE;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;color:var(--ink);line-height:1.6;background:var(--bg)}
+.font-d{font-family:'Poppins','Prompt',sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+header.top{background:linear-gradient(120deg,var(--rose) 0%,var(--rose-deep) 100%);color:#fff;padding:26px 22px;border-radius:18px;margin-bottom:18px;box-shadow:0 8px 24px rgba(225,79,151,.25)}
+header.top h1{margin:0 0 4px;font-family:Poppins;font-size:21px;font-weight:600}
+header.top p{margin:0;font-size:13px;opacity:.92}
+header.top .src{margin-top:10px;font-size:11.5px;opacity:.85}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;transition:.15s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06)}
+.stat .n{font-family:Poppins;font-size:22px;font-weight:600}
+.stat .l{font-size:11.5px;color:#6B7280;margin-top:2px}
+.stat.total .n{color:var(--ink)}
+.stat.ready .n{color:var(--ok-deep)}
+.stat.confirm .n{color:var(--warn-deep)}
+.stat.blocked .n{color:var(--bad-deep)}
+
+.groups{background:#fff;border:1.5px solid var(--rose);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.groups h2{margin:0 0 10px;font-size:13.5px;font-family:Poppins;font-weight:600;color:var(--rose-deep)}
+.grow{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px dashed var(--line);font-size:12.8px}
+.grow:first-of-type{border-top:none}
+.grow .ids{font-family:Poppins;font-weight:600;color:var(--rose-deep);white-space:nowrap}
+.grow .why{color:#4B5563}
+
+.sticky-wrap{position:sticky;top:8px;z-index:40;background:var(--bg);padding-top:2px;margin-bottom:16px}
+.sticky-wrap .panel{margin-bottom:12px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+.sticky-wrap .panel:last-child{margin-bottom:0}
+
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.panel h2{margin:0 0 10px;font-size:13.5px;font-family:Poppins;font-weight:600;color:#374151;display:flex;align-items:center;gap:8px}
+.minilinks{font-size:11px;font-weight:400;color:#9CA3AF}
+.linkbtn{background:none;border:0;padding:0;font-family:inherit;font-size:11px;color:var(--rose-deep);cursor:pointer;text-decoration:underline}
+.linkbtn:hover{color:var(--rose)}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#4B5563;transition:.15s;user-select:none}
+.chip[data-on="1"]{color:#fff;border-color:transparent}
+.chip.st-ready[data-on="1"]{background:var(--ok)}
+.chip.st-confirm[data-on="1"]{background:var(--warn)}
+.chip.st-blocked[data-on="1"]{background:var(--bad)}
+.chip.area-teaser[data-on="1"]{background:var(--teal)}
+.chip.area-full[data-on="1"]{background:var(--rose)}
+.chip.area-asset[data-on="1"]{background:var(--indigo)}
+.chip.area-logic[data-on="1"]{background:var(--gold)}
+.chip.area-content[data-on="1"]{background:var(--gray-deep)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.search{flex:1;min-width:200px}
+.search input{width:100%;font-family:inherit;font-size:13px;padding:9px 13px;border:1.5px solid var(--line);border-radius:10px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;padding:9px 16px;border-radius:999px;white-space:nowrap;
+  background:var(--rose);color:#fff;box-shadow:0 4px 14px rgba(249,120,179,.35)}
+.btn.ghost{background:#fff;color:var(--rose-deep);border:1.5px solid var(--rose)}
+.btn.small{padding:6px 12px;font-size:12px;box-shadow:none}
+
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+thead th{background:var(--rose-soft);color:var(--rose-deep);font-family:Poppins;font-size:11.5px;font-weight:600;text-align:left;padding:11px 12px;cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{background:#FEDDEC}
+thead th .arrow{opacity:.5;margin-left:3px;font-size:10px}
+tbody tr.row{border-top:1px solid var(--line);cursor:pointer}
+tbody tr.row:hover{background:#FFFBFD}
+tbody td{padding:11px 12px;font-size:12.8px;vertical-align:top}
+.tc-id{font-family:Poppins;font-size:12px;font-weight:600;color:var(--rose-deep);background:var(--rose-soft);padding:2px 9px;border-radius:8px;white-space:nowrap}
+.req{max-width:360px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;color:#fff;white-space:nowrap}
+.badge.st-ready{background:var(--ok-deep)}
+.badge.st-confirm{background:var(--warn-deep)}
+.badge.st-blocked{background:var(--bad-deep)}
+.badge.area-teaser{background:var(--teal-deep)}
+.badge.area-full{background:var(--rose-deep)}
+.badge.area-asset{background:var(--indigo-deep)}
+.badge.area-logic{background:var(--gold-deep)}
+.badge.area-content{background:var(--gray-deep)}
+.caret{color:#9CA3AF;font-size:11px;margin-right:4px;display:inline-block;transition:.15s}
+tr.row.open .caret{transform:rotate(90deg)}
+
+tr.detail td{background:#FAFBFC;border-top:none;padding:14px 16px 18px}
+tr.detail.hidden{display:none}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dcol h4{margin:0 0 6px;font-size:11.5px;font-family:Poppins;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.3px}
+.dcol blockquote{margin:0 0 12px;padding:9px 12px;background:#fff;border-left:3px solid var(--rose);border-radius:0 8px 8px 0;font-size:12.5px;color:#4B5563;white-space:pre-line}
+.dcol .current{background:var(--teal-soft);border-left-color:var(--teal-deep);white-space:pre-line;font-size:12px}
+.dcol .proposed{background:var(--rose-soft);border-left-color:var(--rose-deep);white-space:pre-line}
+.dcol .openq{background:var(--gold-soft);border-left-color:var(--gold-deep);white-space:pre-line}
+.dcol .note{font-size:12.5px;color:#4B5563}
+.related{display:inline-block;margin-top:2px;font-size:11.5px;color:var(--rose-deep)}
+.followbox{width:100%;min-height:60px;font-family:inherit;font-size:12.5px;padding:8px 12px;border-radius:10px;
+  border:1.5px solid var(--line);resize:vertical}
+.followbox:focus{outline:2px solid var(--rose);border-color:var(--rose)}
+.savedmark{font-size:11px;color:var(--rose-deep);opacity:0;transition:opacity .3s;margin-top:4px}
+.savedmark.show{opacity:1}
+.empty{text-align:center;padding:40px;color:#9CA3AF;font-size:13px}
+footer.note{margin-top:18px;font-size:11.5px;color:#8B95A1;text-align:center}
+@media(max-width:760px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .dgrid{grid-template-columns:1fr}
+  table,thead,tbody,tr,td,th{display:block}
+  thead tr{display:none}
+  tbody tr.row{padding:10px 4px}
+  tbody td{padding:3px 6px}
+  .req{max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>📋 RTM ยืนยันแก้ไข — Update App Mommunjai (13 ส.ค. 69)</h1>
+    <p>ไล่จาก คอมเมนต์ในไฟล์ PDF → System Requirement → พฤติกรรมปัจจุบัน (เช็คจากโค้ดจริงและไฟล์ภาพจริงแล้ว) → สิ่งที่จะแก้ → คำถามที่ต้องขอ confirm ก่อนเริ่ม — รวม 9 รายการ</p>
+    <div class="src">ที่มา: <code>Update App.pdf</code> (8 หน้า) · เอกสารนี้ยังเป็น &quot;ก่อนแก้&quot; — <b>ยังไม่ได้เริ่มพัฒนาข้อไหนทั้งสิ้น</b> รอต้นเช็ค + confirm เป็นรายข้อก่อน · คลิกแถวเพื่อดูรายละเอียด + ใส่คอมเมนต์ได้</div>
+    <div class="src" style="margin-top:8px"><b>⚠️ ต้องเคาะก่อนลงมือ:</b> ภาพในเอกสารถ่ายจาก <code>mommunjai.vercel.app</code> แต่ webhook ของ LINE กับแอปมือถือชี้ไปที่ <code>mommunjai-dev.vercel.app</code> — ตอนนี้มี 2 deployment รบกวนยืนยันว่าตัวไหนคือตัวจริงที่ลูกค้าใช้ เพื่อให้แก้แล้วขึ้นถูกที่</div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="groups">
+    <h2>🔗 กลุ่มที่มีต้นเหตุร่วมกัน (แก้พร้อมกันจะคุ้มกว่าแยกทำ)</h2>
+    <div class="grow"><span class="ids">U-01 · U-02 · U-03</span><span class="why">— งานภาพสินค้าทั้งหมด <b>ไม่ใช่งานเขียนโปรแกรม</b> ระบบอ่านไฟล์จาก public/products/ อยู่แล้ว เปลี่ยนไฟล์ก็เปลี่ยนภาพทันที ควรรวบขอไฟล์จากทีมแบรนด์รอบเดียวจบ</span></div>
+    <div class="grow"><span class="ids">U-04 · U-05</span><span class="why">— เรื่องโปรตีนจุดเดียวกัน (ตัวคำนวณ + จุดที่เอาไปแสดง) แก้พร้อมกันครั้งเดียว</span></div>
+    <div class="grow"><span class="ids">U-07 · U-09</span><span class="why">— หน้าเดียวกัน (หน้าก่อนเข้า LINE) แตะไฟล์เดียวกัน ทำรวบเดียวได้</span></div>
+    <div class="grow"><span class="ids">⚠️ U-07</span><span class="why">— <b>ข้อนี้กลับมติรอบ 4 ส.ค. 69 (PDF-01)</b> ที่ต้นสั่งเองว่าให้ทุกคนเห็นชุดพื้นฐาน 4 ตัวเหมือนกันหมด — ต้องเคาะก่อน ไม่งั้นจะกลับไปกลับมาอีกรอบ</span></div>
+  </div>
+
+  <div class="sticky-wrap">
+    <div class="panel">
+      <div class="toolbar">
+        <div class="search"><input id="search" type="text" placeholder="ค้นหา U-xx, คำในคอมเมนต์ หรือ requirement…"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost small" id="resetBtn">↺ ล้างตัวกรอง</button>
+          <button class="btn small" id="exportBtn">⬇️ Export .md (รวมคอมเมนต์)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>กรองตามสถานะยืนยัน <span class="minilinks"><button class="linkbtn" id="stAll">เลือกทั้งหมด</button> · <button class="linkbtn" id="stNone">ไม่เลือกเลย</button></span></h2>
+      <div class="chiprow" id="stChips"></div>
+      <h2>กรองตามจุดที่แก้ <span class="minilinks"><button class="linkbtn" id="areaAll">เลือกทั้งหมด</button> · <button class="linkbtn" id="areaNone">ไม่เลือกเลย</button></span></h2>
+      <div class="chiprow" id="areaChips"></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="id">ID <span class="arrow"></span></th>
+        <th data-sort="none">System Requirement</th>
+        <th data-sort="area">จุดที่แก้ <span class="arrow"></span></th>
+        <th data-sort="status">สถานะยืนยัน <span class="arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none">ไม่มีรายการที่ตรงตัวกรอง</div>
+
+  <footer class="note">
+    คอมเมนต์เพิ่มเติมบันทึกอัตโนมัติในเบราว์เซอร์นี้ (localStorage) — กด "Export .md" เมื่อพร้อมส่งไฟล์ให้ทีม แล้วเปิดหน้านี้ใหม่มาแก้ต่อได้เสมอ
+  </footer>
+</div>
+
+<script>
+var DATA = [
+ {
+  "id": "U-01",
+  "area": "asset",
+  "status": "ready",
+  "quote": "แก้ภาพ ให้ชัดๆ พื้นขาว  (วงกลมไว้ที่ น้ำมะกรูด Shot 100% ฿600 — หน้า 1)",
+  "requirement": "ภาพสินค้าในรายงานต้องคมชัด พื้นหลังขาวสะอาด เริ่มจาก “น้ำมะกรูด Shot 100%” ที่วงไว้",
+  "current": "ตรวจไฟล์จริงครบทั้ง 25 รูปใน public/products/ แล้ว — 21 รูปเป็น 640×640 ตามมาตรฐาน แต่ kaffirshot.jpg มีแค่ 260×286 (เล็กกว่ามาตรฐาน ~2.5 เท่า และไม่เป็นจัตุรัส) เบราว์เซอร์จึงต้องขยายภาพขึ้นมาแสดง → เบลอตามที่เห็นในภาพถ่าย · สรุปคือ “ไม่ใช่ปัญหาพื้นหลัง แต่เป็นความละเอียดของไฟล์ต้นทาง”",
+  "proposed": "มีไฟล์ต้นฉบับความละเอียดสูงอยู่ในระบบแล้ว (source/product photo/มะกรูดใหม่.png ขนาด 6000×4000) → ประมวลผลใหม่ด้วยขั้นตอนเดียวกับอีก 21 ไฟล์ (ตัดขอบขาวส่วนเกิน + วางกลางผืนจัตุรัส 640×640 พื้นขาว) · ใช้เวลาไม่กี่นาที ไม่ต้องแก้โค้ดเลยแม้แต่บรรทัดเดียว",
+  "openq": "ยืนยันว่าไฟล์ “มะกรูดใหม่.png” คือสินค้าตัวเดียวกับ น้ำมะกรูด Shot 100% (฿600) ไม่ใช่ตัวผสมน้ำผึ้งชันโรง — ในแคตตาล็อกมีน้ำมะกรูด 2 SKU ผมไม่เดาเอง",
+  "related": "U-02, U-03"
+ },
+ {
+  "id": "U-02",
+  "area": "asset",
+  "status": "blocked",
+  "quote": "— ไม่ได้อยู่ในเอกสาร · ผมเจอเพิ่มระหว่างไล่ตรวจไฟล์ภาพทั้งชุดตามข้อ U-01 —",
+  "requirement": "ภาพสินค้าอีก 3 รายการที่จะเบลอแบบเดียวกับน้ำมะกรูด ทันทีที่ระบบแนะนำให้ลูกค้ารายไหนก็ตาม",
+  "current": "phytocrystalc 260×287 · puregreen 260×218 · purered 260×286 — ทั้ง 3 ไฟล์เล็กกว่ามาตรฐานเหมือน kaffirshot เป๊ะ (ชุดเดียวกัน น่าจะมาจากการดึงภาพจากเว็บครั้งเดียวกัน) · ต่างกันตรงที่ **ไม่มีไฟล์ต้นฉบับความละเอียดสูงอยู่ในระบบ** (source/product photo/ มี 24 ไฟล์ ไม่ครอบคลุม 3 ตัวนี้)",
+  "proposed": "ขอไฟล์ต้นฉบับ 3 ไฟล์จากทีมแบรนด์ แล้วประมวลผลรวบเดียวกับ U-01 · ถ้าไม่มีไฟล์เดิมต้องถ่ายใหม่",
+  "openq": "ทีมแบรนด์มีไฟล์ต้นฉบับของ ไฟโตคริสตัล ซี · Pure Green · Pure Red ไหมคะ — ถ้าปล่อยไว้ ลูกค้าที่ได้รับคำแนะนำ 3 ตัวนี้จะเห็นภาพเบลอแบบเดียวกับที่ต้นวงไว้",
+  "related": "U-01"
+ },
+ {
+  "id": "U-03",
+  "area": "asset",
+  "status": "blocked",
+  "quote": "รูปสินค้าวางคู่แผง · สินค้าต้องรู้ว่าคืออะไร · เช่น คอลลาเทลโล ต้องคู่แก้วชงน้ำม่วง · โปรตีนคู่แก้วเชค",
+  "requirement": "ภาพสินค้าต้องสื่อให้เห็นว่า “ของจริงหน้าตาเป็นยังไง / กินยังไง” ไม่ใช่เห็นแค่กล่องข้างนอก",
+  "current": "ภาพทั้งชุดตอนนี้เป็น “กล่องเดี่ยว” ตัดขอบขาวแล้ววางกลางผืนจัตุรัส ซึ่งตั้งใจทำให้ขนาดสินค้าดูสม่ำเสมอกันเวลาเรียงในตาราง (มีคอมเมนต์กำกับเหตุผลไว้ใน lib/product-photos.ts) · ผลข้างเคียงคือดูเป็นระเบียบดี แต่บอกไม่ได้ว่าเป็นผงชง แคปซูล หรือน้ำ",
+  "proposed": "งานนี้ **ไม่ใช่งานโค้ด เป็นงานภาพล้วน ๆ** — ระบบอ่านไฟล์จาก public/products/&lt;id&gt;.jpg อยู่แล้ว เปลี่ยนไฟล์ปุ๊บเปลี่ยนภาพปั๊บ · เสนอทำเฉพาะรายการที่ “เห็นกล่องแล้วเดาไม่ออก” ก่อน ไม่ต้องถ่ายใหม่ทั้ง 25 ตัวให้เสียเวลาและงบ",
+  "openq": "(1) จะทำกี่รายการ — ทั้ง 25 ตัว หรือคัดเฉพาะที่จำเป็น? (2) 🔴 ภาพที่มีภาชนะ/วิธีชง **ต้องตรงกับวิธีรับประทานที่ระบบเขียนไว้** ไม่งั้นภาพกับข้อความจะขัดกันเองต่อหน้าลูกค้า เช่น ถ้าภาพ Colla Telo เป็นแก้วน้ำสีม่วง แต่ข้อความบอกให้ผสมนม คนอ่านจะงง — รบกวนทีมแบรนด์ล็อก “คู่ภาพ ↔ วิธีใช้” มาพร้อมกันในไฟล์เดียว",
+  "related": "U-01, U-02"
+ },
+ {
+  "id": "U-04",
+  "area": "logic",
+  "status": "ready",
+  "quote": "(หน้า 3) เป้าโปรตีนต่อวัน 91–91 กรัม · (1.3–1.3 ก./น้ำหนักตัว 1 กก.) · เติมด้วยโปรตีนเฟอร์ตี้ 4–4 ซอง/วัน",
+  "requirement": "ตัวเลขที่ค่าต่ำสุดเท่ากับค่าสูงสุด ต้องไม่แสดงออกมาเป็น “X–X”",
+  "current": "ต้นเหตุอยู่ที่ lib/calc/protein.ts — ตารางโปรตีนต่อน้ำหนักตัวกำหนดช่วงของ “ให้นมบุตร” ไว้เป็น 1.3–1.3 คือค่าเดียว ไม่ใช่ช่วงจริง ทุกจุดที่เอาไปแสดงจึงพิมพ์เป็น 91–91 / 1.3–1.3 / 4–4 · **การคำนวณไม่ได้ผิด แต่หน้าตาทำให้ดูเหมือนระบบพัง** (ภาพที่ต้นถ่ายมาคือเคสให้นมบุตร)",
+  "proposed": "แก้ที่ชั้นแสดงผลอย่างเดียว — ถ้าค่าต่ำสุด = ค่าสูงสุด ให้พิมพ์เลขเดียว (“91 กรัม”, “1.3 ก./กก.”) · ไม่แตะสูตรและไม่แตะค่าอ้างอิงทางโภชนาการ จึงไม่มีความเสี่ยงด้านความถูกต้อง",
+  "openq": "— (เห็นชัดจากภาพแล้ว ไม่ต้องถามเพิ่ม)",
+  "related": "U-05"
+ },
+ {
+  "id": "U-05",
+  "area": "logic",
+  "status": "confirm",
+  "quote": "1-2 ซอง ถ้ากินโปรตีนจากอาหารไม่ถึง  (หน้า 3, 4 และ 6 — ย้ำ 3 ครั้ง)",
+  "requirement": "คำแนะนำจำนวนซองโปรตีนเฟอร์ตี้ ให้เป็น 1–2 ซอง/วัน",
+  "current": "ระบบใช้ตัวเลขชุดเดียวกันในสองความหมายที่ต่างกัน จึงออกมาเป็น ~4 ซอง:  (ก) แถวเทียบเท่า “โปรตีนเฟอร์ตี้ ≈ 4 ซอง” หมายถึง ถ้าจะกินซองแทนโปรตีนทั้งวัน (91 ÷ 25 ก.ต่อซอง) — อันนี้เป็นคณิตศาสตร์ ถูกต้องตามนิยามของมัน  (ข) ประโยคแนะนำ “เติมด้วย Ferty ~4 ซอง ถ้าอาหารไม่ถึง” (components/report-view.tsx:234) และ “เติมด้วยโปรตีนเฟอร์ตี้ 4–4 ซอง/วัน” ในหน้าเครื่องมือ — **หยิบเลขจาก (ก) มาใช้ ซึ่งผิดความหมาย** เพราะ “เติมส่วนที่ขาด” ไม่เท่ากับ “กินแทนทั้งวัน”",
+  "proposed": "คงแถว (ก) ไว้เป็นตารางเทียบเท่าเหมือนเดิม · เปลี่ยนเฉพาะ (ข) เป็น “1–2 ซอง/วัน” ตามที่แบรนด์กำหนด — เท่ากับเลิกคำนวณจำนวนซองจากน้ำหนักตัว ซึ่งจะทำให้ข้อความนิ่งและตรงกับที่ทีมแนะนำหน้าร้านจริง",
+  "openq": "🔴 ข้อนี้เป็น **คำแนะนำการบริโภคผลิตภัณฑ์ ต้องมาจากแบรนด์ ผมตั้งเองไม่ได้** ขอยืนยัน 3 ข้อ: (1) 1–2 ซอง ใช้เท่ากันหมดทุกช่วง (เตรียมตั้งครรภ์ / มีบุตรยาก / ตั้งครรภ์แล้ว / ให้นมบุตร) ใช่ไหม (2) ฝ่ายชายที่ใช้ Ferta เวย์โปรตีน ใช้ 1–2 ซองเหมือนกันไหม (3) เป็นค่าคงที่ ไม่ต้องผูกกับส่วนที่ขาดจริงของแต่ละคนใช่ไหม",
+  "related": "U-04, U-08"
+ },
+ {
+  "id": "U-06",
+  "area": "full",
+  "status": "confirm",
+  "quote": "อันนี้จะซ้ำซ้อนไหม ในเมื่อเห็นโค้ดมาแล้ว ให้กลับไปคุยกับแอดมินจิ้มปุ่มนี้แล้วกลับไปหน้าแชทไลน์ · “เขียนว่า….กลับไปคุยกับแอดมิน”",
+  "requirement": "ท้ายรายงานฉบับเต็ม ตัดส่วนที่ซ้ำซ้อนออก และเปลี่ยนปุ่มเป็น “กลับไปคุยกับแอดมิน” ที่พากลับไปหน้าแชท LINE",
+  "current": "components/report-view.tsx บรรทัด 449–458 แสดง 3 อย่างซ้อนกันในกล่องเดียว: กล่องรหัส MJ-XXXXXX + ปุ่ม “คุยกับทีม Baby & Mom ที่ LINE OA” + บรรทัด “พิมพ์รหัส … ในแชท หรือกด แผนของฉัน ในเมนู LINE” · ถ้าลูกค้าเดินทางมาจาก LINE อยู่แล้ว เขาเห็นรหัสมาแล้วจริงตามที่ต้นทัก",
+  "proposed": "เปลี่ยนป้ายปุ่มเป็น “กลับไปคุยกับแอดมิน” · ยุบกล่องรหัสกับบรรทัดพิมพ์รหัสให้เหลือลิงก์เล็ก ๆ “ดูรหัสของฉัน” ที่กดแล้วค่อยกางออก — ได้หน้าจอที่สะอาดตามที่ขอ โดยไม่ตัดทางของคนอีกกลุ่ม (ดูคำถามข้อ 1)",
+  "openq": "🔴 (1) หน้านี้เข้าได้ 2 ทาง — มาจาก LINE (เห็นรหัสแล้ว = ซ้ำจริงตามที่ต้นทัก) กับ เปิดลิงก์ /r/&lt;รหัส&gt; ที่เซฟไว้เองหรือมีคนส่งต่อ (ยังไม่เคยผูก LINE) · กลุ่มหลัง **ผูกบัญชีเข้าระบบด้วยการพิมพ์รหัสในแชทเท่านั้น** ถ้าลบรหัสทิ้งทั้งหมด กลุ่มนี้จะผูกไม่ได้เลย ผมจึงเสนอเป็น “ยุบ” ไม่ใช่ “ลบ” — ยืนยันว่ารับได้ไหม  (2) “กลับไปหน้าแชทไลน์” แบบเด้งกลับอัตโนมัติ ทำได้ต่อเมื่อเปิดหน้านี้ผ่าน LIFF ซึ่งต้องสร้าง LINE Login channel ก่อน (เป็นคำถามที่ค้างอยู่แล้วเรื่องบัญชี) — ถ้ายังไม่มี ปุ่มจะเปิดแอป LINE ไปที่ OA ให้ ซึ่งใกล้เคียงแต่ไม่เหมือนเป๊ะ",
+  "related": "—"
+ },
+ {
+  "id": "U-07",
+  "area": "teaser",
+  "status": "confirm",
+  "quote": "หน้านี้ต้องเป็นข้อมูลเฉพาะ แนะนำวิตามินตามอาการ ไม่ใช่พื้นฐาน",
+  "requirement": "หน้า “แนะนำเบื้องต้นสำหรับคุณ” (ก่อนเข้า LINE) ต้องแนะนำตามอาการ/ภาวะของแต่ละคน ไม่ใช่ชุดเดียวกันทุกคน",
+  "current": "หน้านี้หยิบสินค้า 4 ตัวแรกจากรายการเต็ม (lib/report.ts:567) และรายการเต็มถูกเรียงโดยเอา **ชุดพื้นฐานไว้ก่อนเสมอ** แล้วค่อยตามด้วยชุดตามอาการ (lib/calc/vitamins.ts:602) · สำหรับ “เตรียมตั้งครรภ์” ชุดพื้นฐานมี 4 ตัวพอดี (OvaAll · Ferty · น้ำมะกรูด · Ferti 9 Oil) = **ตรงกับภาพที่ต้นถ่ายมาเป๊ะ** ผลคือของตามอาการ (PCO-VIT เมื่อมี PCOS · A.O.S เมื่อทำ ART · Night Shot เมื่อนอนไม่ดี · Varginaree · ชุดเตรียมผนังมดลูก) **ถูกดันตกจอทั้งหมด ไม่มีลูกค้าคนไหนได้เห็นเลย**",
+  "proposed": "เรียงของตามอาการขึ้นมาก่อนเฉพาะหน้านี้ หรือผสม (ตามอาการ 2 + พื้นฐาน 2) — แก้จุดเดียว ไม่กระทบรายงานฉบับเต็ม และไม่กระทบกฎความปลอดภัยว่าสินค้าไหนห้ามใช้ช่วงไหน",
+  "openq": "🔴 **ข้อนี้กลับมติของรอบที่แล้ว** — เมื่อ 4 ส.ค. 69 ต้นสั่งเองว่า “แนะนำวิตามินเบื้องต้น ก่อนเข้า line **ทุกคนทุกสภาวะ** … เป็น 4 ตัวหลักนี้ 1.Ferty 2.OvaAll 3.น้ำมะกรูด 4.Ferti9 Oil” (ข้อ PDF-01) และระบบแก้ตามไปเรียบร้อยแล้ว · รอบนี้ขอ “ตามอาการ ไม่ใช่พื้นฐาน” ซึ่งขัดกันตรง ๆ — รบกวนเคาะว่าจะยึดอันไหน ก่อนผมแตะโค้ด ไม่งั้นรอบหน้าจะกลับไปกลับมาอีก",
+  "related": "U-09 · PDF-01 (รอบ 4 ส.ค. 69)"
+ },
+ {
+  "id": "U-08",
+  "area": "content",
+  "status": "blocked",
+  "quote": "เพิ่มโปรตีน 10 รายการ เช่น เนื้อวัว · หมู · นม · ถั่ว · อะโวคาโด้ · กุ้ง",
+  "requirement": "ตาราง “โปรตีนในอาหาร (อ้างอิง)” ในรายงานฉบับเต็ม ขยายจาก 4 เป็น 10 รายการ",
+  "current": "ตอนนี้มี 4 รายการ (อกไก่ · ปลา · ไข่ต้ม · โปรตีนเฟอร์ตี้) · ไฟล์ lib/calc/food-reference.ts มีกฎเขียนล็อกไว้ในตัวไฟล์เองว่า **“ทุกตัวเลข/รายการต้องมาจากเอกสารของโปรเจกต์เท่านั้น ห้ามเติมจากความจำ”** และเอกสารต้นทาง (คัมภีร์ครูก้อย §1) ให้ค่าไว้แค่ 4 รายการนี้ · ตัวโปรแกรมแก้ง่ายมาก ติดที่ “ตัวเลข” ไม่ได้ติดที่โค้ด",
+  "proposed": "ขอค่าโปรตีนต่อหน่วยของ 6 รายการที่ระบุ + อีกราว 2 รายการจากทีมครูก้อย → เติมลงเอกสารต้นทางก่อน → แล้วค่อยแก้โค้ด (ขั้นตอนนี้กันไม่ให้ตัวเลขสุขภาพในแอปมีที่มาจากการเดา)",
+  "openq": "🔴 (1) อะโวคาโดมีโปรตีนต่ำมาก (~2 ก. ต่อ 100 ก.) การใส่ไว้ในตาราง “แหล่งโปรตีน” เสี่ยงทำให้ผู้ใช้เข้าใจผิดว่ากินแล้วได้โปรตีนพอ — ยืนยันว่าต้องการใส่จริงไหม หรือย้ายไปหัวข้อ “ไขมันดี” ซึ่งเป็นจุดแข็งจริงของอะโวคาโด  (2) “นม” และ “ถั่ว” ขอให้ระบุชนิดกับปริมาณอ้างอิง (นมวัว/นมแพะ? ถั่วชนิดไหน?) เพราะค่าโปรตีนต่างกันหลายเท่า",
+  "related": "U-04, U-05"
+ },
+ {
+  "id": "U-09",
+  "area": "teaser",
+  "status": "ready",
+  "quote": "ตัวหนังสือเล็ก ใหญ่ทำให้อ่านง่ายๆ",
+  "requirement": "จัดขนาดตัวอักษรในหน้าก่อนเข้า LINE ให้มีลำดับชั้น กวาดตาอ่านได้เร็ว",
+  "current": "หน้านี้ใช้ขนาดตัวอักษรใกล้เคียงกันเกือบทั้งหน้า ทำให้ชื่อสินค้า · เหตุผลที่แนะนำ · และคำเตือน ดูมีน้ำหนักเท่ากันหมด ตาไม่รู้จะเกาะตรงไหนก่อน",
+  "proposed": "ทำลำดับชั้นตัวอักษร — ชื่อสินค้าใหญ่และหนา · เหตุผลเล็กลงและสีจางลง · ตัวเลขเป้าหมายต่อวันเด่นที่สุด · เพิ่มระยะห่างบรรทัด (ภาษาไทยมีสระบน-ล่าง ต้องการระยะมากกว่าภาษาอังกฤษ ไม่งั้นตัวอักษรจะชนกัน)",
+  "openq": "—",
+  "related": "U-07 (หน้าเดียวกัน แก้พร้อมกันคุ้มกว่า)"
+ }
+];
+
+var STATUS_ORDER = ["ready","confirm","blocked"];
+var STATUS_LABEL = {ready:"🟢 พร้อมแก้ทันที",confirm:"🟡 รอ confirm สมมติฐาน",blocked:"🔴 รอ asset/ตัดสินใจเพิ่ม"};
+var STATUS_RANK = {ready:0,confirm:1,blocked:2};
+var AREA_ORDER = ["teaser","full","asset","logic","content"];
+var AREA_LABEL = {teaser:"หน้าก่อนเข้า LINE",full:"รายงานฉบับเต็ม",asset:"ภาพสินค้า",logic:"ตัวเลข/สูตรคำนวณ",content:"เนื้อหาความรู้"};
+var AREA_RANK = {teaser:0,full:1,asset:2,logic:3,content:4};
+
+var LS_KEY = "mmj_rtm_1308_comments";
+function loadComments(){ try{ return JSON.parse(localStorage.getItem(LS_KEY) || "{}"); }catch(e){ return {}; } }
+function saveComments(o){ localStorage.setItem(LS_KEY, JSON.stringify(o)); }
+var comments = loadComments();
+
+var state = {
+  statusOn: {}, areaOn: {}, search: "",
+  sortKey: "id", sortDir: 1, openRows: {}
+};
+STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+AREA_ORDER.forEach(function(k){ state.areaOn[k] = true; });
+
+function renderStats(){
+  var counts = {total:DATA.length, ready:0, confirm:0, blocked:0};
+  DATA.forEach(function(d){ counts[d.status]++; });
+  var el = document.getElementById("stats");
+  el.innerHTML = [
+    ["total","ทั้งหมด",counts.total],
+    ["ready","พร้อมแก้ทันที",counts.ready],
+    ["confirm","รอ confirm สมมติฐาน",counts.confirm],
+    ["blocked","รอ asset/ตัดสินใจ",counts.blocked],
+  ].map(function(s){
+    return '<div class="stat '+s[0]+'"><div class="n">'+s[2]+'</div><div class="l">'+s[1]+'</div></div>';
+  }).join("");
+}
+
+function renderChips(){
+  var stEl = document.getElementById("stChips");
+  stEl.innerHTML = STATUS_ORDER.map(function(k){
+    return '<button class="chip st-'+k+'" data-kind="status" data-key="'+k+'" data-on="'+(state.statusOn[k]?1:0)+'">'+STATUS_LABEL[k]+'</button>';
+  }).join("");
+  var areaEl = document.getElementById("areaChips");
+  areaEl.innerHTML = AREA_ORDER.map(function(k){
+    return '<button class="chip area-'+k+'" data-kind="area" data-key="'+k+'" data-on="'+(state.areaOn[k]?1:0)+'">'+AREA_LABEL[k]+'</button>';
+  }).join("");
+  document.querySelectorAll(".chip").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var kind = btn.getAttribute("data-kind"), key = btn.getAttribute("data-key");
+      var map = kind === "status" ? state.statusOn : state.areaOn;
+      map[key] = !map[key];
+      renderChips(); renderRows();
+    });
+  });
+}
+
+function getFiltered(){
+  var q = state.search.trim().toLowerCase();
+  var list = DATA.filter(function(d){
+    if(!state.statusOn[d.status]) return false;
+    if(!state.areaOn[d.area]) return false;
+    if(q && (d.id+" "+d.requirement+" "+d.quote+" "+d.current+" "+d.openq).toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  list.sort(function(a,b){
+    var av, bv;
+    if(state.sortKey === "id"){ av = a.id; bv = b.id; }
+    else if(state.sortKey === "area"){ av = AREA_RANK[a.area]; bv = AREA_RANK[b.area]; }
+    else if(state.sortKey === "status"){ av = STATUS_RANK[a.status]; bv = STATUS_RANK[b.status]; }
+    else { return 0; }
+    if(av < bv) return -1 * state.sortDir;
+    if(av > bv) return 1 * state.sortDir;
+    return 0;
+  });
+  return list;
+}
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderRows(){
+  var list = getFiltered();
+  var tbody = document.getElementById("tbody");
+  document.getElementById("emptyMsg").style.display = list.length ? "none" : "block";
+  tbody.innerHTML = list.map(function(d){
+    var open = !!state.openRows[d.id];
+    var savedComment = comments[d.id] || "";
+    return (
+      '<tr class="row'+(open?' open':'')+'" data-id="'+d.id+'">'+
+        '<td><span class="caret">▶</span><span class="tc-id">'+d.id+'</span></td>'+
+        '<td class="req">'+esc(d.requirement)+'</td>'+
+        '<td><span class="badge area-'+d.area+'">'+esc(AREA_LABEL[d.area])+'</span></td>'+
+        '<td><span class="badge st-'+d.status+'">'+esc(STATUS_LABEL[d.status])+'</span></td>'+
+      '</tr>'+
+      '<tr class="detail'+(open?'':' hidden')+'" data-detail-for="'+d.id+'"><td colspan="4">'+
+        '<div class="dgrid">'+
+          '<div class="dcol">'+
+            '<h4>ต้นฉบับจาก PDF</h4>'+
+            '<blockquote>'+esc(d.quote)+'</blockquote>'+
+            '<h4>พฤติกรรมปัจจุบัน (เช็คจากโค้ดจริงแล้ว)</h4>'+
+            '<blockquote class="current">'+esc(d.current)+'</blockquote>'+
+            '<h4>สิ่งที่จะแก้</h4>'+
+            '<blockquote class="proposed">'+esc(d.proposed)+'</blockquote>'+
+          '</div>'+
+          '<div class="dcol">'+
+            (d.openq && d.openq !== "—" ? '<h4>คำถามที่ต้องขอ confirm ก่อนเริ่ม</h4><blockquote class="openq">'+esc(d.openq)+'</blockquote>' : '<h4>คำถามที่ต้องขอ confirm ก่อนเริ่ม</h4><p class="note">— ไม่มี ทำได้เลยถ้าต้น confirm requirement</p>')+
+            (d.related && d.related !== "—" ? '<div class="related">🔗 เกี่ยวข้องกับ: '+esc(d.related)+'</div>' : '')+
+            '<h4 style="margin-top:12px">โน้ต/การตัดสินใจของต้น</h4>'+
+            '<textarea class="followbox" data-comment-for="'+d.id+'" placeholder="พิมพ์คำตอบ/การตัดสินใจตรงนี้ — บันทึกอัตโนมัติ">'+esc(savedComment)+'</textarea>'+
+            '<div class="savedmark" data-mark-for="'+d.id+'">✓ บันทึกแล้ว</div>'+
+          '</div>'+
+        '</div>'+
+      '</td></tr>'
+    );
+  }).join("");
+
+  tbody.querySelectorAll("tr.row").forEach(function(tr){
+    tr.addEventListener("click", function(){
+      var id = tr.getAttribute("data-id");
+      state.openRows[id] = !state.openRows[id];
+      renderRows();
+    });
+  });
+  tbody.querySelectorAll("textarea.followbox").forEach(function(ta){
+    ta.addEventListener("click", function(e){ e.stopPropagation(); });
+    var timer = null;
+    ta.addEventListener("input", function(){
+      var id = ta.getAttribute("data-comment-for");
+      comments[id] = ta.value;
+      saveComments(comments);
+      var mark = tbody.querySelector('[data-mark-for="'+id+'"]');
+      if(mark){
+        mark.classList.add("show");
+        clearTimeout(timer);
+        timer = setTimeout(function(){ mark.classList.remove("show"); }, 1400);
+      }
+    });
+  });
+}
+
+function renderSortArrows(){
+  document.querySelectorAll("thead th").forEach(function(th){
+    var key = th.getAttribute("data-sort");
+    var arrow = th.querySelector(".arrow");
+    if(!arrow) return;
+    arrow.textContent = (key === state.sortKey) ? (state.sortDir === 1 ? "▲" : "▼") : "";
+  });
+}
+
+document.querySelectorAll("thead th").forEach(function(th){
+  th.addEventListener("click", function(){
+    var key = th.getAttribute("data-sort");
+    if(key === "none") return;
+    if(state.sortKey === key){ state.sortDir *= -1; }
+    else { state.sortKey = key; state.sortDir = 1; }
+    renderSortArrows();
+    renderRows();
+  });
+});
+
+document.getElementById("search").addEventListener("input", function(e){
+  state.search = e.target.value;
+  renderRows();
+});
+
+document.getElementById("stAll").addEventListener("click", function(){
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+  renderChips(); renderRows();
+});
+document.getElementById("stNone").addEventListener("click", function(){
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = false; });
+  renderChips(); renderRows();
+});
+document.getElementById("areaAll").addEventListener("click", function(){
+  AREA_ORDER.forEach(function(k){ state.areaOn[k] = true; });
+  renderChips(); renderRows();
+});
+document.getElementById("areaNone").addEventListener("click", function(){
+  AREA_ORDER.forEach(function(k){ state.areaOn[k] = false; });
+  renderChips(); renderRows();
+});
+
+document.getElementById("resetBtn").addEventListener("click", function(){
+  STATUS_ORDER.forEach(function(k){ state.statusOn[k] = true; });
+  AREA_ORDER.forEach(function(k){ state.areaOn[k] = true; });
+  state.search = ""; document.getElementById("search").value = "";
+  state.sortKey = "id"; state.sortDir = 1;
+  renderChips(); renderSortArrows(); renderRows();
+});
+
+document.getElementById("exportBtn").addEventListener("click", function(){
+  var lines = [];
+  lines.push("# RTM ยืนยันแก้ไข — App Mommunjai (4 ส.ค. 69)");
+  lines.push("");
+  lines.push("> Export จาก rtm-0408.html เมื่อ " + new Date().toISOString().slice(0,10));
+  lines.push("> คอลัมน์: PDF comment → System Requirement → พฤติกรรมปัจจุบัน → สิ่งที่จะแก้ → คำถามที่ต้องยืนยัน → โน้ตของต้น");
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+  DATA.forEach(function(d){
+    lines.push("## " + d.id + " (" + AREA_LABEL[d.area] + ")");
+    lines.push("");
+    lines.push("**ต้นฉบับ PDF:**");
+    lines.push("> " + d.quote);
+    lines.push("");
+    lines.push("**System Requirement:** " + d.requirement);
+    lines.push("");
+    lines.push("**พฤติกรรมปัจจุบัน:** " + d.current);
+    lines.push("");
+    lines.push("**สิ่งที่จะแก้:** " + d.proposed);
+    lines.push("");
+    if(d.openq && d.openq !== "—"){
+      lines.push("**คำถามที่ต้องขอ confirm:** " + d.openq);
+      lines.push("");
+    }
+    if(d.related && d.related !== "—"){
+      lines.push("**เกี่ยวข้องกับ:** " + d.related);
+      lines.push("");
+    }
+    lines.push("**สถานะยืนยัน:** " + STATUS_LABEL[d.status]);
+    lines.push("");
+    var c = comments[d.id];
+    lines.push("**โน้ต/การตัดสินใจของต้น:** " + (c && c.trim() ? c.trim() : "_(ยังไม่ได้ตอบ)_"));
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  });
+  var blob = new Blob([lines.join("\n")], {type:"text/markdown;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "rtm-0408-comments.md";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+renderStats();
+renderChips();
+renderSortArrows();
+renderRows();
+</script>
+</body>
+</html>

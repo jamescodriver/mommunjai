@@ -6,7 +6,7 @@ import {
   EXERCISE_FREQS,
   type MaleBehavior, type PcosStatus, type ExerciseFreq, type ConceptionMethod,
 } from "./calc/vitamins";
-import { calcProtein, Stage } from "./calc/protein";
+import { calcProtein, fmtRange, Stage } from "./calc/protein";
 import { bmiTier, bmiScale, type BmiResult } from "./calc/bmi";
 import { calcWater, type WaterStage } from "./calc/water";
 import { recommendExercise, type BaselineActivity, type ExerciseStage } from "./calc/exercise";
@@ -148,6 +148,9 @@ export interface Report {
    *  optional เพราะรายงานที่ถูก snapshot ไว้ก่อน R3 ใน `reports` ยังไม่มีฟิลด์นี้ */
   bmi?: BmiResult | null;
   vitamins: Product[];
+  /** U-07 (RTM 13 ส.ค. 69) — แยก "ของตามอาการ" ออกมาจาก vitamins เพื่อให้หน้าก่อนเข้า LINE
+   *  หยิบของเฉพาะบุคคลขึ้นก่อนได้ · optional เพราะรายงานที่ snapshot ไว้ก่อนหน้านี้ไม่มีฟิลด์นี้ */
+  vitaminsTargeted?: Product[];
   vitaminNote: string;
   /** R15 — ข้อมูลของคุณ (BMI · น้ำ · นอน · ออกกำลังกาย) */
   part1?: ReportPart1;
@@ -441,7 +444,7 @@ export function generateReport(p: ReportProfile): Report {
     greeting: `เราอ่านคำตอบของคุณ ${p.nickname || "คุณ"} แล้ว และทำแผนนี้ขึ้นเพื่อคุณโดยเฉพาะค่ะ 💛`,
     score, scoreLabel,
     pillars, fertileWindow, protein,
-    vitamins: rec.primary, vitaminNote: rec.note,
+    vitamins: rec.primary, vitaminsTargeted: rec.targeted, vitaminNote: rec.note,
     part1, part2,
     pregnancyKnowledge, lactationKnowledge,
     partnerNudge, isMale, cautions, bmi,
@@ -529,7 +532,8 @@ export function planMetrics(report: Report): PlanMetric[] {
   const p2 = report.part2;
   const rows: PlanMetric[] = [];
   const protein = p2?.protein ?? report.protein;
-  if (protein) rows.push({ key: "protein", label: "โปรตีน", value: `${protein.min}–${protein.max} ก./วัน` });
+  // U-04 — จุดที่ 3 ที่ต้องกันเลขซ้ำ "91–91" (นอกจากหน้าเครื่องมือกับรายงานฉบับเต็ม)
+  if (protein) rows.push({ key: "protein", label: "โปรตีน", value: `${fmtRange(protein.min, protein.max)} ก./วัน` });
   const water = p1?.water ?? p2?.waterMl;
   if (water) rows.push({ key: "water", label: "น้ำดื่ม", value: `${water.minMl.toLocaleString()}–${water.maxMl.toLocaleString()} มล./วัน` });
   if (p1?.sleep) rows.push({ key: "sleep", label: "นอน", value: `${p1.sleep.recommendedMinHours}–${p1.sleep.recommendedMaxHours} ชม./คืน` });
@@ -551,6 +555,38 @@ export interface TeaserSummary {
   /** 🔒 คำเตือนที่ต้องเดินทางมาถึงหน้า teaser ด้วย — ห้ามตัดออก (ดูคอมเมนต์ใน buildTeaser) */
   cautions: string[];
 }
+/**
+ * U-07 (RTM 13 ส.ค. 69) — สินค้าที่โชว์บน "หน้าก่อนเข้า LINE"
+ *
+ * ปัญหาเดิม: หน้านี้ใช้ `report.vitamins.slice(0, 4)` และ vitamins = [...core, ...targeted]
+ * คือ **ชุดพื้นฐานมาก่อนเสมอ** · ของ stage เตรียมตั้งครรภ์ชุดพื้นฐานมี 4 ตัวพอดี
+ * (OvaAll · Ferty · น้ำมะกรูด · Ferti 9 Oil) ผลคือของตามอาการ — PCO-VIT เมื่อมี PCOS,
+ * A.O.S เมื่อทำ ART, Night Shot เมื่อนอนไม่ดี, ชุดเตรียมผนังมดลูก — **ถูกดันตกจอทั้งหมด
+ * ไม่มีลูกค้าคนไหนได้เห็นเลย** ทั้งที่เป็นส่วนที่ทำให้คำแนะนำ "เฉพาะคุณ" จริง ๆ
+ *
+ * 🔒 ต้นเคาะ 19 ส.ค. 69: "เรียงตามอาการ แล้ว เติมให้ครบตามตัวหลัก และ พื้นฐานด้วย"
+ *    → ของตามอาการขึ้นก่อน แล้วเติมด้วยชุดพื้นฐานจนครบ 4 ตัว
+ *    (ไม่ตัดพื้นฐานทิ้ง เพราะรอบ 4 ส.ค. 69 · PDF-01 ยืนยันว่าทุกคนควรเห็นตัวหลักด้วย)
+ *
+ * ⚠️ ไม่แตะรายงานฉบับเต็มและไม่แตะ Safety Matrix — ที่นี่แค่ "เลือกลำดับที่จะโชว์"
+ *    จากสินค้าที่ผ่านกฎความปลอดภัยมาแล้วเท่านั้น ไม่มีการเติมสินค้าใหม่เข้ามาเอง
+ */
+const TEASER_PRODUCT_COUNT = 4;
+export function teaserProducts(report: Report): Product[] {
+  const targeted = report.vitaminsTargeted || [];
+  const picked: Product[] = [];
+  const seen = new Set<string>();
+  for (const list of [targeted, report.vitamins]) {
+    for (const x of list) {
+      if (picked.length >= TEASER_PRODUCT_COUNT) break;
+      if (seen.has(x.id)) continue;
+      seen.add(x.id);
+      picked.push(x);
+    }
+  }
+  return picked;
+}
+
 export function buildTeaser(report: Report): TeaserSummary {
   const scored = report.pillars.filter((x) => x.score !== null);
   const ordered = scored.length
@@ -564,7 +600,7 @@ export function buildTeaser(report: Report): TeaserSummary {
     // R4 (0408) · PDF-01/14 — ขยายจาก 3 เป็น 4 ตัว: ที่ 3 ตัวเคยตัด probiotics/ตัวสุดท้าย
     // ของชุด core (4 ตัว) ออกไปเงียบ ๆ ทุก stage ที่ core มี 4 ตัวพอดี (prep/infertility/
     // pregnant) → confirm แล้วว่าให้โชว์ทั้ง 4 ไม่ใช่ตัดเหลือ 3
-    recommendedProducts: report.vitamins.slice(0, 4).map((x) => ({ id: x.id, name: x.name, why: x.why })),
+    recommendedProducts: teaserProducts(report).map((x) => ({ id: x.id, name: x.name, why: x.why })),
     // 🔒 Lucifer red-team 31/7 — หน้า teaser แนะนำอาหารเสริม 3 ตัวโดยไม่มี disclaimer และ
     // ไม่มีข้อความ referral ตามอายุเลย ทั้งที่ teaser คือ tier ที่ **คนส่วนใหญ่ของแอปเห็น**
     // (หลัง R5/R11 ตัดคำถาม ART ออกจาก prep/lactating → 2 กลุ่มนี้เป็น teaser เสมอ)

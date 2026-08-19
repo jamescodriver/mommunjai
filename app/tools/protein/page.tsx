@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useEmbed } from "@/components/use-embed";
-import { calcProtein, Stage } from "@/lib/calc/protein";
+import { calcProtein, fmtRange, fertyTopUpText, Stage } from "@/lib/calc/protein";
 import { recordTool, mergeProfile } from "@/lib/profile-store";
 import { ToolShell, ResultCard, Field, PlanCta, VitaminsCta, EmbedAutoResize } from "@/components/ui";
 import { IconEgg } from "@/components/icons";
@@ -82,8 +82,8 @@ export default function ProteinPage() {
           <ResultCard>
             <div className="text-center">
               <p className="text-sm text-ink/60">เป้าโปรตีนต่อวัน</p>
-              <p className="text-2xl font-semibold text-teal-deep">{res.minGrams}–{res.maxGrams} กรัม</p>
-              <p className="text-xs text-ink/50">({res.perKg[0]}–{res.perKg[1]} ก./น้ำหนักตัว 1 กก.)</p>
+              <p className="text-2xl font-semibold text-teal-deep">{fmtRange(res.minGrams, res.maxGrams)} กรัม</p>
+              <p className="text-xs text-ink/50">({fmtRange(res.perKg[0], res.perKg[1])} ก./น้ำหนักตัว 1 กก.)</p>
             </div>
             <div className="mt-4 space-y-1 text-sm">
               <p className="font-medium">เทียบเท่าประมาณ:</p>
@@ -94,7 +94,8 @@ export default function ProteinPage() {
               ))}
             </div>
             <p className="mt-3 text-xs text-ink/60">
-              ถ้ากินอาหารไม่ถึงเป้า เติมด้วยโปรตีนเฟอร์ตี้ {res.fertyServings.min}–{res.fertyServings.max} ซอง/วัน
+              {/* U-05 — ค่าคงที่จากแบรนด์ ห้ามคำนวณจากน้ำหนักตัว (ดู lib/calc/protein.ts) */}
+              {fertyTopUpText(stage === "male")}
             </p>
             <PlanCta />
             <VitaminsCta />

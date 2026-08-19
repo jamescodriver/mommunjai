@@ -33,5 +33,20 @@ export default async function ReportPage({ params }: { params: { code: string } 
       </main>
     );
   }
-  return <ReportView report={data.payload as Report} code={code} />;
+  // U-06 (RTM 13 ส.ค. 69) — ผูกบัญชี LINE แล้วหรือยัง
+  // ผูกแล้ว = เขาเดินทางมาจากแชท เห็นรหัสมาแล้ว → ไม่ต้องโชว์รหัสซ้ำ (ดู components/report-view.tsx)
+  // 🔒 ถามแยกจาก reports เพราะ payload เป็น snapshot ตอนออกรหัส ไม่รู้ว่าภายหลังผูก LINE หรือยัง
+  //    ผิดพลาด/ไม่พบ = ถือว่า "ยังไม่ผูก" เสมอ เพื่อให้ยังเห็นรหัสไว้ผูกได้ (fail-safe)
+  let lineLinked = false;
+  try {
+    const { data: t } = await sb.from("tickets").select("lead_id").eq("code", code).maybeSingle();
+    if (t?.lead_id) {
+      const { data: lead } = await sb.from("leads").select("line_user_id").eq("id", t.lead_id).maybeSingle();
+      lineLinked = !!lead?.line_user_id;
+    }
+  } catch {
+    lineLinked = false;
+  }
+
+  return <ReportView report={data.payload as Report} code={code} lineLinked={lineLinked} />;
 }

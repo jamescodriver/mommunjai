@@ -41,14 +41,17 @@ export default function MetricsBlock({
 
   return (
     <section className="glass p-5">
-      <h2 className="text-base font-semibold">เป้าหมายของคุณต่อวัน 🎯</h2>
-      <p className="mt-1 text-sm text-ink/75">คำนวณจากคำตอบของคุณเอง เริ่มทำได้เลยวันนี้</p>
+      {/* U-09 (RTM 13 ส.ค. 69) — "ตัวหนังสือเล็ก ใหญ่ ทำให้อ่านง่ายๆ"
+          เดิมหัวข้อ · ป้าย · ตัวเลข ใช้ขนาดใกล้กันหมด ตาไม่รู้จะเกาะตรงไหนก่อน
+          ลำดับใหม่: ตัวเลขเป้าหมาย > หัวข้อ > ป้ายกำกับ > คำอธิบาย */}
+      <h2 className="text-lg font-semibold leading-snug">เป้าหมายของคุณต่อวัน 🎯</h2>
+      <p className="mt-1 text-xs leading-relaxed text-ink/60">คำนวณจากคำตอบของคุณเอง เริ่มทำได้เลยวันนี้</p>
 
-      <dl className="mt-3 space-y-2">
+      <dl className="mt-3 divide-y divide-black/5">
         {teaser.metrics.map((m) => (
-          <div key={m.key} className="flex items-baseline gap-3">
-            <dt className="w-28 shrink-0 text-sm text-ink/75">{m.label}</dt>
-            <dd className="flex-1 text-sm font-semibold text-teal-deep">{m.value}</dd>
+          <div key={m.key} className="flex items-baseline gap-3 py-2">
+            <dt className="w-24 shrink-0 text-xs text-ink/60">{m.label}</dt>
+            <dd className="flex-1 text-base font-semibold leading-snug text-teal-deep">{m.value}</dd>
           </div>
         ))}
       </dl>

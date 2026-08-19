@@ -268,10 +268,15 @@ function PlanPageInner() {
                 คำตอบของเขาเอง และถ้ายังไม่ได้กรอกตัวเลข ให้กรอกตรงนี้แล้วคำนวณทันที */}
             <MetricsBlock teaser={t} onFilled={handleMeasure} />
             <section className="glass p-5">
-              <h2 className="text-base font-semibold">แนะนำเบื้องต้นสำหรับคุณ 💊</h2>
-              <ul className="mt-2 space-y-1 text-sm">
+              {/* U-09 — ชื่อสินค้าใหญ่/หนา · เหตุผลเล็กและจางลง · เว้นบรรทัดให้หายใจ
+                  (ภาษาไทยมีสระบน-ล่าง ต้องการระยะบรรทัดมากกว่าอังกฤษ ไม่งั้นตัวอักษรชนกัน) */}
+              <h2 className="text-lg font-semibold leading-snug">แนะนำเบื้องต้นสำหรับคุณ 💊</h2>
+              <ul className="mt-3 divide-y divide-black/5">
                 {t.recommendedProducts.map((p) => (
-                  <li key={p.id}>• <b>{p.name}</b> — {p.why}</li>
+                  <li key={p.id} className="py-2.5">
+                    <p className="text-base font-semibold leading-snug text-ink">{p.name}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-ink/60">{p.why}</p>
+                  </li>
                 ))}
               </ul>
             </section>
