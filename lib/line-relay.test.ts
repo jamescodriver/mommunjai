@@ -148,9 +148,18 @@ describe("webhook route — อยู่ร่วมกับบอทเช็�
     expect(relayCalls()[0].init.body).toBe(body);
   });
 
-  it("โหมดเดิม (ไม่มีบอทอื่น): ข้อความทั่วไปยังตอบทักทายเหมือนเก่า", async () => {
+  it("🔴 ข้อความทั่วไปต้องเงียบเสมอ แม้ไม่มีบอทอื่นแล้ว (OA นี้เป็นแชทร้านค้าจริง)", async () => {
+    // เดิมตอบทักทาย "พิมพ์รหัส MJ-XXXXXX" ทุกข้อความที่ไม่รู้จัก
+    // พอปิด relay แล้วกลายเป็นเด้งขัดทุกบทสนทนาที่ลูกค้าคุยกับแอดมิน (ต้นเจอเอง 20 ส.ค. 69)
     await hitWebhook("สวัสดีค่ะ");
-    expect(relayCalls()).toHaveLength(0);
+    expect(lineReplyCalls()).toHaveLength(0);
+
+    await hitWebhook("ของส่งวันไหนคะ");
+    expect(lineReplyCalls()).toHaveLength(0);
+  });
+
+  it("ข้อความที่เป็นของเราจริง ๆ ยังตอบ (ไม่ได้ปิดหมด)", async () => {
+    await hitWebhook("แผนของฉัน");
     expect(lineReplyCalls()).toHaveLength(1);
   });
 
@@ -245,5 +254,56 @@ describe("🔴 URL ส่งต่อที่ตั้งไว้แต่ใ�
     expect(body.relay).toBe("bad-url");
     expect(body.slipActive).toBe(false);
     expect(body.warning).toMatch(/ไม่ใช่ URL ที่ใช้ได้/);
+  });
+});
+
+describe("🔴 รูปที่ไม่ใช่สลิป ต้องไม่ตอบอะไรเลย", () => {
+  const imgBody = () =>
+    `{"events":[{"type":"message","replyToken":"rt-img","source":{"type":"user","userId":"U1"},"message":{"type":"image","id":"IMG-1"}}]}`;
+  const hitImage = async () => {
+    const req = new Request("http://localhost/api/line/webhook", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-line-signature": "s", "x-dev-bypass": "1" },
+      body: imgBody(),
+    });
+    return WEBHOOK(req as any);
+  };
+
+  beforeEach(() => {
+    delete process.env.LINE_RELAY_WEBHOOK_URL;
+    process.env.SLIP_CHECK_ENABLED = "1";
+    process.env.THUNDER_API_KEY = "k";
+    process.env.SLIP_IMAGE_SECRET = "sec";
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test";
+  });
+
+  /** ให้ Thunder ตอบ error code ที่กำหนด แล้วนับว่าเราตอบ LINE กี่ครั้ง */
+  const runWith = async (code: string, status = 400) => {
+    calls = [];
+    globalThis.fetch = vi.fn(async (url: any) => {
+      if (String(url).includes("api.thunder.in.th")) {
+        return new Response(JSON.stringify({ success: false, error: { code } }), { status });
+      }
+      calls.push({ url: String(url), init: {} });
+      return new Response("{}", { status: 200 });
+    }) as any;
+    await hitImage();
+    return calls.filter((c) => c.url.includes("api.line.me")).length;
+  };
+
+  it("อ่านสลิปไม่ออก (SLIP_NOT_FOUND) → เงียบ ไม่ตอบเลย", async () => {
+    expect(await runWith("SLIP_NOT_FOUND", 404)).toBe(0);
+  });
+
+  it("รูปทั่วไปที่ API ตีตก (VALIDATION_ERROR) → เงียบ", async () => {
+    expect(await runWith("VALIDATION_ERROR", 400)).toBe(0);
+  });
+
+  it("⚠️ โควตาหมด → ยังต้องตอบ เพราะเป็นระบบเราพัง ไม่ใช่เรื่องของรูป", async () => {
+    expect(await runWith("QUOTA_EXCEEDED", 403)).toBe(1);
+  });
+
+  it("⚠️ key เสีย → ยังต้องตอบ ด้วยเหตุผลเดียวกัน", async () => {
+    expect(await runWith("INVALID_API_KEY", 401)).toBe(1);
   });
 });
