@@ -241,23 +241,51 @@ export async function verifySlipByUrl(imageUrl: string): Promise<SlipResult> {
     return { ok: false, reason, message: FAIL_TEXT[reason] };
   }
 
+  // ── 🔴 โครงสร้างคำตอบจริง ไม่ตรงกับที่เอกสารเขียนไว้เลย (ยิงของจริง 20 ส.ค. 69) ──
+  //
+  // เอกสารเขียนว่า data.transRef / data.sender.displayName / data.receiver.account.value
+  // ของจริงคือ:
+  //   data.isDuplicate      ← สลิปซ้ำ (มาแบบ success ปกติ ไม่ใช่ error code!)
+  //   data.matchedAccount   ← ผลเทียบบัญชีจาก matchAccount (เป็น null ถ้าเทียบไม่ได้)
+  //   data.amountInSlip
+  //   data.rawSlip.transRef
+  //   data.rawSlip.sender.account.name.th / .en
+  //   data.rawSlip.receiver.account.name.th / .en
+  //   data.rawSlip.receiver.account.bank.account  ← เลขบัญชีแบบปิดบางหลัก
+  //
+  // ผลของการอ่านผิด: ทุกฟิลด์เป็น undefined → ข้อความตอบกลับว่างเปล่าเหมือนกันหมด
+  // ไม่ว่าสลิปจริงหรือปลอม (ต้นเจอเอง 20 ส.ค. 69) และเทียบเลขบัญชีไม่ได้เลย
+  //
+  // ยังรองรับโครงเดิมตามเอกสารไว้ด้วย เผื่อ API คืนคนละแบบตามโหมด input
   const d = body.data;
-  // 🔴 เทียบได้เฉพาะ "เลขบัญชี" เท่านั้น — ห้ามเอา proxy (เบอร์โทร/พร้อมเพย์) มาเทียบ
-  //    เพราะเป็นคนละชนิดเลข เอามาเทียบกันจะได้ผลมั่วทั้งผ่านและไม่ผ่าน
-  const receiverAccount: string | undefined = d?.receiver?.account?.value;
-  const receiverProxy: string | undefined = d?.receiver?.proxy?.value;
+  const raw = d?.rawSlip ?? d;
+
+  // 🔴 สลิปซ้ำมาแบบ success + isDuplicate:true ไม่ได้มาเป็น error
+  //    ถ้าไม่ดัก จะตอบว่า "ตรวจเรียบร้อย" ให้สลิปที่ถูกใช้ไปแล้ว = เปิดช่องเคลมซ้ำ
+  if (d?.isDuplicate === true) {
+    return { ok: false, reason: "duplicate", message: FAIL_TEXT.duplicate };
+  }
+
+  const pickName = (n: any): string | undefined =>
+    typeof n === "string" ? n : n?.th || n?.en || undefined;
+
+  // เลขบัญชีผู้รับ — ห้ามเอา proxy (พร้อมเพย์/เบอร์โทร) มาเทียบกับเลขบัญชี
+  const receiverAccount: string | undefined =
+    raw?.receiver?.account?.bank?.account ?? raw?.receiver?.account?.value;
   const matched = receiverMatches(receiverAccount || "", expectedReceiverAccounts());
   // Thunder เทียบให้แล้วหรือยัง (ต้องลงทะเบียนบัญชีร้านไว้ที่ POST /bank-accounts ก่อน)
   const thunderMatched = !!d?.matchedAccount;
 
   const data: SlipData = {
-    transRef: d?.transRef,
-    date: d?.date,
-    amount: typeof d?.amount?.amount === "number" ? d.amount.amount : d?.amount?.local?.amount,
-    currency: d?.amount?.local?.currency || "THB",
-    senderName: d?.sender?.displayName || d?.sender?.name,
-    receiverName: d?.receiver?.displayName || d?.receiver?.name,
-    receiverAccount: receiverAccount || receiverProxy,
+    transRef: raw?.transRef,
+    date: raw?.date,
+    amount: typeof d?.amountInSlip === "number" ? d.amountInSlip
+      : typeof raw?.amount?.amount === "number" ? raw.amount.amount
+      : raw?.amount?.local?.amount,
+    currency: raw?.amount?.local?.currency || "THB",
+    senderName: pickName(raw?.sender?.account?.name) ?? raw?.sender?.displayName ?? raw?.sender?.name,
+    receiverName: pickName(raw?.receiver?.account?.name) ?? raw?.receiver?.displayName ?? raw?.receiver?.name,
+    receiverAccount,
     receiverMatched: matched,
     verifiedBy: thunderMatched ? "thunder" : matched === true ? "digits" : undefined,
   };

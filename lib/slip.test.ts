@@ -29,12 +29,26 @@ afterEach(() => {
 const ok = (data: any, shape: "success" | "status" = "status") =>
   vi.fn(async () => new Response(JSON.stringify(shape === "status" ? { status: 200, data } : { success: true, data }), { status: 200 })) as any;
 
+/**
+ * 🔴 โครงสร้างนี้คัดมาจาก **คำตอบจริงของ API** (ยิงสลิปจริง 20 ส.ค. 69)
+ *    ไม่ใช่จากเอกสาร — เอกสารเขียนไว้คนละแบบ (data.transRef / data.sender.displayName)
+ *    ซึ่งทำให้โค้ดอ่านค่าไม่ได้เลยสักฟิลด์ และตอบข้อความว่างเปล่าเหมือนกันหมด
+ *    ไม่ว่าสลิปจริงหรือปลอม
+ */
 const SLIP = {
-  transRef: "2024011512345678",
-  date: "2026-08-20T10:30:00+07:00",
-  amount: { amount: 1500.5, local: { amount: 1500.5, currency: "THB" } },
-  sender: { displayName: "นาย ผู้โอน ทดสอบ" },
-  receiver: { displayName: "นาง ผู้รับ ทดสอบ", account: { type: "BANKAC", value: "xxx-x-xx789-x" } },
+  isDuplicate: false,
+  matchedAccount: null,
+  amountInSlip: 1039,
+  rawSlip: {
+    payload: "0038000600000101030060217Ae56d807cc40c4dcd5102TH91046305",
+    transRef: "Ae56d807cc40c4dcd",
+    date: "2026-08-20T15:51:52+07:00",
+    amount: { amount: 1039, local: { amount: 0, currency: "" } },
+    sender: { bank: { id: "006", short: "KTB" },
+      account: { name: { th: "น.ส. จรรทพร ว", en: "MISS JANTAPORN W" }, bank: { type: "BANKAC", account: "XXX-X-XX423-1" } } },
+    receiver: { bank: { id: "004", short: "KBANK" },
+      account: { name: { th: "บจก. เบบี้แอนด์มัม(ประเทศไทย)", en: "BABY A" }, bank: { type: "BANKAC", account: "XXX-X-XX660-9" } } },
+  },
 };
 
 describe("สวิตช์เปิด/ปิด", () => {
@@ -92,15 +106,17 @@ describe("เทียบเลขบัญชีผู้รับ (กัน�
 
 describe("verifySlipImage", () => {
   it("สำเร็จ → คืนข้อมูลสลิปที่แปลงแล้ว (รับ response ได้ทั้ง 2 แบบตามที่ doc เขียนไม่ตรงกัน)", async () => {
-    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890789"; // ต้องยืนยันปลายทางได้ก่อนถึงจะผ่าน
+    process.env.THUNDER_RECEIVER_ACCOUNT = "0528766609"; // บัญชีร้านจริง — เลขท้าย 6609 ตรงกับ XXX-X-XX660-9
     for (const shape of ["status", "success"] as const) {
       globalThis.fetch = ok(SLIP, shape);
       const r = await verifySlipByUrl("https://x.test/i.jpg");
       expect(r.ok).toBe(true);
       if (!r.ok) throw new Error("ควรผ่าน");
-      expect(r.data.amount).toBe(1500.5);
-      expect(r.data.transRef).toBe("2024011512345678");
-      expect(r.data.senderName).toBe("นาย ผู้โอน ทดสอบ");
+      expect(r.data.amount).toBe(1039);
+      expect(r.data.transRef).toBe("Ae56d807cc40c4dcd");
+      expect(r.data.senderName).toBe("น.ส. จรรทพร ว");
+      expect(r.data.receiverName).toBe("บจก. เบบี้แอนด์มัม(ประเทศไทย)");
+      expect(r.data.receiverAccount).toBe("XXX-X-XX660-9");
     }
   });
 
@@ -119,7 +135,7 @@ describe("verifySlipImage", () => {
   });
 
   it("🔴 เงินเข้าบัญชีอื่น → ไม่ผ่าน ถึงสลิปจะเป็นของจริง", async () => {
-    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890111";
+    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890111"; // คนละบัญชีกับที่สลิปโอนไป
     globalThis.fetch = ok(SLIP);
     const r = await verifySlipByUrl("https://x.test/i.jpg");
     expect(r.ok).toBe(false);
@@ -162,8 +178,9 @@ describe("verifySlipImage", () => {
   });
 
   it("สลิปผู้รับเป็นพร้อมเพย์ (ไม่มีเลขบัญชีให้เทียบ) → ต้องไม่ผ่าน", async () => {
-    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890789";
-    globalThis.fetch = ok({ ...SLIP, receiver: { displayName: "ร้าน", proxy: { type: "MSISDN", value: "08x-xxx-xx78" } } });
+    process.env.THUNDER_RECEIVER_ACCOUNT = "0528766609";
+    globalThis.fetch = ok({ ...SLIP, rawSlip: { ...SLIP.rawSlip,
+      receiver: { bank: { short: "KBANK" }, account: { name: { th: "ร้าน" }, proxy: { type: "MSISDN", value: "08x-xxx-xx78" } } } } });
     const r = await verifySlipByUrl("https://x.test/i.jpg");
     expect(r.ok).toBe(false);
     if (r.ok) throw new Error("ต้องไม่ผ่าน");
@@ -172,11 +189,21 @@ describe("verifySlipImage", () => {
 
   it("✅ Thunder เทียบบัญชีให้แล้ว (matchedAccount) → ผ่าน แม้เราเทียบเองไม่ได้", async () => {
     delete process.env.THUNDER_RECEIVER_ACCOUNT;
-    globalThis.fetch = ok({ ...SLIP, matchedAccount: { bank: "KBANK", account: "xxx-x-x0789-x" } });
+    globalThis.fetch = ok({ ...SLIP, matchedAccount: { bankCode: "004", bankNumber: "0528766609" } });
     const r = await verifySlipByUrl("https://x.test/i.jpg");
     expect(r.ok).toBe(true);
     if (!r.ok) throw new Error("ควรผ่าน");
     expect(r.data.verifiedBy).toBe("thunder");
+  });
+
+  it("🔴 สลิปซ้ำมาแบบ success + isDuplicate:true (ไม่ใช่ error) → ต้องดักให้ได้", async () => {
+    // ถ้าไม่ดัก จะตอบว่า 'ตรวจเรียบร้อย' ให้สลิปที่ถูกใช้ไปแล้ว = เปิดช่องเคลมซ้ำ
+    process.env.THUNDER_RECEIVER_ACCOUNT = "0528766609";
+    globalThis.fetch = ok({ ...SLIP, isDuplicate: true });
+    const r = await verifySlipByUrl("https://x.test/i.jpg");
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error("ต้องไม่ผ่าน");
+    expect(r.reason).toBe("duplicate");
   });
 
   it("ตอบ 200 แต่ไม่มี data → ถือว่าไม่ผ่าน (ห้ามตีความว่าสำเร็จ)", async () => {
