@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
-import { isSlipCheckEnabled, isSlipCheckActive, verifySlipByUrl, signSlipImageToken, slipReplyText, slipFailMessage } from "@/lib/slip";
+import { isSlipCheckEnabled, isSlipCheckActive, verifySlipByUrl, signSlipImageToken, slipReplyText, slipFailMessage, expectedReceiverAccounts } from "@/lib/slip";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
 import { relayToPartner, isRelayMode, isBotEnabled, relayTargetUrl } from "@/lib/line-relay";
@@ -239,6 +239,10 @@ export function GET() {
     // slip = ตั้งค่าไว้ให้เปิดไหม · slipActive = ทำงานจริงไหม (ต่างกันเมื่อตั้งค่าชนกัน)
     slip,
     slipActive,
+    // 🔴 ตั้งเลขบัญชีร้านไว้เทียบหรือยัง — เป็น boolean เท่านั้น **ห้ามส่งเลขบัญชีออกมา**
+    //    ไม่ตั้ง = ระบบอ่านสลิปให้เฉย ๆ ไม่รู้ว่าเงินเข้าบัญชีร้านจริงไหม (อันตรายกว่าไม่ตรวจเลย)
+    //    ต้องมองเห็นจาก diagnostic เพราะ 20 ส.ค. 69 เจอ 2 ครั้งที่แก้ env แล้วไม่มีผลจริง
+    receiverCheck: expectedReceiverAccounts().length > 0,
     ...(relay === "bad-url"
       ? { warning: "LINE_RELAY_WEBHOOK_URL ตั้งไว้แต่ไม่ใช่ URL ที่ใช้ได้ — ตอนนี้ไม่มีอะไรถูกส่งต่อไปบอทสลิปเลย และการตรวจสลิปของเราก็ยังปิดอยู่ ต้องลบตัวแปรนี้ทิ้งให้หมด (ไม่ใช่ใส่ค่าว่าง/เว้นวรรค)" }
       : conflict

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { GET as DIAG } from "../app/api/line/webhook/route";
 import {
   isSlipCheckEnabled, expectedReceiverAccounts, receiverMatches,
   verifySlipByUrl, signSlipImageToken, verifySlipImageToken, slipReplyText, slipFailMessage, isSlipCheckActive,
@@ -232,5 +233,19 @@ describe("🔴 ตั้งค่าชนกัน (relay + slip) ต้อง�
     process.env.SLIP_CHECK_ENABLED = "0";
     expect(isSlipCheckActive(false)).toBe(false);
     expect(isSlipCheckActive(true)).toBe(false);
+  });
+});
+
+describe("🔒 diagnostic ต้องบอกได้ว่าตั้งเลขบัญชีร้านหรือยัง โดยไม่เปิดเผยเลขบัญชี", () => {
+  it("ตั้งแล้ว → รายงาน true และห้ามมีเลขบัญชีอยู่ใน response", async () => {
+    process.env.THUNDER_RECEIVER_ACCOUNT = "123-4-56789-0";
+    const body = await (DIAG() as any).json();
+    expect(body.receiverCheck).toBe(true);
+    expect(JSON.stringify(body)).not.toContain("56789");
+  });
+
+  it("ยังไม่ตั้ง → รายงาน false", async () => {
+    delete process.env.THUNDER_RECEIVER_ACCOUNT;
+    expect((await (DIAG() as any).json()).receiverCheck).toBe(false);
   });
 });
