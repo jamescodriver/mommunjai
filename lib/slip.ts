@@ -1,0 +1,259 @@
+// ตรวจสลิปโอนเงินด้วย Thunder Solution API (แทนการส่งต่อให้บอทของ Thunder)
+//
+// เอกสาร: https://document.thunder.in.th/th/v2/  ·  base URL https://api.thunder.in.th/v2
+//
+// ── ⚠️ เอกสารกับ API จริงไม่ตรงกัน (ทดสอบเอง 20 ส.ค. 2569) ────────────────
+// เอกสารบอกว่า /verify/bank รับภาพได้ 3 ทาง (multipart `file`, base64 ฟิลด์ `image`, `url`)
+// ยิงจริงแล้วพบว่า:
+//   ❌ base64 ในฟิลด์ image → 400 "image: Invalid input: expected file, received string"
+//   ❌ multipart ทุกชื่อฟิลด์ที่ลอง (image/file/slip/photo) ทั้งจาก curl และ FormData ของ Node
+//      → 400 "Please provide either a payload string, a image file, ..." (เหมือนไม่ถูก parse เลย)
+//   ✅ ฟิลด์ `url`     → API ไปดึงภาพเองจริง (ได้ IMAGE_URL_UNREACHABLE ตอนใส่ URL ปลอม)
+//   ✅ ฟิลด์ `payload` → API พยายาม parse จริง (ได้ "Invalid bank slip format")
+// จึงเลือกใช้ **โหมด url** ซึ่งเป็นทางเดียวที่ยืนยันแล้วว่าส่งภาพได้
+//   → LINE ไม่เปิดให้ดึงภาพโดยไม่มี token เราจึงต้องเปิดทางให้ Thunder มาดึงจากเรา
+//     ผ่าน /api/line/slip-image?t=<token> ที่เซ็น HMAC + หมดอายุใน 2 นาที
+// (ถ้าวันหนึ่ง Thunder ยืนยันชื่อฟิลด์อัปโหลดที่ถูกต้อง เปลี่ยนมาส่งไฟล์ตรงจะง่ายกว่านี้มาก)
+//
+// ยืนยันจากการเรียกจริง: GET /health และ GET /info ใช้งานได้ · error แบบ VALIDATION_ERROR ไม่กินโควตา
+//
+// ── 🔴 กฎความปลอดภัยที่ห้ามผิด ──────────────────────────────────────────────
+// 1. **API key ห้ามอยู่ในโค้ดหรือใน repo เด็ดขาด** — อ่านจาก env `THUNDER_API_KEY` เท่านั้น
+//    (เอกสารของ Thunder เองก็ย้ำ: "Do not expose API Key in Client-side code or public repositories")
+//    ห้าม log ค่า key และห้ามส่งกลับไปในคำตอบ LINE ไม่ว่ากรณีใด
+// 2. **ห้ามเปิดทั้ง relay และตรวจสลิปเองพร้อมกัน** — replyToken ใช้ได้ครั้งเดียว
+//    ถ้าเปิดคู่กัน บอทของ Thunder จะตอบด้วย แล้วฝ่ายใดฝ่ายหนึ่งจะพัง
+//    (ดู isSlipCheckEnabled() + คำเตือนใน /api/line/webhook)
+// 3. **ผลตรวจสลิปคือเรื่องเงิน** — ถ้าตรวจพลาด ลูกค้าอาจส่งของโดยไม่ได้รับเงินจริง
+//    เมื่อไม่แน่ใจต้องตอบว่า "ตรวจไม่ได้ ให้แอดมินเช็ค" **ห้ามเดาว่าผ่าน**
+
+import crypto from "node:crypto";
+
+const BASE = "https://api.thunder.in.th/v2";
+const TIMEOUT_MS = 20000;
+
+export function slipApiKey(): string | undefined {
+  const k = process.env.THUNDER_API_KEY?.trim();
+  return k ? k : undefined;
+}
+
+/** เปิดใช้การตรวจสลิปด้วยตัวเองไหม — ต้องมีทั้งสวิตช์และ key ถึงจะทำงาน */
+export function isSlipCheckEnabled(): boolean {
+  const v = process.env.SLIP_CHECK_ENABLED?.trim().toLowerCase();
+  const on = v !== undefined && v !== "" && !["0", "false", "off", "no"].includes(v);
+  return on && !!slipApiKey();
+}
+
+/**
+ * เลขบัญชีผู้รับที่ถูกต้องของแบรนด์ (ตัวเลขล้วน) — ใส่ได้หลายบัญชีคั่นด้วยจุลภาค
+ *
+ * 🔴 นี่คือกันโกงที่สำคัญที่สุด: ถ้าไม่เทียบผู้รับ ลูกค้าส่งสลิปโอนเข้าบัญชีใครก็ได้
+ *    ที่เป็นสลิปจริง แล้วระบบจะตอบว่า "ถูกต้อง" ทั้งที่เงินไม่ได้เข้าบัญชีแบรนด์
+ */
+export function expectedReceiverAccounts(): string[] {
+  return (process.env.THUNDER_RECEIVER_ACCOUNT || "")
+    .split(",")
+    .map((s) => s.replace(/\D/g, ""))
+    .filter((s) => s.length >= 4);
+}
+
+export interface SlipData {
+  transRef?: string;
+  date?: string;
+  amount?: number;
+  currency?: string;
+  senderName?: string;
+  receiverName?: string;
+  receiverAccount?: string;
+  /** เทียบเลขบัญชีผู้รับกับที่ตั้งไว้แล้วหรือยัง — undefined = ไม่ได้ตั้งค่าให้เทียบ */
+  receiverMatched?: boolean;
+}
+
+export type SlipResult =
+  /** อ่านสลิปได้ และ (ถ้าตั้งค่าไว้) เงินเข้าบัญชีที่ถูกต้อง */
+  | { ok: true; data: SlipData }
+  /** อ่านไม่ได้/สลิปไม่ถูกต้อง/ระบบมีปัญหา — reason ใช้ตัดสินใจ, message เอาไปโชว์ผู้ใช้ได้เลย */
+  | { ok: false; reason: SlipFailReason; message: string };
+
+export type SlipFailReason =
+  | "disabled"       // ยังไม่เปิดใช้/ไม่มี key
+  | "not-a-slip"     // อ่านสลิปจากภาพไม่ได้
+  | "duplicate"      // สลิปนี้เคยถูกใช้แล้ว
+  | "wrong-receiver" // เงินไม่ได้เข้าบัญชีของแบรนด์
+  | "quota"          // โควตา API หมด
+  | "auth"           // key ผิด/หมดอายุ
+  | "network"        // ต่อไม่ติด/หมดเวลา
+  | "unknown";
+
+/** ข้อความไทยที่ส่งให้ผู้ใช้เห็นได้เลย — ห้ามมีรายละเอียดทางเทคนิคหรือ key */
+const FAIL_TEXT: Record<SlipFailReason, string> = {
+  disabled: "ระบบตรวจสลิปยังไม่เปิดใช้งานค่ะ แอดมินจะตรวจให้เองนะคะ",
+  "not-a-slip": "อ่านสลิปจากภาพนี้ไม่ได้ค่ะ 🙏 รบกวนส่งภาพสลิปเต็มใบที่เห็น QR ชัด ๆ อีกครั้ง หรือรอแอดมินตรวจให้ค่ะ",
+  duplicate: "สลิปนี้เคยถูกใช้ยืนยันไปแล้วค่ะ 🙏 รบกวนตรวจสอบอีกครั้ง หรือทักแอดมินได้เลยค่ะ",
+  "wrong-receiver": "สลิปนี้เป็นการโอนเข้าบัญชีอื่น ไม่ใช่บัญชีของร้านค่ะ 🙏 รบกวนตรวจสอบอีกครั้ง หรือทักแอดมินนะคะ",
+  quota: "ระบบตรวจสลิปอัตโนมัติใช้งานครบโควตาแล้วค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
+  auth: "ระบบตรวจสลิปอัตโนมัติขัดข้องชั่วคราวค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
+  network: "ระบบตรวจสลิปตอบช้าผิดปกติค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
+  unknown: "ตรวจสลิปอัตโนมัติไม่สำเร็จค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
+};
+
+export function slipFailMessage(reason: SlipFailReason): string {
+  return FAIL_TEXT[reason];
+}
+
+/** map error code ของ Thunder → เหตุผลฝั่งเรา (เอกสาร §Common Error Codes) */
+function reasonFromApi(httpStatus: number, code?: string): SlipFailReason {
+  const c = (code || "").toUpperCase();
+  if (c === "MISSING_API_KEY" || c === "INVALID_API_KEY" || httpStatus === 401) return "auth";
+  if (c === "QUOTA_EXCEEDED" || httpStatus === 403) return "quota";
+  if (c === "SLIP_NOT_FOUND" || httpStatus === 404) return "not-a-slip";
+  if (c.includes("DUPLICATE")) return "duplicate";
+  if (c === "IMAGE_URL_UNREACHABLE") return "network"; // Thunder ดึงภาพจากเราไม่ได้
+  if (c === "VALIDATION_ERROR" || httpStatus === 400) return "not-a-slip";
+  return "unknown";
+}
+
+/** เก็บเฉพาะตัวเลขจากเลขบัญชี (ของจริงมักถูกปิดบางหลักเป็น x เช่น "xxx-x-xx789-x") */
+function digitsOf(v: unknown): string {
+  return typeof v === "string" ? v.replace(/\D/g, "") : "";
+}
+
+/**
+ * เทียบเลขบัญชีผู้รับ — Thunder คืนเลขบัญชีแบบปิดบางหลัก เช่น "xxx-x-xx789-x"
+ * (เห็นจริงแค่ 3 หลัก) จึงเทียบแบบ "ตัวเลขที่เห็นต้องเป็นส่วนท้ายของเลขบัญชีจริง"
+ *
+ * ⚖️ ความแม่นยำที่ได้จริง — ต้องเข้าใจให้ตรงกันก่อนเอาไปใช้ตัดสินเรื่องเงิน:
+ *   • เลขไม่ตรง  → **สรุปได้แน่นอนว่าคนละบัญชี** (บัญชีเดียวกันเป็นไปไม่ได้ที่เลขท้ายจะต่าง)
+ *     ใช้ปฏิเสธได้เต็มปาก ไม่มีทางผิดพลาดฝั่งนี้
+ *   • เลขตรง     → **แค่ "ไม่ขัดกัน" ไม่ใช่การยืนยัน** เพราะ 3 หลักซ้ำกันได้ราว 1 ใน 1,000
+ *     จึงห้ามเขียนข้อความให้ผู้ใช้เข้าใจว่าระบบยืนยันปลายทางให้แล้ว (ดู slipReplyText)
+ *
+ * เดิมตั้งขั้นต่ำไว้ 4 หลักซึ่ง **ทำให้ฟังก์ชันนี้ไม่เคยทำงานเลย** กับรูปแบบจริงของ Thunder
+ * (เจอตอนเขียนเทสต์ 20 ส.ค. 69)
+ */
+const MIN_VISIBLE_DIGITS = 3;
+export function receiverMatches(masked: string, expected: string[]): boolean | undefined {
+  const seen = digitsOf(masked);
+  if (!expected.length) return undefined;
+  if (seen.length < MIN_VISIBLE_DIGITS) return undefined;
+  return expected.some((acc) => acc.endsWith(seen));
+}
+
+// ── โทเคนสำหรับให้ Thunder มาดึงภาพจากเรา ───────────────────────────────────
+//
+// 🔒 ทำไมต้องเซ็นและหมดอายุ: URL นี้ "เปิดสาธารณะชั่วคราว" และปลายทางเป็นภาพสลิป
+//    ซึ่งมีชื่อผู้โอน/ผู้รับและเลขบัญชีบางส่วน = ข้อมูลส่วนบุคคล
+//    จึงต้องเดา URL ไม่ได้ · ใช้ได้สั้นมาก · และไม่มีการเก็บไฟล์ไว้ที่ไหนเลย (stream ผ่าน)
+const TOKEN_TTL_SEC = 120;
+
+function tokenSecret(): string | undefined {
+  // ใช้ secret แยกถ้าตั้งไว้ · ไม่งั้นยืมของ LINE ซึ่งเป็น server-only และอยู่ในขอบเขตงานเดียวกัน
+  return process.env.SLIP_IMAGE_SECRET?.trim() || process.env.LINE_CHANNEL_SECRET?.trim() || undefined;
+}
+
+export function signSlipImageToken(messageId: string, nowSec = Math.floor(Date.now() / 1000)): string | null {
+  const secret = tokenSecret();
+  if (!secret || !messageId) return null;
+  const body = `${messageId}.${nowSec + TOKEN_TTL_SEC}`;
+  const sig = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+  return `${Buffer.from(body).toString("base64url")}.${sig}`;
+}
+
+export function verifySlipImageToken(token: string, nowSec = Math.floor(Date.now() / 1000)): string | null {
+  const secret = tokenSecret();
+  if (!secret || !token) return null;
+  const [b64, sig] = token.split(".");
+  if (!b64 || !sig) return null;
+  let body: string;
+  try { body = Buffer.from(b64, "base64url").toString("utf8"); } catch { return null; }
+  const expect = crypto.createHmac("sha256", secret).update(body).digest("base64url");
+  try {
+    if (expect.length !== sig.length || !crypto.timingSafeEqual(Buffer.from(expect), Buffer.from(sig))) return null;
+  } catch { return null; }
+  const i = body.lastIndexOf(".");
+  const messageId = body.slice(0, i);
+  const exp = Number(body.slice(i + 1));
+  if (!messageId || !Number.isFinite(exp) || nowSec > exp) return null;
+  return messageId;
+}
+
+/**
+ * ให้ Thunder ไปดึงภาพสลิปจาก URL แล้วตรวจให้
+ * @param imageUrl URL สาธารณะชั่วคราวที่ Thunder เข้าถึงได้
+ *
+ * 🔒 ฟังก์ชันนี้ **ไม่โยน exception** — คืน SlipResult เสมอ เพื่อไม่ให้ทำ webhook ทั้งตัวล้ม
+ */
+export async function verifySlipByUrl(imageUrl: string): Promise<SlipResult> {
+  const key = slipApiKey();
+  if (!key) return { ok: false, reason: "disabled", message: FAIL_TEXT.disabled };
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/verify/bank`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      // กันสลิปเดิมถูกส่งซ้ำเพื่อเคลมสองรอบ — เปิดไว้เสมอ
+      body: JSON.stringify({ url: imageUrl, checkDuplicate: true }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch {
+    return { ok: false, reason: "network", message: FAIL_TEXT.network };
+  }
+
+  let body: any = null;
+  try { body = await res.json(); } catch { /* ปล่อยเป็น null */ }
+
+  // เอกสารแสดง success ไว้ 2 แบบไม่ตรงกัน ({success:true,data} กับ {status:200,data}) จึงรับทั้งคู่
+  const okFlag = body?.success === true || body?.status === 200;
+  if (!res.ok || !okFlag || !body?.data) {
+    const reason = reasonFromApi(res.status, body?.error?.code || body?.code);
+    return { ok: false, reason, message: FAIL_TEXT[reason] };
+  }
+
+  const d = body.data;
+  // 🔴 เทียบได้เฉพาะ "เลขบัญชี" เท่านั้น — ห้ามเอา proxy (เบอร์โทร/พร้อมเพย์) มาเทียบ
+  //    เพราะเป็นคนละชนิดเลข เอามาเทียบกันจะได้ผลมั่วทั้งผ่านและไม่ผ่าน
+  const receiverAccount: string | undefined = d?.receiver?.account?.value;
+  const receiverProxy: string | undefined = d?.receiver?.proxy?.value;
+  const matched = receiverMatches(receiverAccount || "", expectedReceiverAccounts());
+
+  const data: SlipData = {
+    transRef: d?.transRef,
+    date: d?.date,
+    amount: typeof d?.amount?.amount === "number" ? d.amount.amount : d?.amount?.local?.amount,
+    currency: d?.amount?.local?.currency || "THB",
+    senderName: d?.sender?.displayName || d?.sender?.name,
+    receiverName: d?.receiver?.displayName || d?.receiver?.name,
+    receiverAccount: receiverAccount || receiverProxy,
+    receiverMatched: matched,
+  };
+
+  // 🔴 เงินไม่ได้เข้าบัญชีแบรนด์ = ถือว่าไม่ผ่าน ถึงสลิปจะเป็นของจริงก็ตาม
+  if (matched === false) return { ok: false, reason: "wrong-receiver", message: FAIL_TEXT["wrong-receiver"] };
+
+  return { ok: true, data };
+}
+
+/** จัดข้อความผลตรวจให้ผู้ใช้อ่าน — ตัวเลขทั้งหมดมาจาก API ไม่มีการเดา */
+export function slipReplyText(d: SlipData): string {
+  const lines = ["✅ ตรวจสลิปเรียบร้อยค่ะ"];
+  if (typeof d.amount === "number") {
+    lines.push(`ยอดเงิน ${d.amount.toLocaleString("th-TH", { minimumFractionDigits: 2 })} ${d.currency || "THB"}`);
+  }
+  if (d.senderName) lines.push(`ผู้โอน ${d.senderName}`);
+  if (d.receiverName) lines.push(`ผู้รับ ${d.receiverName}`);
+  if (d.date) {
+    try {
+      lines.push(`เวลา ${new Date(d.date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}`);
+    } catch { /* วันที่รูปแบบแปลก ข้ามไป ไม่ต้องเดา */ }
+  }
+  if (d.transRef) lines.push(`เลขอ้างอิง ${d.transRef}`);
+  // 🔒 ห้ามเขียนว่า "ยืนยันแล้ว" ไม่ว่ากรณีใด — เลขบัญชีที่สลิปแสดงมีแค่ 3 หลัก
+  //    ตรงกันจึงแปลว่า "ไม่ขัดกัน" ไม่ใช่การพิสูจน์ว่าเงินเข้าบัญชีร้านจริง
+  lines.push(
+    d.receiverMatched === true
+      ? "\n(เลขท้ายบัญชีผู้รับตรงกับของร้าน — แอดมินจะยืนยันยอดอีกครั้งค่ะ)"
+      : "\n(ระบบอ่านข้อมูลจากสลิปให้ แอดมินจะยืนยันยอดอีกครั้งค่ะ)",
+  );
+  return lines.join("\n");
+}

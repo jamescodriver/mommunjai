@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
+import { isSlipCheckEnabled, verifySlipByUrl, signSlipImageToken, slipReplyText, slipFailMessage } from "@/lib/slip";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
 import { relayToPartner, isRelayMode, isBotEnabled, relayTargetUrl } from "@/lib/line-relay";
@@ -69,7 +70,37 @@ export async function POST(req: NextRequest) {
 
   for (const ev of events) {
     try {
-      if (ev.type !== "message" || ev.message?.type !== "text") continue;
+      if (ev.type !== "message") continue;
+
+      // ── ตรวจสลิปโอนเงินเอง (แทนการส่งต่อให้บอทของ Thunder) ────────────────
+      // 🔴 ห้ามเปิดพร้อมกับ relay — replyToken ใช้ได้ครั้งเดียว ถ้าเปิดคู่กัน
+      //    บอทของ Thunder จะตอบภาพเดียวกันด้วย แล้วฝ่ายใดฝ่ายหนึ่งจะพัง
+      //    (มีคำเตือนใน log + diagnostic ที่ GET ของไฟล์นี้)
+      if (ev.message.type === "image") {
+        if (!isSlipCheckEnabled()) continue; // ปิดอยู่ = ปล่อยให้บอทอีกตัวจัดการ ไม่ตอบอะไรเลย
+
+        // Thunder รับภาพได้ทางเดียวที่ยืนยันแล้วคือ "ให้ URL แล้วเขามาดึงเอง"
+        // เราจึงออกลิงก์ชั่วคราวที่เซ็นไว้ ชี้ไปที่ /api/line/slip-image (อายุ 2 นาที ไม่เก็บไฟล์)
+        const base = process.env.NEXT_PUBLIC_APP_URL || "";
+        const t = signSlipImageToken(ev.message.id);
+        if (!base || !t) {
+          // ตั้งค่าไม่ครบ (ไม่มี NEXT_PUBLIC_APP_URL หรือไม่มี secret) — ห้ามเดาว่าสลิปถูกต้อง
+          console.error("[slip] ตั้งค่าไม่ครบ: ต้องมี NEXT_PUBLIC_APP_URL และ SLIP_IMAGE_SECRET/LINE_CHANNEL_SECRET");
+          await lineReply(ev.replyToken, [{ type: "text", text: slipFailMessage("unknown") }]);
+          continue;
+        }
+        const r = await verifySlipByUrl(`${base}/api/line/slip-image?t=${encodeURIComponent(t)}`);
+        await lineReply(ev.replyToken, [
+          { type: "text", text: r.ok ? slipReplyText(r.data) : r.message },
+        ]);
+        if (!r.ok && (r.reason === "quota" || r.reason === "auth")) {
+          // 2 กรณีนี้แอดมินต้องรู้ทันที เพราะแปลว่าระบบตรวจอัตโนมัติหยุดทำงานทั้งระบบ
+          console.error(`[slip] ระบบตรวจสลิปใช้งานไม่ได้: ${r.reason}`);
+        }
+        continue;
+      }
+
+      if (ev.message?.type !== "text") continue;
       const lineUserId = ev.source?.userId as string | undefined;
 
       if (ev.message.text.trim() === MENU_TRIGGER) {
@@ -185,8 +216,16 @@ export function GET() {
     }
   }
 
+  // U-slip — เปิดตรวจสลิปเองพร้อมกับ relay ไม่ได้ ต้องเห็นได้จากตรงนี้ทันที
+  const slip = isSlipCheckEnabled() ? "on" : "off";
+  const conflict = slip === "on" && relay === "on";
+
   return NextResponse.json({
     ok: true,
+    slip,
+    ...(conflict
+      ? { warning: "เปิดทั้ง relay และ slip พร้อมกัน — บอท 2 ตัวจะตอบภาพสลิปชนกัน ต้องปิดอย่างใดอย่างหนึ่ง" }
+      : {}),
     // ส่งต่อให้บอทอีกตัวไหม · off = เราตอบทุกข้อความ (ทับบอทสลิป!)
     relay,
     relayHost,

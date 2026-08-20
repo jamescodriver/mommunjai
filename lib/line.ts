@@ -191,6 +191,34 @@ export async function lineReply(replyToken: string, messages: any[]): Promise<bo
   return res.ok;
 }
 
+/**
+ * ดาวน์โหลดไฟล์ที่ผู้ใช้ส่งเข้ามาใน LINE (ภาพสลิป ฯลฯ)
+ *
+ * ⚠️ คนละโดเมนกับ API ปกติ — ต้องใช้ **api-data.line.me** ไม่ใช่ api.line.me
+ * ⚠️ LINE เก็บไฟล์ไว้ชั่วคราวเท่านั้น ต้องโหลดตอนได้รับ event ทันที ย้อนหลังไม่ได้
+ *
+ * คืน null เมื่อโหลดไม่ได้ (ไม่โยน exception เพื่อไม่ให้ webhook ทั้งตัวล้ม)
+ */
+export async function lineGetMessageContent(
+  messageId: string,
+): Promise<{ base64: string; mime: string } | null> {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!token || !messageId) return null;
+  try {
+    const res = await fetch(`https://api-data.line.me/v2/bot/message/${encodeURIComponent(messageId)}/content`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return null;
+    const mime = res.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (!buf.length) return null;
+    return { base64: buf.toString("base64"), mime };
+  } catch {
+    return null;
+  }
+}
+
 export async function linePush(to: string, messages: any[]): Promise<boolean> {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
   if (!token) return false;
