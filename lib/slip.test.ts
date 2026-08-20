@@ -74,7 +74,7 @@ describe("เทียบเลขบัญชีผู้รับ (กัน�
   });
 
   it("🔒 เลขตรงกัน = 'ไม่ขัดกัน' เท่านั้น ข้อความห้ามเคลมว่ายืนยันแล้ว", () => {
-    const t = slipReplyText({ amount: 100, receiverMatched: true });
+    const t = slipReplyText({ amount: 100, receiverMatched: true, verifiedBy: "digits" });
     expect(t).toMatch(/แอดมินจะยืนยัน/);
     expect(t).not.toMatch(/ยืนยันแล้ว|ตรวจสอบแล้วว่าถูกต้อง|เงินเข้าบัญชีร้านแล้ว/);
   });
@@ -92,6 +92,7 @@ describe("เทียบเลขบัญชีผู้รับ (กัน�
 
 describe("verifySlipImage", () => {
   it("สำเร็จ → คืนข้อมูลสลิปที่แปลงแล้ว (รับ response ได้ทั้ง 2 แบบตามที่ doc เขียนไม่ตรงกัน)", async () => {
+    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890789"; // ต้องยืนยันปลายทางได้ก่อนถึงจะผ่าน
     for (const shape of ["status", "success"] as const) {
       globalThis.fetch = ok(SLIP, shape);
       const r = await verifySlipByUrl("https://x.test/i.jpg");
@@ -103,7 +104,7 @@ describe("verifySlipImage", () => {
     }
   });
 
-  it("ยิงไปที่ /verify/bank พร้อม Bearer key และเปิด checkDuplicate เสมอ", async () => {
+  it("ยิงไปที่ /verify/bank พร้อม Bearer key · เปิด checkDuplicate และ matchAccount เสมอ", async () => {
     const spy = ok(SLIP); globalThis.fetch = spy;
     await verifySlipByUrl("https://x.test/i.jpg");
     const [url, init] = spy.mock.calls[0] as any;
@@ -111,6 +112,7 @@ describe("verifySlipImage", () => {
     expect(init.headers.Authorization).toBe(`Bearer ${KEY}`);
     const body = JSON.parse(init.body);
     expect(body.checkDuplicate).toBe(true); // กันสลิปเดิมถูกเคลมซ้ำ
+    expect(body.matchAccount).toBe(true);   // ให้ Thunder เทียบบัญชีร้านฝั่งเขาด้วย
     // ⚠️ ต้องเป็นฟิลด์ url เท่านั้น — ทดสอบกับ API จริงแล้ว base64/multipart ใช้ไม่ได้
     expect(body.url).toBe("https://x.test/i.jpg");
     expect(body.image).toBeUndefined();
@@ -149,6 +151,34 @@ describe("verifySlipImage", () => {
     expect(r.reason).toBe("network");
   });
 
+  it("🔴🔴 เทียบปลายทางไม่ได้ → ต้องไม่ผ่าน (เดิมปล่อยผ่าน = สลิปปลอมได้คำตอบเดียวกับของจริง)", async () => {
+    // ไม่ได้ตั้งบัญชีร้าน + Thunder ไม่ได้ส่ง matchedAccount กลับมา = ไม่มีหลักฐานว่าถูก
+    delete process.env.THUNDER_RECEIVER_ACCOUNT;
+    globalThis.fetch = ok(SLIP);
+    const r = await verifySlipByUrl("https://x.test/i.jpg");
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error("ต้องไม่ผ่าน");
+    expect(r.reason).toBe("unverified-receiver");
+  });
+
+  it("สลิปผู้รับเป็นพร้อมเพย์ (ไม่มีเลขบัญชีให้เทียบ) → ต้องไม่ผ่าน", async () => {
+    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890789";
+    globalThis.fetch = ok({ ...SLIP, receiver: { displayName: "ร้าน", proxy: { type: "MSISDN", value: "08x-xxx-xx78" } } });
+    const r = await verifySlipByUrl("https://x.test/i.jpg");
+    expect(r.ok).toBe(false);
+    if (r.ok) throw new Error("ต้องไม่ผ่าน");
+    expect(r.reason).toBe("unverified-receiver");
+  });
+
+  it("✅ Thunder เทียบบัญชีให้แล้ว (matchedAccount) → ผ่าน แม้เราเทียบเองไม่ได้", async () => {
+    delete process.env.THUNDER_RECEIVER_ACCOUNT;
+    globalThis.fetch = ok({ ...SLIP, matchedAccount: { bank: "KBANK", account: "xxx-x-x0789-x" } });
+    const r = await verifySlipByUrl("https://x.test/i.jpg");
+    expect(r.ok).toBe(true);
+    if (!r.ok) throw new Error("ควรผ่าน");
+    expect(r.data.verifiedBy).toBe("thunder");
+  });
+
   it("ตอบ 200 แต่ไม่มี data → ถือว่าไม่ผ่าน (ห้ามตีความว่าสำเร็จ)", async () => {
     globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ status: 200 }), { status: 200 })) as any;
     expect((await verifySlipByUrl("https://x.test/i.jpg")).ok).toBe(false);
@@ -180,9 +210,12 @@ describe("🔒 ข้อความที่ส่งถึงผู้ใช�
     expect(t).not.toContain(KEY);
   });
 
-  it("ไม่ได้ตั้งบัญชีไว้เทียบ → ต้องบอกผู้ใช้ว่าแอดมินจะยืนยันอีกครั้ง ห้ามทำให้เข้าใจว่าระบบยืนยันปลายทางแล้ว", () => {
-    const t = slipReplyText({ amount: 100, receiverMatched: undefined });
-    expect(t).toMatch(/แอดมินจะยืนยัน/);
+  it("ทุกกรณีต้องบอกว่าแอดมินจะยืนยันอีกครั้ง และห้ามเคลมว่ายืนยันกับธนาคารแล้ว", () => {
+    for (const v of ["thunder", "digits", undefined] as const) {
+      const t = slipReplyText({ amount: 100, verifiedBy: v });
+      expect(t).toMatch(/แอดมินจะยืนยัน/);
+      expect(t).not.toMatch(/ยืนยันกับธนาคาร|เงินเข้าบัญชีแล้ว|ตรวจสอบกับธนาคาร/);
+    }
   });
 });
 

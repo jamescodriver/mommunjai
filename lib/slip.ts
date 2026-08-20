@@ -83,8 +83,11 @@ export interface SlipData {
   senderName?: string;
   receiverName?: string;
   receiverAccount?: string;
-  /** เทียบเลขบัญชีผู้รับกับที่ตั้งไว้แล้วหรือยัง — undefined = ไม่ได้ตั้งค่าให้เทียบ */
+  /** เทียบเลขบัญชีผู้รับกับที่ตั้งไว้แล้วหรือยัง — undefined = เทียบไม่ได้ */
   receiverMatched?: boolean;
+  /** ยืนยันปลายทางด้วยวิธีไหน — "thunder" = Thunder เทียบเลขบัญชีเต็มให้ (แข็งแรงกว่า)
+   *  · "digits" = เราเทียบเองจากเลขท้ายที่สลิปเปิดให้เห็น (อ่อนกว่า) */
+  verifiedBy?: "thunder" | "digits";
 }
 
 export type SlipResult =
@@ -97,7 +100,8 @@ export type SlipFailReason =
   | "disabled"       // ยังไม่เปิดใช้/ไม่มี key
   | "not-a-slip"     // อ่านสลิปจากภาพไม่ได้
   | "duplicate"      // สลิปนี้เคยถูกใช้แล้ว
-  | "wrong-receiver" // เงินไม่ได้เข้าบัญชีของแบรนด์
+  | "wrong-receiver"      // เงินไม่ได้เข้าบัญชีของแบรนด์ (รู้แน่)
+  | "unverified-receiver" // ยืนยันปลายทางไม่ได้ → ห้ามตอบว่าผ่าน
   | "quota"          // โควตา API หมด
   | "auth"           // key ผิด/หมดอายุ
   | "network"        // ต่อไม่ติด/หมดเวลา
@@ -109,6 +113,7 @@ const FAIL_TEXT: Record<SlipFailReason, string> = {
   "not-a-slip": "อ่านสลิปจากภาพนี้ไม่ได้ค่ะ 🙏 รบกวนส่งภาพสลิปเต็มใบที่เห็น QR ชัด ๆ อีกครั้ง หรือรอแอดมินตรวจให้ค่ะ",
   duplicate: "สลิปนี้เคยถูกใช้ยืนยันไปแล้วค่ะ 🙏 รบกวนตรวจสอบอีกครั้ง หรือทักแอดมินได้เลยค่ะ",
   "wrong-receiver": "สลิปนี้เป็นการโอนเข้าบัญชีอื่น ไม่ใช่บัญชีของร้านค่ะ 🙏 รบกวนตรวจสอบอีกครั้ง หรือทักแอดมินนะคะ",
+  "unverified-receiver": "ระบบยังยืนยันปลายทางของสลิปนี้ไม่ได้ค่ะ 🙏 แอดมินจะตรวจสอบให้อีกครั้งนะคะ",
   quota: "ระบบตรวจสลิปอัตโนมัติใช้งานครบโควตาแล้วค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
   auth: "ระบบตรวจสลิปอัตโนมัติขัดข้องชั่วคราวค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
   network: "ระบบตรวจสลิปตอบช้าผิดปกติค่ะ แอดมินจะตรวจให้เองนะคะ 🙏",
@@ -210,8 +215,16 @@ export async function verifySlipByUrl(imageUrl: string): Promise<SlipResult> {
     res = await fetch(`${BASE}/verify/bank`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      // กันสลิปเดิมถูกส่งซ้ำเพื่อเคลมสองรอบ — เปิดไว้เสมอ
-      body: JSON.stringify({ url: imageUrl, checkDuplicate: true }),
+      body: JSON.stringify({
+        url: imageUrl,
+        // กันสลิปเดิมถูกส่งซ้ำเพื่อเคลมสองรอบ — เปิดไว้เสมอ
+        checkDuplicate: true,
+        // 🔴 ให้ Thunder เทียบผู้รับกับบัญชีร้านที่ลงทะเบียนไว้ในระบบเขา (POST /bank-accounts)
+        //    แข็งแรงกว่าที่เราเทียบเองมาก เพราะเขาเห็นเลขบัญชีเต็ม ส่วนเราเห็นแค่ 3 หลักท้าย
+        //    ถ้ายังไม่ได้ลงทะเบียนบัญชีไว้กับ Thunder จะไม่มี matchedAccount กลับมา
+        //    → โค้ดข้างล่างจะถือว่า "ยืนยันไม่ได้" ไม่ใช่ "ผ่าน"
+        matchAccount: true,
+      }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch {
@@ -234,6 +247,8 @@ export async function verifySlipByUrl(imageUrl: string): Promise<SlipResult> {
   const receiverAccount: string | undefined = d?.receiver?.account?.value;
   const receiverProxy: string | undefined = d?.receiver?.proxy?.value;
   const matched = receiverMatches(receiverAccount || "", expectedReceiverAccounts());
+  // Thunder เทียบให้แล้วหรือยัง (ต้องลงทะเบียนบัญชีร้านไว้ที่ POST /bank-accounts ก่อน)
+  const thunderMatched = !!d?.matchedAccount;
 
   const data: SlipData = {
     transRef: d?.transRef,
@@ -244,10 +259,22 @@ export async function verifySlipByUrl(imageUrl: string): Promise<SlipResult> {
     receiverName: d?.receiver?.displayName || d?.receiver?.name,
     receiverAccount: receiverAccount || receiverProxy,
     receiverMatched: matched,
+    verifiedBy: thunderMatched ? "thunder" : matched === true ? "digits" : undefined,
   };
 
-  // 🔴 เงินไม่ได้เข้าบัญชีแบรนด์ = ถือว่าไม่ผ่าน ถึงสลิปจะเป็นของจริงก็ตาม
+  // 🔴 เงินไม่ได้เข้าบัญชีแบรนด์ = ไม่ผ่าน ถึงสลิปจะเป็นของจริงก็ตาม
   if (matched === false) return { ok: false, reason: "wrong-receiver", message: FAIL_TEXT["wrong-receiver"] };
+
+  // 🔴🔴 กฎสำคัญที่สุดของไฟล์นี้ — **ต้องมีการยืนยันฝั่งบวกเท่านั้นถึงจะตอบว่าผ่าน**
+  //
+  // เดิมเขียนไว้ว่า "ถ้าไม่พบว่าผิด = ผ่าน" ซึ่งทำให้กรณี "เทียบไม่ได้" (undefined)
+  // เช่นสลิปที่ผู้รับเป็นพร้อมเพย์/ไม่มีเลขบัญชีให้เทียบ ถูกตอบว่า "✅ ตรวจเรียบร้อย"
+  // เหมือนสลิปจริงทุกประการ → ต้นเจอเองว่าสลิปปลอมก็ได้คำตอบแบบเดียวกัน (20 ส.ค. 69)
+  //
+  // เรื่องเงินต้องกลับด้าน: **ไม่มีหลักฐานว่าถูก = ยังไม่ผ่าน** ไม่ใช่ "ไม่มีหลักฐานว่าผิด = ผ่าน"
+  if (!thunderMatched && matched !== true) {
+    return { ok: false, reason: "unverified-receiver", message: FAIL_TEXT["unverified-receiver"] };
+  }
 
   return { ok: true, data };
 }
@@ -266,12 +293,13 @@ export function slipReplyText(d: SlipData): string {
     } catch { /* วันที่รูปแบบแปลก ข้ามไป ไม่ต้องเดา */ }
   }
   if (d.transRef) lines.push(`เลขอ้างอิง ${d.transRef}`);
-  // 🔒 ห้ามเขียนว่า "ยืนยันแล้ว" ไม่ว่ากรณีใด — เลขบัญชีที่สลิปแสดงมีแค่ 3 หลัก
-  //    ตรงกันจึงแปลว่า "ไม่ขัดกัน" ไม่ใช่การพิสูจน์ว่าเงินเข้าบัญชีร้านจริง
+  // 🔒 บอกตามจริงว่ายืนยันปลายทางด้วยวิธีไหน — ความแข็งแรงต่างกันมาก
+  //    ห้ามเขียนให้เข้าใจว่า "ยืนยันการโอนกับธนาคารแล้ว" เพราะเรายังไม่รู้ว่า Thunder
+  //    ตรวจกับธนาคารจริงหรือแค่อ่าน QR (ยังไม่ได้คำตอบจากซัพพอร์ต)
   lines.push(
-    d.receiverMatched === true
-      ? "\n(เลขท้ายบัญชีผู้รับตรงกับของร้าน — แอดมินจะยืนยันยอดอีกครั้งค่ะ)"
-      : "\n(ระบบอ่านข้อมูลจากสลิปให้ แอดมินจะยืนยันยอดอีกครั้งค่ะ)",
+    d.verifiedBy === "thunder"
+      ? "\n(ตรงกับบัญชีร้านที่ลงทะเบียนไว้ — แอดมินจะยืนยันยอดอีกครั้งค่ะ)"
+      : "\n(เลขท้ายบัญชีผู้รับตรงกับของร้าน — แอดมินจะยืนยันยอดอีกครั้งค่ะ)",
   );
   return lines.join("\n");
 }
