@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient, hasSupabaseEnv } from "@/lib/supabase-server";
 import { verifyLineSignature, extractTicketCode, reportFlex, menuFlex, lineReply } from "@/lib/line";
-import { isSlipCheckEnabled, verifySlipByUrl, signSlipImageToken, slipReplyText, slipFailMessage } from "@/lib/slip";
+import { isSlipCheckEnabled, isSlipCheckActive, verifySlipByUrl, signSlipImageToken, slipReplyText, slipFailMessage } from "@/lib/slip";
 import { generateReport } from "@/lib/report";
 import { resolveCustomerByLineUserId, linkLeadToCustomerViaLine, signResumeToken } from "@/lib/customer";
 import { relayToPartner, isRelayMode, isBotEnabled, relayTargetUrl } from "@/lib/line-relay";
@@ -77,7 +77,14 @@ export async function POST(req: NextRequest) {
       //    บอทของ Thunder จะตอบภาพเดียวกันด้วย แล้วฝ่ายใดฝ่ายหนึ่งจะพัง
       //    (มีคำเตือนใน log + diagnostic ที่ GET ของไฟล์นี้)
       if (ev.message.type === "image") {
-        if (!isSlipCheckEnabled()) continue; // ปิดอยู่ = ปล่อยให้บอทอีกตัวจัดการ ไม่ตอบอะไรเลย
+        // ปิดอยู่ หรือ relay ยังเปิดอยู่ (ตั้งค่าชนกัน) = ปล่อยให้บอทอีกตัวจัดการ ไม่ตอบอะไรเลย
+        // 🔴 ถอยไปทางที่ปลอดภัยเสมอ ห้ามแย่งตอบกับบอทอีกตัวในเรื่องเงิน
+        if (!isSlipCheckActive(relaying)) {
+          if (isSlipCheckEnabled()) {
+            console.error("[slip] ตั้งค่าชนกัน: relay เปิดอยู่ จึงปิดการตรวจสลิปของเราอัตโนมัติ — ต้องล้าง LINE_RELAY_WEBHOOK_URL ก่อน");
+          }
+          continue;
+        }
 
         // Thunder รับภาพได้ทางเดียวที่ยืนยันแล้วคือ "ให้ URL แล้วเขามาดึงเอง"
         // เราจึงออกลิงก์ชั่วคราวที่เซ็นไว้ ชี้ไปที่ /api/line/slip-image (อายุ 2 นาที ไม่เก็บไฟล์)
@@ -218,13 +225,16 @@ export function GET() {
 
   // U-slip — เปิดตรวจสลิปเองพร้อมกับ relay ไม่ได้ ต้องเห็นได้จากตรงนี้ทันที
   const slip = isSlipCheckEnabled() ? "on" : "off";
-  const conflict = slip === "on" && relay === "on";
+  const slipActive = isSlipCheckActive(relay === "on");
+  const conflict = slip === "on" && !slipActive;
 
   return NextResponse.json({
     ok: true,
+    // slip = ตั้งค่าไว้ให้เปิดไหม · slipActive = ทำงานจริงไหม (ต่างกันเมื่อตั้งค่าชนกัน)
     slip,
+    slipActive,
     ...(conflict
-      ? { warning: "เปิดทั้ง relay และ slip พร้อมกัน — บอท 2 ตัวจะตอบภาพสลิปชนกัน ต้องปิดอย่างใดอย่างหนึ่ง" }
+      ? { warning: "relay เปิดอยู่ จึงปิดการตรวจสลิปของเราอัตโนมัติเพื่อไม่ให้บอท 2 ตัวตอบชนกัน — ถ้าต้องการให้เราตรวจเอง ต้องล้าง LINE_RELAY_WEBHOOK_URL ให้ว่าง" }
       : {}),
     // ส่งต่อให้บอทอีกตัวไหม · off = เราตอบทุกข้อความ (ทับบอทสลิป!)
     relay,

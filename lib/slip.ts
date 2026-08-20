@@ -37,11 +37,29 @@ export function slipApiKey(): string | undefined {
   return k ? k : undefined;
 }
 
-/** เปิดใช้การตรวจสลิปด้วยตัวเองไหม — ต้องมีทั้งสวิตช์และ key ถึงจะทำงาน */
+/** ตั้งค่าไว้ให้เปิดไหม (เจตนาจาก env) — ต้องมีทั้งสวิตช์และ key */
 export function isSlipCheckEnabled(): boolean {
   const v = process.env.SLIP_CHECK_ENABLED?.trim().toLowerCase();
   const on = v !== undefined && v !== "" && !["0", "false", "off", "no"].includes(v);
   return on && !!slipApiKey();
+}
+
+/**
+ * ทำงานจริงไหม — ต่างจาก isSlipCheckEnabled() ตรงที่ตัดกรณีตั้งค่าชนกันออกด้วย
+ *
+ * 🔴 ทำไมต้องมี: ถ้าเปิดทั้ง relay และ slip พร้อมกัน บอท 2 ตัวจะแย่งกันตอบภาพสลิป
+ *    (replyToken ใช้ได้ครั้งเดียว) ผลลัพธ์ที่ลูกค้าได้จะคาดเดาไม่ได้ — และนี่คือ "เรื่องเงิน"
+ *
+ * เดิมมีแค่คำเตือนใน diagnostic ซึ่งพึ่งให้คนเห็นแล้วไปแก้ env ให้ถูก
+ * แต่เกิดขึ้นจริงบน production 20 ส.ค. 69 แล้วแก้ env ไม่ติดอยู่พักใหญ่
+ * → เปลี่ยนเป็น **ปิดตัวเองอัตโนมัติ** เมื่อ relay ยังเปิดอยู่ แล้วถอยไปสถานะเดิม
+ *   ที่รู้ว่าปลอดภัย (ปล่อยให้บอทของ Thunder ตรวจสลิปเหมือนเดิม)
+ *
+ * ⚠️ ไม่ได้ปิดเงียบ ๆ — diagnostic จะขึ้น slipActive:false พร้อมเหตุผลให้เห็นชัด
+ *    ถ้าตั้งใจจะให้เราตรวจเอง ต้องล้าง LINE_RELAY_WEBHOOK_URL ให้ว่างก่อน
+ */
+export function isSlipCheckActive(relayOn: boolean): boolean {
+  return isSlipCheckEnabled() && !relayOn;
 }
 
 /**

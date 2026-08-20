@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   isSlipCheckEnabled, expectedReceiverAccounts, receiverMatches,
-  verifySlipByUrl, signSlipImageToken, verifySlipImageToken, slipReplyText, slipFailMessage,
+  verifySlipByUrl, signSlipImageToken, verifySlipImageToken, slipReplyText, slipFailMessage, isSlipCheckActive,
 } from "./slip";
 
 /**
@@ -215,5 +215,22 @@ describe("โทเคนภาพชั่วคราวที่ให้ Thu
     delete process.env.SLIP_IMAGE_SECRET;
     delete process.env.LINE_CHANNEL_SECRET;
     expect(signSlipImageToken("MSG123")).toBeNull();
+  });
+});
+
+describe("🔴 ตั้งค่าชนกัน (relay + slip) ต้องถอยไปทางที่ปลอดภัยเอง", () => {
+  it("relay เปิดอยู่ → ปิดการตรวจสลิปของเราอัตโนมัติ ถึงจะตั้ง env ให้เปิดก็ตาม", () => {
+    expect(isSlipCheckEnabled()).toBe(true);      // เจตนาจาก env = เปิด
+    expect(isSlipCheckActive(true)).toBe(false);  // แต่ทำงานจริง = ปิด เพราะ relay เปิดอยู่
+  });
+
+  it("relay ปิดแล้ว → ทำงานตามที่ตั้งไว้", () => {
+    expect(isSlipCheckActive(false)).toBe(true);
+  });
+
+  it("ไม่ได้ตั้ง env ให้เปิด → ปิดอยู่แล้วไม่ว่า relay จะเปิดหรือปิด", () => {
+    process.env.SLIP_CHECK_ENABLED = "0";
+    expect(isSlipCheckActive(false)).toBe(false);
+    expect(isSlipCheckActive(true)).toBe(false);
   });
 });
