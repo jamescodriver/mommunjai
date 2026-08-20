@@ -225,7 +225,13 @@ export function GET() {
 
   // U-slip — เปิดตรวจสลิปเองพร้อมกับ relay ไม่ได้ ต้องเห็นได้จากตรงนี้ทันที
   const slip = isSlipCheckEnabled() ? "on" : "off";
-  const slipActive = isSlipCheckActive(relay === "on");
+  // 🔴 ต้องใช้แหล่งความจริงเดียวกับตอนรับ event จริง (isRelayMode()) ห้ามดูจากป้าย relay
+  //    เดิมเช็ค `relay === "on"` ซึ่งพลาดกรณี relay = "bad-url": ป้ายบอกว่าไม่ใช่ "on"
+  //    diagnostic เลยรายงาน slipActive:true ทั้งที่ webhook จริง ๆ ปิดการตรวจสลิปอยู่
+  //    (isRelayMode() ถือว่า "ตั้งค่าไว้แต่ URL ใช้ไม่ได้" = ยังอยู่ในโหมดอยู่ร่วมกับบอทอื่น)
+  //    เจอบน production 20 ส.ค. 69 — diagnostic ที่โกหกอันตรายกว่าไม่มี diagnostic
+  const relayOn = isRelayMode();
+  const slipActive = isSlipCheckActive(relayOn);
   const conflict = slip === "on" && !slipActive;
 
   return NextResponse.json({
@@ -233,8 +239,10 @@ export function GET() {
     // slip = ตั้งค่าไว้ให้เปิดไหม · slipActive = ทำงานจริงไหม (ต่างกันเมื่อตั้งค่าชนกัน)
     slip,
     slipActive,
-    ...(conflict
-      ? { warning: "relay เปิดอยู่ จึงปิดการตรวจสลิปของเราอัตโนมัติเพื่อไม่ให้บอท 2 ตัวตอบชนกัน — ถ้าต้องการให้เราตรวจเอง ต้องล้าง LINE_RELAY_WEBHOOK_URL ให้ว่าง" }
+    ...(relay === "bad-url"
+      ? { warning: "LINE_RELAY_WEBHOOK_URL ตั้งไว้แต่ไม่ใช่ URL ที่ใช้ได้ — ตอนนี้ไม่มีอะไรถูกส่งต่อไปบอทสลิปเลย และการตรวจสลิปของเราก็ยังปิดอยู่ ต้องลบตัวแปรนี้ทิ้งให้หมด (ไม่ใช่ใส่ค่าว่าง/เว้นวรรค)" }
+      : conflict
+      ? { warning: "relay เปิดอยู่ จึงปิดการตรวจสลิปของเราอัตโนมัติเพื่อไม่ให้บอท 2 ตัวตอบชนกัน — ถ้าต้องการให้เราตรวจเอง ต้องลบ LINE_RELAY_WEBHOOK_URL ทิ้ง" }
       : {}),
     // ส่งต่อให้บอทอีกตัวไหม · off = เราตอบทุกข้อความ (ทับบอทสลิป!)
     relay,

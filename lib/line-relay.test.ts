@@ -229,3 +229,21 @@ describe("webhook route — อยู่ร่วมกับบอทเช็�
     expect(relayCalls()).toHaveLength(0);
   });
 });
+
+describe("🔴 URL ส่งต่อที่ตั้งไว้แต่ใช้ไม่ได้ — diagnostic ต้องไม่โกหก", () => {
+  it("ตั้งค่าไว้แต่ไม่ใช่ URL → ยังถือว่าอยู่ในโหมดอยู่ร่วมกับบอทอื่น (ไม่ไปแย่งตอบ)", () => {
+    process.env.LINE_RELAY_WEBHOOK_URL = "line.thunder.in.th/webhook"; // ลืม https://
+    expect(isRelayMode()).toBe(true);
+  });
+
+  it("diagnostic ต้องรายงานตรงกับพฤติกรรมจริง ไม่ใช่ดูจากป้าย relay", async () => {
+    process.env.LINE_RELAY_WEBHOOK_URL = "line.thunder.in.th/webhook";
+    process.env.SLIP_CHECK_ENABLED = "1";
+    process.env.THUNDER_API_KEY = "k";
+    const body = await (DIAG() as any).json();
+    // ป้าย relay จะเป็น "bad-url" (ไม่ใช่ "on") — เดิมทำให้ slipActive รายงานผิดเป็น true
+    expect(body.relay).toBe("bad-url");
+    expect(body.slipActive).toBe(false);
+    expect(body.warning).toMatch(/ไม่ใช่ URL ที่ใช้ได้/);
+  });
+});
