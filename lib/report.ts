@@ -14,11 +14,7 @@ import { goodFatTarget, type GoodFatResult, type GoodFatStage } from "./calc/goo
 import { assessSleep } from "./calc/sleep";
 import { buildPregnancyKnowledge, type PregnancyKnowledge } from "./calc/pregnancy";
 import { buildLactationKnowledge, type LactationKnowledge } from "./calc/lactation";
-import {
-  PROTEIN_FOODS, PROTEIN_SERVINGS, PROTEIN_FOODS_NOTE, PROTEIN_FOODS_SOURCE,
-  RECOMMENDED_VEGETABLES, RECOMMENDED_FRUITS, FOOD_SOURCE_NOTE,
-  type ProteinFoodGroup,
-} from "./calc/food-reference";
+import { RECOMMENDED_VEGETABLES, RECOMMENDED_FRUITS, FOOD_SOURCE_NOTE } from "./calc/food-reference";
 
 export interface ReportProfile {
   nickname?: string;
@@ -116,31 +112,18 @@ export interface ReportPart1 {
   exercise: ExerciseGuide;
 }
 
-export interface ProteinFoodRef {
-  food: string;
-  per: string;
-  protein: string;
-  /** ค่ากลางเป็นตัวเลข — สำหรับวาดแถบเปรียบเทียบในหน้ารายงานเท่านั้น */
-  proteinAvg: number;
-  group: ProteinFoodGroup;
-  note?: string;
-}
-
-export interface ProteinServingRef {
-  serving: string;
-  protein: string;
-  hint?: string;
-}
+// 🔴 ตารางโปรตีนในอาหาร "ไม่ได้" อยู่ใน payload ของรายงาน (เอาออก 21 ส.ค. 69)
+//    เพราะเป็นข้อมูลอ้างอิงกลาง เหมือนกันทุกคน ไม่ได้ปรับตามผู้ใช้ — แบบเดียวกับ
+//    MEAL_EXAMPLES / RECOMMENDED_* ที่หน้ารายงานอ่านจากค่าคงที่โดยตรงอยู่แล้ว
+//    payload เป็น snapshot ที่แช่แข็งตอนออกรหัส ถ้าเก็บตารางไว้ในนั้น รายงานที่ออก
+//    ไปแล้วจะค้างอยู่กับตารางเวอร์ชันเก่าตลอดไป (และพังทันทีถ้าโครงสร้างแถวเปลี่ยน
+//    — เจอจริงบน production กับรหัส MJ-Z4XDHZ: กล่องตารางโชว์ว่างเปล่า)
+//    ดู components/report-view.tsx และ lib/calc/food-reference.ts
 
 export interface ReportPart2 {
   protein: { min: number; max: number; ferty: number; note?: string } | null;
   waterMl: WaterTarget | null;
   goodFat: GoodFatResult;
-  proteinFoods: ProteinFoodRef[];
-  /** เทียบเป็นหน่วยที่กินจริง (ฟอง/แก้ว/กำมือ/ซอง) — คู่กับตาราง 100 กรัม */
-  proteinServings: ProteinServingRef[];
-  proteinFoodsNote: string;
-  proteinFoodsSource: string;
   vegetables: string[];
   fruits: string[];
   foodSourceNote: string;
@@ -382,13 +365,6 @@ export function generateReport(p: ReportProfile): Report {
     protein,
     waterMl: water,
     goodFat: goodFatTarget(stage5),
-    proteinFoods: PROTEIN_FOODS.map((f) => ({
-      food: f.food, per: f.per, protein: f.protein,
-      proteinAvg: f.proteinAvg, group: f.group, ...(f.note ? { note: f.note } : {}),
-    })),
-    proteinServings: PROTEIN_SERVINGS.map((s) => ({ serving: s.serving, protein: s.protein, ...(s.hint ? { hint: s.hint } : {}) })),
-    proteinFoodsNote: PROTEIN_FOODS_NOTE,
-    proteinFoodsSource: PROTEIN_FOODS_SOURCE,
     vegetables: RECOMMENDED_VEGETABLES,
     fruits: RECOMMENDED_FRUITS,
     foodSourceNote: FOOD_SOURCE_NOTE,

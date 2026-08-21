@@ -5,7 +5,7 @@ import { generateReport, buildTeaser, reportTier, buildSleepGuide, type Report }
 import { goodFatTarget, type GoodFatStage } from "./calc/goodfat";
 import { PRODUCT_PHOTO_IDS, hasProductPhoto, productPhotoSrc } from "./product-photos";
 import { PRODUCTS } from "./calc/vitamins";
-import { PROTEIN_BAR_MAX, PROTEIN_FOOD_GROUPS } from "./calc/food-reference";
+import { PROTEIN_FOODS, PROTEIN_SERVINGS, PROTEIN_BAR_MAX, PROTEIN_FOOD_GROUPS } from "./calc/food-reference";
 
 const ALL_STAGES: GoodFatStage[] = ["prep", "infertility", "pregnant", "lactating", "male"];
 
@@ -229,26 +229,36 @@ describe("R15 — Part 2 โภชนาการของคุณ", () => {
     expect(inf.part2?.goodFat.stage).toBe("infertility");
   });
 
-  it("TC-15-06 มีตารางโปรตีนต่ออาหาร + ผัก + ผลไม้ พร้อมอ้างอิงที่มา", () => {
+  it("TC-15-06 รายงานยังมีผัก + ผลไม้ พร้อมที่มา", () => {
     const r = generateReport({ nickname: "A", stage: "prep", weightKg: 60 });
-    expect(r.part2?.proteinFoods.length).toBeGreaterThan(0);
-    // ตารางใหม่ (2026-08-21) มาจาก source/ตารางโปรตีนอาหาร.xlsx — ฐาน "วัตถุดิบดิบ 100 ก."
-    expect(r.part2?.proteinFoods.find((f) => f.food === "อกไก่ (ไม่มีหนัง)"))
-      .toEqual({ food: "อกไก่ (ไม่มีหนัง)", per: "100 กรัม", protein: "≈ 23 ก.", proteinAvg: 23, group: "meat", note: "ไขมันต่ำสุดในกลุ่มไก่" });
-    // ต้นสั่งเพิ่มอะโวคาโดเข้าไปด้วย ทั้งที่ไม่มีในไฟล์ต้นฉบับ
-    expect(r.part2?.proteinFoods.find((f) => f.food === "อะโวคาโด")).toBeTruthy();
-    // ค่าจากคัมภีร์ครูก้อย (ฐาน "สุก") ไม่ได้หายไป — ย้ายไปอยู่ตาราง "หน่วยที่กินจริง"
-    expect(r.part2?.proteinServings.find((s) => s.serving === "อกไก่สุก 100 กรัม")?.protein).toBe("≈ 30 ก.");
-    expect(r.part2?.proteinServings.find((s) => s.serving.includes("เฟอร์ตี้"))?.protein).toBe("≈ 25 ก.");
-    // ทุกแถวต้องมีค่าตัวเลขไว้วาดแถบ และไม่เกินสเกลสูงสุด
-    for (const f of r.part2!.proteinFoods) {
+    expect(r.part2?.vegetables.length).toBeGreaterThan(0);
+    expect(r.part2?.fruits.length).toBeGreaterThan(0);
+    expect(r.part2?.foodSourceNote).toBeTruthy();
+    // 🔴 ตารางโปรตีนในอาหาร "ต้องไม่" อยู่ใน payload — เป็นข้อมูลอ้างอิงกลาง
+    //    หน้ารายงานอ่านจากค่าคงที่โดยตรง ถ้าแอบกลับเข้ามาใน payload อีก รายงานที่
+    //    ออกไปแล้วจะค้างกับตารางเวอร์ชันเก่า และพังถ้าโครงสร้างแถวเปลี่ยน
+    //    (เคยพังจริงบน production กับรหัส MJ-Z4XDHZ — ตารางโชว์กล่องเปล่า)
+    expect(JSON.stringify(r)).not.toContain("proteinFoods");
+  });
+
+  it("TC-15-06b ตารางโปรตีนในอาหาร: 17 รายการ ครบหมวด มีค่าไว้วาดแถบทุกแถว", () => {
+    // ที่มา: source/ตารางโปรตีนอาหาร.xlsx (16 รายการ) + อะโวคาโดที่ต้นสั่งเพิ่ม
+    expect(PROTEIN_FOODS.length).toBe(17);
+    expect(PROTEIN_FOODS.find((f) => f.food === "อกไก่ (ไม่มีหนัง)"))
+      .toEqual({ food: "อกไก่ (ไม่มีหนัง)", per: "100 กรัม", protein: "≈ 23 ก.", proteinAvg: 23, group: "meat", note: "ไขมันต่ำสุดในกลุ่มไก่", per100g: true });
+    expect(PROTEIN_FOODS.find((f) => f.food === "อะโวคาโด")).toBeTruthy();
+    for (const f of PROTEIN_FOODS) {
       expect(f.proteinAvg).toBeGreaterThan(0);
       expect(f.proteinAvg).toBeLessThanOrEqual(PROTEIN_BAR_MAX);
       expect(PROTEIN_FOOD_GROUPS.some((g) => g.key === f.group)).toBe(true);
     }
-    expect(r.part2?.proteinFoodsSource).toContain("USDA");
-    expect(r.part2?.vegetables.length).toBeGreaterThan(0);
-    expect(r.part2?.fruits.length).toBeGreaterThan(0);
+    // ทุกหมวดต้องมีของอยู่จริง ไม่งั้นหน้ารายงานจะมีหัวข้อหมวดที่ว่างเปล่า
+    for (const g of PROTEIN_FOOD_GROUPS) {
+      expect(PROTEIN_FOODS.filter((f) => f.group === g.key).length, g.label).toBeGreaterThan(0);
+    }
+    // ค่าจากคัมภีร์ครูก้อย (ฐาน "สุก") ไม่ได้หายไป — ย้ายไปตาราง "หน่วยที่กินจริง"
+    expect(PROTEIN_SERVINGS.find((s) => s.serving === "อกไก่สุก 100 กรัม")?.protein).toBe("≈ 30 ก.");
+    expect(PROTEIN_SERVINGS.find((s) => s.serving.includes("เฟอร์ตี้"))?.protein).toBe("≈ 25 ก.");
   });
 
   it("ไขมันดีในรายงานตรงกับ stage ของผู้ใช้ทั้ง 5 หมวด", () => {
