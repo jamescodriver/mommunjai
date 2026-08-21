@@ -70,21 +70,42 @@ describe("สวิตช์เปิด/ปิด", () => {
 });
 
 describe("เทียบเลขบัญชีผู้รับ (กันโกงที่สำคัญที่สุด)", () => {
-  it("ไม่ได้ตั้งบัญชีไว้เทียบ → ตัดสินไม่ได้ (undefined) ไม่ใช่ 'ผ่าน'", () => {
-    expect(receiverMatches("xxx-x-xx789-x", [])).toBeUndefined();
+  const SHOP = ["0528766609"]; // = 052-8-76660-9
+
+  it("ไม่ได้ตั้งบัญชีไว้เทียบ → ตัดสินไม่ได้ ไม่ใช่ 'ผ่าน'", () => {
+    expect(receiverMatches("XXX-X-XX660-9", [])).toBeUndefined();
   });
 
-  it("เลขท้ายตรงกับบัญชีแบรนด์ → ผ่าน", () => {
-    expect(receiverMatches("xxx-x-xx789-x", ["1234567890789"])).toBe(true);
+  // 🔴 เคสจริงจาก production 20 ส.ค. 69 — สลิป 2 ใบของบัญชีร้านเดียวกัน
+  //    แต่ปิดเลขคนละตำแหน่ง วิธีเดิม (endsWith) ผ่านแค่ใบแรก
+  it("สลิปกรุงไทย→กสิกร 'XXX-X-XX660-9' → ตรง", () => {
+    expect(receiverMatches("XXX-X-XX660-9", SHOP)).toBe(true);
   });
 
-  it("เลขท้ายไม่ตรง → ไม่ผ่าน", () => {
-    expect(receiverMatches("xxx-x-xx789-x", ["1234567890111"])).toBe(false);
+  it("🔴 สลิปกสิกร→กสิกร 'xxx-x-x6660-x' (ปิดหลักสุดท้าย) → ต้องตรงด้วย", () => {
+    // เคสนี้เคยถูกตอบว่า "โอนเข้าบัญชีอื่น" ใส่ลูกค้าที่จ่ายเงินจริง
+    expect(receiverMatches("xxx-x-x6660-x", SHOP)).toBe(true);
   });
 
-  it("เห็นตัวเลขน้อยกว่า 3 หลัก → ตัดสินไม่ได้ ห้ามเดา", () => {
-    expect(receiverMatches("xxx-x-xxxx-x", ["1234567890001"])).toBeUndefined();
-    expect(receiverMatches("xx", ["1234567890012"])).toBeUndefined();
+  it("คนละบัญชีจริง (จัดแนวได้ แต่หลักขัดกัน) → false ปฏิเสธได้เต็มปาก", () => {
+    expect(receiverMatches("xxx-x-x1234-x", SHOP)).toBe(false);
+    expect(receiverMatches("XXX-X-XX111-1", SHOP)).toBe(false);
+  });
+
+  it("🔒 จัดแนวไม่ได้ (ความยาวไม่เท่า) → undefined ห้ามฟันธงว่าผิด", () => {
+    // บัญชีบางธนาคารยาวไม่เท่ากัน — ตัดสินไม่ได้ ต้องไม่ไปกล่าวหาลูกค้า
+    expect(receiverMatches("xx-x-x660-x", SHOP)).toBeUndefined();
+  });
+
+  it("เห็นตัวเลขน้อยกว่า 3 หลัก → ตัดสินไม่ได้", () => {
+    expect(receiverMatches("xxx-x-xxxxx-x", SHOP)).toBeUndefined();
+    expect(receiverMatches("xx", SHOP)).toBeUndefined();
+  });
+
+  it("ตัวคั่นแบบอื่น (เว้นวรรค/จุด) ก็ต้องจัดแนวได้", () => {
+    // ต้องยาว 10 ตำแหน่งเท่าเลขบัญชีจริงหลังตัดตัวคั่น (xxx + x + x6660 + x)
+    expect(receiverMatches("xxx x x6660 x", SHOP)).toBe(true);
+    expect(receiverMatches("xxx.x.x6660.x", SHOP)).toBe(true);
   });
 
   it("🔒 เลขตรงกัน = 'ไม่ขัดกัน' เท่านั้น ข้อความห้ามเคลมว่ายืนยันแล้ว", () => {
@@ -94,8 +115,7 @@ describe("เทียบเลขบัญชีผู้รับ (กัน�
   });
 
   it("ห้ามเอาเบอร์โทร (proxy) มาเทียบกับเลขบัญชี", () => {
-    // สลิปที่ผู้รับเป็นพร้อมเพย์เบอร์โทร ไม่มี account.value → ต้องตัดสินไม่ได้
-    expect(receiverMatches("", ["1234567890"])).toBeUndefined();
+    expect(receiverMatches("", SHOP)).toBeUndefined();
   });
 
   it("ตั้งได้หลายบัญชี คั่นด้วยจุลภาค และตัดอักขระที่ไม่ใช่ตัวเลขทิ้ง", () => {
@@ -135,7 +155,7 @@ describe("verifySlipImage", () => {
   });
 
   it("🔴 เงินเข้าบัญชีอื่น → ไม่ผ่าน ถึงสลิปจะเป็นของจริง", async () => {
-    process.env.THUNDER_RECEIVER_ACCOUNT = "1234567890111"; // คนละบัญชีกับที่สลิปโอนไป
+    process.env.THUNDER_RECEIVER_ACCOUNT = "0528761111"; // จัดแนวได้ แต่หลักขัดกัน = คนละบัญชีแน่
     globalThis.fetch = ok(SLIP);
     const r = await verifySlipByUrl("https://x.test/i.jpg");
     expect(r.ok).toBe(false);
