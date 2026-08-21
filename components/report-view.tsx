@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { Report } from "@/lib/report";
 import { BMI_BANDS } from "@/lib/calc/bmi";
 import { fmtRange, fertyTopUpText } from "@/lib/calc/protein";
-import { MEAL_EXAMPLES, MEAL_EXAMPLES_DISCLAIMER } from "@/lib/calc/food-reference";
+import { MEAL_EXAMPLES, MEAL_EXAMPLES_DISCLAIMER, PROTEIN_FOOD_GROUPS, PROTEIN_BAR_MAX } from "@/lib/calc/food-reference";
 import { productPhotoSrc } from "@/lib/product-photos";
 import { track } from "@/lib/track";
 import { Wordmark } from "@/components/wordmark";
@@ -284,30 +284,70 @@ export default function ReportView({ report, code, ticketNote, lineLinked }: {
             </div>
           )}
 
-          {/* ตารางโปรตีนต่ออาหาร */}
+          {/* ── ตารางโปรตีนในอาหาร ─────────────────────────────────────────
+              ที่มา: source/ตารางโปรตีนอาหาร.xlsx (ทีม Baby & Mom · อ้างอิง USDA)
+              แบ่งเป็นหมวดแทนการไล่ยาว 17 บรรทัดรวด และมีแถบเทียบสายตาให้เห็นว่า
+              "อันไหนคุ้มโปรตีนกว่ากัน" โดยไม่ต้องอ่านตัวเลขทีละตัว
+              📱 มือถือ = หมวดเรียงลง · 💻 sm ขึ้นไป = 2 คอลัมน์ ไม่ให้หน้ายืดยาวเกิน */}
           {p2?.proteinFoods && p2.proteinFoods.length > 0 && (
             <div className="rounded-xl bg-white/70 p-3">
-              <div className="text-sm font-semibold text-teal-deep">โปรตีนในอาหาร (อ้างอิง)</div>
-              <div className="mt-2 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs text-ink/75">
-                      <th className="pb-1 font-medium">อาหาร</th>
-                      <th className="pb-1 font-medium">ปริมาณอ้างอิง</th>
-                      <th className="pb-1 text-right font-medium">โปรตีน</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {p2.proteinFoods.map((f, i) => (
-                      <tr key={i} className="border-t border-black/5">
-                        <td className="py-1.5">{f.food}</td>
-                        <td className="py-1.5 text-ink/80">{f.per}</td>
-                        <td className="py-1.5 text-right font-medium text-teal-deep">{f.protein}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="text-sm font-semibold text-teal-deep">โปรตีนในอาหาร (อ้างอิง) 🍗</div>
+              <p className="mt-0.5 text-xs text-ink/75">ต่อวัตถุดิบดิบ 100 กรัม · นม/โยเกิร์ต = ต่อ 100 มิลลิลิตร</p>
+
+              <div className="mt-3 grid items-start gap-3 sm:grid-cols-2">
+                {PROTEIN_FOOD_GROUPS.map((g) => {
+                  const rows = p2.proteinFoods.filter((f) => f.group === g.key);
+                  if (rows.length === 0) return null;
+                  return (
+                    <div key={g.key} className="rounded-lg border border-teal/15 bg-white/60 p-2.5">
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-teal-deep">
+                        <span aria-hidden>{g.emoji}</span>{g.label}
+                      </div>
+                      <ul className="mt-1.5 space-y-2">
+                        {rows.map((f, i) => (
+                          <li key={i}>
+                            <div className="flex items-baseline justify-between gap-2">
+                              <span className="text-sm">{f.food}</span>
+                              <span className="shrink-0 text-sm font-semibold tabular-nums text-teal-deep">{f.protein}</span>
+                            </div>
+                            <div
+                              className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-teal-soft"
+                              role="img"
+                              aria-label={`โปรตีน ${f.protein} ต่อ ${f.per}`}
+                            >
+                              <div
+                                className="h-full rounded-full bg-teal"
+                                style={{ width: `${Math.max(3, Math.round((f.proteinAvg / PROTEIN_BAR_MAX) * 100))}%` }}
+                              />
+                            </div>
+                            {f.note && <p className="mt-0.5 text-xs leading-snug text-ink/70">{f.note}</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
               </div>
+
+              {/* เทียบเป็นหน่วยที่กินจริง — คนกะ "100 กรัม" ไม่ออก แต่กะเป็นฟอง/แก้ว/ซองได้ */}
+              {p2.proteinServings && p2.proteinServings.length > 0 && (
+                <div className="mt-3 rounded-lg bg-teal-soft/70 p-2.5">
+                  <div className="text-xs font-semibold text-teal-deep">เทียบเป็นหน่วยที่กินจริง 🥄</div>
+                  <ul className="mt-1.5 space-y-1.5">
+                    {p2.proteinServings.map((sv, i) => (
+                      <li key={i}>
+                        <div className="flex items-baseline justify-between gap-2 text-sm">
+                          <span>{sv.serving}</span>
+                          <span className="shrink-0 font-semibold tabular-nums text-teal-deep">{sv.protein}</span>
+                        </div>
+                        {sv.hint && <p className="text-xs leading-snug text-ink/70">{sv.hint}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {p2.proteinFoodsNote && <p className="mt-2 text-xs leading-snug text-ink/75">ℹ️ {p2.proteinFoodsNote}</p>}
               {/* R4 (0408) · PDF-04 — เอาบรรทัดอ้างอิง docs/*.md ออกตามที่ client ยืนยัน */}
             </div>
           )}

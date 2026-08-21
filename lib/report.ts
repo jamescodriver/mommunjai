@@ -15,7 +15,9 @@ import { assessSleep } from "./calc/sleep";
 import { buildPregnancyKnowledge, type PregnancyKnowledge } from "./calc/pregnancy";
 import { buildLactationKnowledge, type LactationKnowledge } from "./calc/lactation";
 import {
-  PROTEIN_FOODS, PROTEIN_FOODS_SOURCE, RECOMMENDED_VEGETABLES, RECOMMENDED_FRUITS, FOOD_SOURCE_NOTE,
+  PROTEIN_FOODS, PROTEIN_SERVINGS, PROTEIN_FOODS_NOTE, PROTEIN_FOODS_SOURCE,
+  RECOMMENDED_VEGETABLES, RECOMMENDED_FRUITS, FOOD_SOURCE_NOTE,
+  type ProteinFoodGroup,
 } from "./calc/food-reference";
 
 export interface ReportProfile {
@@ -118,6 +120,16 @@ export interface ProteinFoodRef {
   food: string;
   per: string;
   protein: string;
+  /** ค่ากลางเป็นตัวเลข — สำหรับวาดแถบเปรียบเทียบในหน้ารายงานเท่านั้น */
+  proteinAvg: number;
+  group: ProteinFoodGroup;
+  note?: string;
+}
+
+export interface ProteinServingRef {
+  serving: string;
+  protein: string;
+  hint?: string;
 }
 
 export interface ReportPart2 {
@@ -125,6 +137,9 @@ export interface ReportPart2 {
   waterMl: WaterTarget | null;
   goodFat: GoodFatResult;
   proteinFoods: ProteinFoodRef[];
+  /** เทียบเป็นหน่วยที่กินจริง (ฟอง/แก้ว/กำมือ/ซอง) — คู่กับตาราง 100 กรัม */
+  proteinServings: ProteinServingRef[];
+  proteinFoodsNote: string;
   proteinFoodsSource: string;
   vegetables: string[];
   fruits: string[];
@@ -367,7 +382,12 @@ export function generateReport(p: ReportProfile): Report {
     protein,
     waterMl: water,
     goodFat: goodFatTarget(stage5),
-    proteinFoods: PROTEIN_FOODS.map((f) => ({ food: f.food, per: f.per, protein: f.protein })),
+    proteinFoods: PROTEIN_FOODS.map((f) => ({
+      food: f.food, per: f.per, protein: f.protein,
+      proteinAvg: f.proteinAvg, group: f.group, ...(f.note ? { note: f.note } : {}),
+    })),
+    proteinServings: PROTEIN_SERVINGS.map((s) => ({ serving: s.serving, protein: s.protein, ...(s.hint ? { hint: s.hint } : {}) })),
+    proteinFoodsNote: PROTEIN_FOODS_NOTE,
     proteinFoodsSource: PROTEIN_FOODS_SOURCE,
     vegetables: RECOMMENDED_VEGETABLES,
     fruits: RECOMMENDED_FRUITS,

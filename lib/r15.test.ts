@@ -5,6 +5,7 @@ import { generateReport, buildTeaser, reportTier, buildSleepGuide, type Report }
 import { goodFatTarget, type GoodFatStage } from "./calc/goodfat";
 import { PRODUCT_PHOTO_IDS, hasProductPhoto, productPhotoSrc } from "./product-photos";
 import { PRODUCTS } from "./calc/vitamins";
+import { PROTEIN_BAR_MAX, PROTEIN_FOOD_GROUPS } from "./calc/food-reference";
 
 const ALL_STAGES: GoodFatStage[] = ["prep", "infertility", "pregnant", "lactating", "male"];
 
@@ -231,8 +232,21 @@ describe("R15 — Part 2 โภชนาการของคุณ", () => {
   it("TC-15-06 มีตารางโปรตีนต่ออาหาร + ผัก + ผลไม้ พร้อมอ้างอิงที่มา", () => {
     const r = generateReport({ nickname: "A", stage: "prep", weightKg: 60 });
     expect(r.part2?.proteinFoods.length).toBeGreaterThan(0);
-    expect(r.part2?.proteinFoods.find((f) => f.food === "อกไก่")).toEqual({ food: "อกไก่", per: "100 กรัม", protein: "≈ 30 ก." });
-    expect(r.part2?.proteinFoodsSource).toContain("nutrition-protocol.md");
+    // ตารางใหม่ (2026-08-21) มาจาก source/ตารางโปรตีนอาหาร.xlsx — ฐาน "วัตถุดิบดิบ 100 ก."
+    expect(r.part2?.proteinFoods.find((f) => f.food === "อกไก่ (ไม่มีหนัง)"))
+      .toEqual({ food: "อกไก่ (ไม่มีหนัง)", per: "100 กรัม", protein: "≈ 23 ก.", proteinAvg: 23, group: "meat", note: "ไขมันต่ำสุดในกลุ่มไก่" });
+    // ต้นสั่งเพิ่มอะโวคาโดเข้าไปด้วย ทั้งที่ไม่มีในไฟล์ต้นฉบับ
+    expect(r.part2?.proteinFoods.find((f) => f.food === "อะโวคาโด")).toBeTruthy();
+    // ค่าจากคัมภีร์ครูก้อย (ฐาน "สุก") ไม่ได้หายไป — ย้ายไปอยู่ตาราง "หน่วยที่กินจริง"
+    expect(r.part2?.proteinServings.find((s) => s.serving === "อกไก่สุก 100 กรัม")?.protein).toBe("≈ 30 ก.");
+    expect(r.part2?.proteinServings.find((s) => s.serving.includes("เฟอร์ตี้"))?.protein).toBe("≈ 25 ก.");
+    // ทุกแถวต้องมีค่าตัวเลขไว้วาดแถบ และไม่เกินสเกลสูงสุด
+    for (const f of r.part2!.proteinFoods) {
+      expect(f.proteinAvg).toBeGreaterThan(0);
+      expect(f.proteinAvg).toBeLessThanOrEqual(PROTEIN_BAR_MAX);
+      expect(PROTEIN_FOOD_GROUPS.some((g) => g.key === f.group)).toBe(true);
+    }
+    expect(r.part2?.proteinFoodsSource).toContain("USDA");
     expect(r.part2?.vegetables.length).toBeGreaterThan(0);
     expect(r.part2?.fruits.length).toBeGreaterThan(0);
   });
