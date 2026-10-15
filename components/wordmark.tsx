@@ -9,12 +9,12 @@ export function Wordmark({
   white = false,
 }: {
   className?: string;
-  /** rendered height in px; width scales automatically (logo ratio ≈ 3.2:1) */
+  /** rendered height in px; width scales automatically (logo ratio ≈ 3.33:1) */
   height?: number;
   /** use the all-white version (for teal/dark backgrounds) */
   white?: boolean;
 }) {
-  const width = Math.round(height * 3.2);
+  const width = Math.round(height * 3.33);
   return (
     <Image
       src={white ? "/logo-white.png" : "/logo.png"}
